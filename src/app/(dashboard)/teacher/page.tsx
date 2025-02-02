@@ -2,10 +2,10 @@ import { type ReactElement } from "react";
 
 export interface pageProps {}
 
-export default function page({}: pageProps): ReactElement {
+export default function TeacherPage({}: pageProps): ReactElement {
   return (
     <>
-      <div>Teacher page</div>
+      <h1>TeacherPage</h1>
     </>
   );
 }

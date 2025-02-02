@@ -1,3 +1,8 @@
+import { role } from "@/lib/data";
+import Image from "next/image";
+import Link from "next/link";
+import { type ReactElement } from "react";
+
 const menuItems = [
   {
     title: "MENU",
@@ -113,31 +118,36 @@ const menuItems = [
   },
 ];
 
-import Image from "next/image";
-import Link from "next/link";
-import { type ReactElement } from "react";
-
 export interface MenuProps {}
 
 export default function Menu({}: MenuProps): ReactElement {
   return (
     <>
-      <div className="mt-4 text-sm">
+      <div className="mt-4 text-sm ">
         {menuItems.map((i) => (
-          <div className="flex flex-col gap-2" key={i.title}>
+          <div className="flex flex-col gap-2 overflow-scroll" key={i.title}>
             <span className="hidden lg:block text-gray-400 font-light my-4">
               {i.title}
             </span>
-            {i.items.map((item) => (
-              <Link
-                href={item.href}
-                key={item.label}
-                className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 ml-3"
-              >
-                <Image alt="item link" src={item.icon} width={20} height={20} />
-                <span className="hidden lg:block">{item.label}</span>
-              </Link>
-            ))}
+            {i.items.map((item) => {
+              if (item.visible.includes(role)) {
+                return (
+                  <Link
+                    href={item.href}
+                    key={item.label}
+                    className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 ml-3 rounded-md hover:bg-skyLight md:px-2"
+                  >
+                    <Image
+                      alt="item link"
+                      src={item.icon}
+                      width={20}
+                      height={20}
+                    />
+                    <span className="hidden lg:block">{item.label}</span>
+                  </Link>
+                );
+              }
+            })}
           </div>
         ))}
       </div>

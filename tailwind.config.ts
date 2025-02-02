@@ -19,7 +19,7 @@ const config: Config = {
         alPurple: "#CFCEFF",
         alPurpleLight: "#F1F0FF",
         alYellow: "#FAE27C",
-        alYellowLight: "FEFCE8",
+        alYellowLight: "#FEFCE8",
       },
     },
   },
