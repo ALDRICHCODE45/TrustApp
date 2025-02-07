@@ -1,152 +1,166 @@
 "use client";
-import Image from "next/image";
-import { type ReactElement } from "react";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import Image from "next/image";
 
 const data = [
   {
-    name: "Ene",
+    month: "Ene",
     income: 4000,
     expense: 2400,
     amt: 2400,
   },
   {
-    name: "Feb",
+    month: "Feb",
     income: 3000,
     expense: 1398,
     amt: 2210,
   },
   {
-    name: "Mar",
+    month: "Mar",
     income: 2000,
     expense: 9800,
     amt: 2290,
   },
   {
-    name: "Abr",
+    month: "Abr",
     income: 2780,
     expense: 3908,
     amt: 2000,
   },
   {
-    name: "May",
+    month: "May",
     income: 1890,
     expense: 4800,
     amt: 2181,
   },
   {
-    name: "Jun",
+    month: "Jun",
     income: 2390,
     expense: 3800,
     amt: 2500,
   },
   {
-    name: "Jul",
+    month: "Jul",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
   {
-    name: "Ago",
+    month: "Ago",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
   {
-    name: "Sep",
+    month: "Sep",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
   {
-    name: "Oct",
+    month: "Oct",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
   {
-    name: "Nov",
+    month: "Nov",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
   {
-    name: "Dic",
+    month: "Dic",
     income: 3490,
     expense: 4300,
     amt: 2100,
   },
 ];
 
-export interface FinanceChartProps {}
+const chartConfig = {
+  expense: {
+    label: "Expense",
+    color: "#C3EBFA",
+  },
+  income: {
+    label: "Income",
+    color: "#60a8fb",
+  },
+  amt: {
+    label: "Amounth",
+    color: "#ddd",
+  },
+} satisfies ChartConfig;
 
-export function FinanceChart({}: FinanceChartProps): ReactElement {
+export function FinanceChart() {
   return (
-    <>
-      <div className="w-full h-full bg-white rounded-xl p-4">
-        {/* TITLE */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-semibold">Students</h1>
+    <Card className="">
+      <CardHeader className="flex flex-row justify-between">
+        <div className="flex flex-col items-start">
+          <CardTitle>Finance Chart - Multiple</CardTitle>
+          <CardDescription>January - June 2024</CardDescription>
+        </div>
+        <div className="items-end cursor-pointer">
           <Image src="/moreDark.png" alt="more.." width={20} height={20} />
         </div>
-        <ResponsiveContainer width="100%" height="90%">
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
           <LineChart
-            width={500}
-            height={300}
+            accessibilityLayer
             data={data}
             margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
+              left: 12,
+              right: 12,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+            <CartesianGrid vertical={true} />
             <XAxis
-              dataKey="name"
-              axisLine={false}
-              tick={{ fill: "#d1d5db" }}
+              dataKey="month"
               tickLine={false}
-              tickMargin={10}
-            />
-            <YAxis
               axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#d1d5db" }}
-              tickMargin={20}
+              tickMargin={8}
+              tickFormatter={(value) => value.slice(0, 3)}
             />
-            <Tooltip />
-            <Legend
-              align="center"
-              verticalAlign="top"
-              wrapperStyle={{ paddingTop: "10px", paddingBottom: "30px" }}
-            />
-
+            <ChartTooltip cursor={true} content={<ChartTooltipContent />} />
             <Line
-              type="monotone"
               dataKey="income"
-              stroke="#C3EBFA"
-              strokeWidth={5}
+              type="monotone"
+              stroke="var(--color-expense)"
+              strokeWidth={2}
+              dot={true}
             />
             <Line
-              type="monotone"
               dataKey="expense"
-              stroke="#CFCEFF"
-              strokeWidth={5}
+              type="monotone"
+              stroke="var(--color-income)"
+              strokeWidth={2}
+              dot={true}
+            />
+            <Line
+              dataKey="amt"
+              type="monotone"
+              stroke="var(--color-amt)"
+              strokeWidth={2}
+              dot={true}
             />
           </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,4 +1,6 @@
-import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { type ReactElement } from "react";
 
 export interface UserCardProps {
@@ -7,17 +9,30 @@ export interface UserCardProps {
 
 export function UserCard({ type }: UserCardProps): ReactElement {
   return (
-    <>
-      <div className="rounded-2xl odd:bg-alPurple even:bg-alYellow p-4 flex-1 min-w-[130px]">
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] bg-white px-2 py-2 rounded-full text-green-600">
-            2024/25
-          </span>
-          <Image src="/more.png" alt="" width={20} height={20} />
-        </div>
-        <h1 className="text-2xl font-semibold my-4">1,234</h1>
-        <h1 className="capitalize text-sm font-medium text-gray-500">{type}</h1>
-      </div>
-    </>
+    <Card className="rounded-2xl odd:bg-[#c3ebfa]  even:bg-[#60a8fb] p-4 flex-1 min-w-[130px]">
+      <CardHeader className="flex flex-row justify-between items-center p-0">
+        {/* Badge for Year */}
+        <Badge variant="secondary" className="text-xs px-2 py-1 rounded-full">
+          2024/25
+        </Badge>
+        {/* Avatar for Icon */}
+        <Avatar className="w-5 h-5">
+          <AvatarImage
+            src="/more.png"
+            alt="More options"
+            className="hover:cursor-pointer"
+          />
+          <AvatarFallback>...</AvatarFallback>
+        </Avatar>
+      </CardHeader>
+      <CardContent className="p-0 mt-4">
+        {/* Main Number */}
+        <CardTitle className="text-2xl font-semibold ">1,234</CardTitle>
+        {/* Type Label */}
+        <p className="capitalize text-sm font-medium text-gray-600 mt-2">
+          {type}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

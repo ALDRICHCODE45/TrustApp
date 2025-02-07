@@ -3,7 +3,40 @@ import { type Event } from "react-big-calendar";
 // TEMPORARY DATA
 export let role = "admin";
 
-export const teachersData = [
+export interface Teacher {
+  id: number;
+  teacherId: string;
+  name: string;
+  email: string;
+  photo: string;
+  phone: string;
+  subjects: string[];
+  classes: string[];
+  address: string;
+}
+
+export interface Students {
+  id: number;
+  studentId: string;
+  name: string;
+  email: string;
+  photo: string;
+  phone: string;
+  grade: number;
+  class: string;
+  address: string;
+}
+
+export interface Parent {
+  id: number;
+  name: string;
+  students: string[];
+  email: string;
+  phone: string;
+  address: string;
+}
+
+export const teachersData: Teacher[] = [
   {
     id: 1,
     teacherId: "1234567890",
@@ -124,9 +157,21 @@ export const teachersData = [
     classes: ["5A", "4B", "3C"],
     address: "123 Main St, Anytown, USA",
   },
+  {
+    id: 11,
+    teacherId: "1234567890",
+    name: "John Glover",
+    email: "john@glover.com",
+    photo:
+      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    subjects: ["Biology"],
+    classes: ["5A", "4B", "3C"],
+    address: "123 Main St, Anytown, USA",
+  },
 ];
 
-export const studentsData = [
+export const studentsData: Students[] = [
   {
     id: 1,
     studentId: "1234567890",
@@ -247,9 +292,21 @@ export const studentsData = [
     class: "5A",
     address: "123 Main St, Anytown, USA",
   },
+  {
+    id: 11,
+    studentId: "1234567890",
+    name: "John Glover",
+    email: "john@glover.com",
+    photo:
+      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    grade: 5,
+    class: "5A",
+    address: "123 Main St, Anytown, USA",
+  },
 ];
 
-export const parentsData = [
+export const parentsData: Parent[] = [
   {
     id: 1,
     name: "John Doe",

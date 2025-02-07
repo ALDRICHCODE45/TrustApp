@@ -1,98 +1,93 @@
 "use client";
-import Image from "next/image";
-import { type ReactElement } from "react";
+
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
 import {
-  BarChart,
-  Bar,
-  Rectangle,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import Image from "next/image";
 
 const data = [
   {
-    name: "Lun",
+    month: "Lun",
     present: 60,
     absent: 39,
   },
   {
-    name: "Mar",
+    month: "Mar",
     present: 99,
     absent: 34,
   },
   {
-    name: "Mie",
+    month: "Mie",
     present: 23,
     absent: 11,
   },
   {
-    name: "Jue",
+    month: "Jue",
     present: 32,
     absent: 87,
   },
   {
-    name: "Vie",
+    month: "Vie",
     present: 88,
     absent: 29,
   },
 ];
+const chartConfig = {
+  desktop: {
+    label: "Present",
+    color: "#2563eb",
+  },
+  mobile: {
+    label: "Absent",
+    color: "#60a8fb",
+  },
+} satisfies ChartConfig;
 
-export interface AttendanceChartProps {}
-
-export function AttendanceChart({}: AttendanceChartProps): ReactElement {
+export function AttendanceChart() {
   return (
-    <>
-      <div className="bg-white rounded-lg p-4 h-full">
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-semibold">Attendance</h1>
+    <Card className=" h-full rounded-xl">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex flex-col">
+          <CardTitle>Bar Chart - Multiple</CardTitle>
+          <CardDescription>January - June 2024</CardDescription>
+        </div>
+
+        <div className="cursor-pointer">
           <Image src="/moreDark.png" alt="" width={20} height={20} />
         </div>
-        <ResponsiveContainer width="100%" height="90%">
-          <BarChart width={500} height={300} data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="#ddd"
-            />
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart accessibilityLayer data={data}>
+            <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="name"
-              axisLine={false}
-              tick={{ fill: "#d1d5db" }}
+              dataKey="month"
               tickLine={false}
-            />
-            <YAxis
+              tickMargin={10}
               axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#d1d5db" }}
+              tickFormatter={(value) => value.slice(0, 3)}
             />
-
-            <Tooltip
-              contentStyle={{ borderRadius: "10px", borderColor: "lightgray" }}
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Legend
-              align="left"
-              verticalAlign="top"
-              wrapperStyle={{ paddingTop: "20px", paddingBottom: "40px" }}
-            />
-            <Bar
-              dataKey="present"
-              fill="#FAE27C"
-              legendType="circle"
-              radius={[10, 10, 0, 0]}
-            />
-            <Bar
-              dataKey="absent"
-              legendType="circle"
-              fill="#C3EBFA"
-              radius={[10, 10, 0, 0]}
-            />
+            <Bar dataKey="present" fill="var(--color-desktop)" radius={4} />
+            <Bar dataKey="absent" fill="var(--color-mobile)" radius={4} />
           </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }

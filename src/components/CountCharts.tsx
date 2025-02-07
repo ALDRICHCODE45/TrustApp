@@ -1,76 +1,101 @@
 "use client";
-import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
+import { RadialBar, RadialBarChart } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import Image from "next/image";
 
-const data = [
+const chartData = [
   {
     name: "Total",
-    count: 100,
-    fill: "white",
+    cantidad: 100,
+    fill: "#c3ebfa",
   },
   {
     name: "Boys",
-    count: 50,
-    fill: "#FAE27C",
+    cantidad: 50,
+    fill: "var(--color-boys)",
   },
   {
     name: "Girls",
-    count: 50,
-    fill: "#C3EBFA",
+    cantidad: 50,
+    fill: "var(--color-girls)",
   },
 ];
 
-import { type ReactElement } from "react";
-import Image from "next/image";
+const chartConfig = {
+  boys: {
+    label: "Boys",
+    color: "#2563eb", // Color amarillo
+  },
+  girls: {
+    label: "Girls",
+    color: "#60a8fb", // Color azul claro
+  },
+} satisfies ChartConfig;
 
-export interface CountChartsProps {}
-
-export function CountCharts({}: CountChartsProps): ReactElement {
+export function CountCharts() {
   return (
-    <>
-      <div className="w-full bg-white rounded-xl h-full p-4 ">
-        {/* TITLE */}
-        <div className="">
-          <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold">Students</h1>
-            <Image src="/moreDark.png" alt="" width={20} height={20} />
+    <Card className="flex flex-col  w-full h-full">
+      {/* Header */}
+      <CardHeader className="items-center p-5">
+        <div className="flex  flex-row justify-between items-center w-full">
+          <div className="flex flex-col">
+            <CardTitle>Empleados</CardTitle>
+            <CardDescription className="items-start">
+              Descripcion general
+            </CardDescription>
           </div>
-        </div>
-        {/* CHART */}
-        <div className="relative w-full h-[75%]">
-          <ResponsiveContainer>
-            <RadialBarChart
-              cx="50%"
-              cy="50%"
-              innerRadius="40%"
-              outerRadius="100%"
-              barSize={32}
-              data={data}
-            >
-              <RadialBar background dataKey="count" />
-            </RadialBarChart>
-          </ResponsiveContainer>
           <Image
-            src="/maleFemale.png"
-            alt="maleFemale"
-            width={50}
-            height={50}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            src="/moreDark.png"
+            alt="More options"
+            width={20}
+            height={20}
+            className="cursor-pointer"
           />
         </div>
-        {/* BOTTOM */}
-        <div className="flex justify-center gap-16">
-          <div className="flex flex-col gap-1">
-            <div className="w-5 h-5 bg-sky rounded-full" />
-            <h1 className="font-bold">1,234</h1>
-            <h2 className="text-sm text-gray-300">Boys (55%)</h2>
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="w-5 h-5 bg-alYellow rounded-full" />
-            <h1 className="font-bold">1,234</h1>
-            <h2 className="text-sm text-gray-300">Girls (55%)</h2>
-          </div>
+      </CardHeader>
+
+      {/* Content */}
+      <CardContent className="flex-1 pb-0 relative">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px]"
+        >
+          <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel nameKey="name" />}
+            />
+            <RadialBar dataKey="cantidad" background />
+          </RadialBarChart>
+        </ChartContainer>
+      </CardContent>
+
+      {/* Footer */}
+      <CardFooter className="flex justify-center gap-8 text-sm">
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-5 h-5 bg-[#60a8fb] rounded-full" />
+          <h1 className="font-bold">50</h1>
+          <h2 className="text-muted-foreground">Boys (50%)</h2>
         </div>
-      </div>
-    </>
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-5 h-5 bg-[#C3EBFA] rounded-full" />
+          <h1 className="font-bold">50</h1>
+          <h2 className="text-muted-foreground">Girls (50%)</h2>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
