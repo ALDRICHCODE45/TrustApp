@@ -1,8 +1,7 @@
 "use client";
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { Parent } from "@/lib/data";
-import { Phone, MapPin, UserRound } from "lucide-react";
+import { Phone, MapPin, UsersIcon } from "lucide-react";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 
 const myCustomFilterFn: FilterFn<Parent> = (
@@ -70,7 +69,7 @@ export const parentsColumns: ColumnDef<Parent>[] = [
       const students = row.original.students.join(", ");
       return (
         <div className="flex items-center gap-2">
-          <UserRound size={17} className="hidden md:block" />
+          <UsersIcon size={17} className="hidden md:block" />
           {students}
         </div>
       );

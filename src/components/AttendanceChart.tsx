@@ -57,7 +57,7 @@ const chartConfig = {
 
 export function AttendanceChart() {
   return (
-    <Card className=" h-full rounded-xl">
+    <Card className="rounded-xl h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex flex-col">
           <CardTitle>Bar Chart - Multiple</CardTitle>
@@ -68,8 +68,8 @@ export function AttendanceChart() {
           <Image src="/moreDark.png" alt="" width={20} height={20} />
         </div>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className="">
+        <ChartContainer config={chartConfig} className="w-full h-[345px]">
           <BarChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis
