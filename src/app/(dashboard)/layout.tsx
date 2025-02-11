@@ -1,9 +1,4 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
-import Menu from "@/components/Menu";
-import { Navbar } from "@/components/Navbar";
-import { Toaster } from "sonner";
 import {
   SidebarInset,
   SidebarProvider,
@@ -20,6 +15,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
+import { ModeToggle } from "@/components/themeToggle";
 
 export default function DashboardLayout({
   children,
@@ -33,10 +29,13 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <header className="flex justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
-              <Separator className="mr-2 h-4" />
+              <Separator className=" h-4" />
+              <div className="p-2">
+                <ModeToggle />
+              </div>
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
@@ -50,14 +49,14 @@ export default function DashboardLayout({
               </Breadcrumb>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 dark:bg-[#0e0e0e]">
             {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3"> */}
             {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
             {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
             {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
             {/* </div> */}
             {/* <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" /> */}
-            <div className="mb-10">{children}</div>
+            <div className="mb-10 dark:bg-[#0e0e0e]  ">{children}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>

@@ -29,6 +29,13 @@ import {
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export interface TableProps {}
 
@@ -45,6 +52,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [pageSize, setPageSize] = useState<number>(10); // Estado para el tamaño de página
 
   const table = useReactTable({
     data,
@@ -65,15 +73,28 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handlePageSizeChange = (value: string) => {
+    const newSize = parseInt(value, 10);
+    setPageSize(newSize);
+    table.setPageSize(newSize); // Actualiza el tamaño de página en la tabla
+  };
+
   return (
-    <div>
-      <div className="flex items-center py-4">
+    <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
+      <div className="flex items-center py-4 dark:bg-[#0e0e0e]">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+          placeholder="Filter ..."
+          value={
+            table.getColumn("email")?.getCanFilter()
+              ? (table.getColumn("email")?.getFilterValue() as string) ?? ""
+              : ""
           }
+          onChange={(event) => {
+            const column = table.getColumn("email");
+            if (column?.getCanFilter()) {
+              column.setFilterValue(event.target.value);
+            }
+          }}
           className="max-w-sm"
         />
         <DropdownMenu>
@@ -103,8 +124,8 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border dark:bg-[#0e0e0e] overflow-x-auto">
+        <Table className="min-w-[900px] w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -153,10 +174,32 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      {/* PAGINACION */}
+
       <div className="flex items-center justify-between">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="flex items-center gap-2 mr-4">
+          <span className="text-sm text-muted-foreground">
+            Filas por página:
+          </span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
+            <SelectTrigger className="w-[70px]">
+              <SelectValue placeholder="10" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <Button

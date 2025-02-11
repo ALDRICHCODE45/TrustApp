@@ -63,7 +63,6 @@ export function AttendanceChart() {
           <CardTitle>Bar Chart - Multiple</CardTitle>
           <CardDescription>January - June 2024</CardDescription>
         </div>
-
         <div className="cursor-pointer">
           <Image src="/moreDark.png" alt="" width={20} height={20} />
         </div>

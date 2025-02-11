@@ -3,24 +3,22 @@ import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
-  Bot,
   Command,
   Frame,
   GalleryVerticalEnd,
   Map,
+  MonitorCog,
   PieChart,
   Settings2,
-  SquareTerminal,
+  Shield,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
@@ -53,7 +51,7 @@ const data = {
     {
       title: "Administracion",
       url: "#",
-      icon: SquareTerminal,
+      icon: Shield,
       isActive: true,
       items: [
         {
@@ -66,14 +64,14 @@ const data = {
         },
         {
           title: "Leads",
-          url: "/list/parents",
+          url: "/list/leads",
         },
       ],
     },
     {
       title: "Panel de control",
       url: "#",
-      icon: Bot,
+      icon: MonitorCog,
       isActive: true,
       items: [
         {
@@ -81,8 +79,8 @@ const data = {
           url: "/admin",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Reclutamiento",
+          url: "/list/reclutamiento",
         },
         {
           title: "Quantum",
@@ -160,15 +158,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        {/* <TeamSwitcher teams={data.teams} /> */}
+        <NavUser user={data.user} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+      {/* <SidebarFooter> */}
+      {/* </SidebarFooter> */}
       <SidebarRail />
     </Sidebar>
   );

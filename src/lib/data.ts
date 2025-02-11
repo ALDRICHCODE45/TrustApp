@@ -3,6 +3,394 @@ import { type Event } from "react-big-calendar";
 // TEMPORARY DATA
 export let role = "admin";
 
+export interface Candidato {
+  nombre: string;
+  telefono: string;
+  correo: string;
+  foto: string;
+  cv: string; // Archivo representado como string por ahora
+}
+
+export interface Vacante {
+  año: number;
+  reclutador: string;
+  tipo: "Nueva" | "Recompra";
+  estado: "Hunting" | "Cancelada" | "Entrevistas" | "Perdida" | "Placement";
+  puesto: string;
+  comentarios: string[]; // Múltiples comentarios por vacante
+  tiempoTranscurrido: number; // Días transcurridos
+  prioridad: "Alta" | "Media" | "Baja";
+  mesAsignado: string;
+  fechaEntrega: string;
+  fechaUltimaTerna: string;
+  duracionTotal: number; // Tiempo total en días
+  fechaOferta: string | null;
+  candidatoContratado?: {
+    nombre: string;
+    cv: string; // Archivo representado como string
+  } | null;
+  salario: number;
+  fechaComision: string | null;
+  monto: number;
+  valorFactura: number;
+  porcentajeComision: number;
+  checklist: string; // Archivo representado como string
+  muestraPerfil: string; // Archivo representado como string
+  ternaFinal: Candidato[]; // Lista de 3 candidatos con su información
+}
+
+export const vacantes: Vacante[] = [
+  {
+    año: 2023,
+    reclutador: "Juan Pérez",
+    tipo: "Nueva",
+    estado: "Hunting",
+    puesto: "Desarrollador Frontend",
+    comentarios: [
+      "Buscando candidatos con experiencia en React",
+      "Prioridad alta",
+    ],
+    tiempoTranscurrido: 10,
+    prioridad: "Alta",
+    mesAsignado: "Enero",
+    fechaEntrega: "2023-02-15",
+    fechaUltimaTerna: "2023-02-10",
+    duracionTotal: 30,
+    fechaOferta: null,
+    candidatoContratado: null,
+    salario: 50000,
+    fechaComision: null,
+    monto: 10000,
+    valorFactura: 12000,
+    porcentajeComision: 20,
+    checklist: "checklist.pdf",
+    muestraPerfil: "perfil.pdf",
+    ternaFinal: [
+      {
+        nombre: "Ana López",
+        telefono: "555-1234",
+        correo: "ana.lopez@example.com",
+        foto: "ana.jpg",
+        cv: "ana_cv.pdf",
+      },
+      {
+        nombre: "Carlos Ruiz",
+        telefono: "555-5678",
+        correo: "carlos.ruiz@example.com",
+        foto: "carlos.jpg",
+        cv: "carlos_cv.pdf",
+      },
+      {
+        nombre: "María González",
+        telefono: "555-8765",
+        correo: "maria.gonzalez@example.com",
+        foto: "maria.jpg",
+        cv: "maria_cv.pdf",
+      },
+    ],
+  },
+  {
+    año: 2023,
+    reclutador: "Laura Martínez",
+    tipo: "Recompra",
+    estado: "Entrevistas",
+    puesto: "Desarrollador Backend",
+    comentarios: [
+      "Segunda ronda de entrevistas",
+      "Candidato fuerte en Node.js",
+    ],
+    tiempoTranscurrido: 20,
+    prioridad: "Media",
+    mesAsignado: "Febrero",
+    fechaEntrega: "2023-03-01",
+    fechaUltimaTerna: "2023-02-25",
+    duracionTotal: 45,
+    fechaOferta: "2023-02-28",
+    candidatoContratado: {
+      nombre: "Pedro Sánchez",
+      cv: "pedro_cv.pdf",
+    },
+    salario: 60000,
+    fechaComision: "2023-03-15",
+    monto: 12000,
+    valorFactura: 14400,
+    porcentajeComision: 20,
+    checklist: "checklist.pdf",
+    muestraPerfil: "perfil.pdf",
+    ternaFinal: [
+      {
+        nombre: "Pedro Sánchez",
+        telefono: "555-4321",
+        correo: "pedro.sanchez@example.com",
+        foto: "pedro.jpg",
+        cv: "pedro_cv.pdf",
+      },
+      {
+        nombre: "Lucía Fernández",
+        telefono: "555-6543",
+        correo: "lucia.fernandez@example.com",
+        foto: "lucia.jpg",
+        cv: "lucia_cv.pdf",
+      },
+      {
+        nombre: "Jorge Díaz",
+        telefono: "555-9876",
+        correo: "jorge.diaz@example.com",
+        foto: "jorge.jpg",
+        cv: "jorge_cv.pdf",
+      },
+    ],
+  },
+  // ... (38 items más)
+];
+
+// Nota: Puedes continuar agregando más items siguiendo el mismo formato.
+
+export enum LeadStatus {
+  Contacto = "Contacto",
+  SocialSelling = "S.S",
+  ContactoCalido = "C.C",
+  Prospecto = "Prospecto",
+  CitaAgendada = "C.A",
+  CitaValidada = "C.V",
+}
+
+// Actualizamos la interfaz para usar el enum en el campo status
+export interface Lead {
+  empresa: string;
+  sector: string;
+  generadorLeads: string;
+  link: string;
+  fechaProspeccion: string;
+  contacto: string;
+  posicion: string;
+  fechaAConectar: string;
+  status: LeadStatus; // Usamos el enum aquí
+}
+
+export const leadsData: Lead[] = [
+  {
+    empresa: "Innovatech Solutions",
+    sector: "Tecnología",
+    generadorLeads: "Carlos Mendoza",
+    link: "https://innovatechsolutions.com",
+    fechaProspeccion: "2023-09-25",
+    contacto: "Laura González",
+    posicion: "Gerente de Producto",
+    fechaAConectar: "2023-10-02",
+    status: LeadStatus.Contacto,
+  },
+  {
+    empresa: "PowerGrid Energy",
+    sector: "Energía",
+    generadorLeads: "María Fernández",
+    link: "https://powergridenergy.com",
+    fechaProspeccion: "2023-09-26",
+    contacto: "Javier Torres",
+    posicion: "Director de Energías Renovables",
+    fechaAConectar: "2023-10-03",
+    status: LeadStatus.SocialSelling,
+  },
+  {
+    empresa: "MedLife Clinics",
+    sector: "Salud",
+    generadorLeads: "Ricardo López",
+    link: "https://medlifeclinics.com",
+    fechaProspeccion: "2023-09-27",
+    contacto: "Ana Ramírez",
+    posicion: "Coordinadora Médica",
+    fechaAConectar: "2023-10-04",
+    status: LeadStatus.ContactoCalido,
+  },
+  {
+    empresa: "FreshBites Foods",
+    sector: "Alimentos",
+    generadorLeads: "Sofía Morales",
+    link: "https://freshbitesfoods.com",
+    fechaProspeccion: "2023-09-28",
+    contacto: "Diego Sánchez",
+    posicion: "Gerente de Desarrollo de Productos",
+    fechaAConectar: "2023-10-05",
+    status: LeadStatus.Prospecto,
+  },
+  {
+    empresa: "SwiftLogistics",
+    sector: "Logística",
+    generadorLeads: "Luisa Castro",
+    link: "https://swiftlogistics.com",
+    fechaProspeccion: "2023-09-29",
+    contacto: "Miguel Díaz",
+    posicion: "Director de Operaciones Logísticas",
+    fechaAConectar: "2023-10-06",
+    status: LeadStatus.CitaAgendada,
+  },
+  {
+    empresa: "LearnSmart Education",
+    sector: "Educación",
+    generadorLeads: "Patricia Vargas",
+    link: "https://learnsmarteducation.com",
+    fechaProspeccion: "2023-09-30",
+    contacto: "Raúl Martínez",
+    posicion: "Director Académico",
+    fechaAConectar: "2023-10-07",
+    status: LeadStatus.CitaValidada,
+  },
+  {
+    empresa: "StyleVogue Fashion",
+    sector: "Moda",
+    generadorLeads: "Gabriel Hernández",
+    link: "https://stylevoguefashion.com",
+    fechaProspeccion: "2023-10-01",
+    contacto: "Isabel Pérez",
+    posicion: "Diseñadora Principal",
+    fechaAConectar: "2023-10-08",
+    status: LeadStatus.Contacto,
+  },
+  {
+    empresa: "CloudTech Innovations",
+    sector: "Tecnología",
+    generadorLeads: "Fernando Gómez",
+    link: "https://cloudtechinnovations.com",
+    fechaProspeccion: "2023-10-02",
+    contacto: "Carolina López",
+    posicion: "Gerente de Soluciones en la Nube",
+    fechaAConectar: "2023-10-09",
+    status: LeadStatus.SocialSelling,
+  },
+  {
+    empresa: "SolarWave Energy",
+    sector: "Energía",
+    generadorLeads: "Daniela Ramírez",
+    link: "https://solarwaveenergy.com",
+    fechaProspeccion: "2023-10-03",
+    contacto: "Alejandro Torres",
+    posicion: "Ingeniero de Proyectos Solares",
+    fechaAConectar: "2023-10-10",
+    status: LeadStatus.ContactoCalido,
+  },
+  {
+    empresa: "CarePlus Health",
+    sector: "Salud",
+    generadorLeads: "Martín Sánchez",
+    link: "https://careplushealth.com",
+    fechaProspeccion: "2023-10-04",
+    contacto: "Valeria Díaz",
+    posicion: "Directora de Servicios de Salud",
+    fechaAConectar: "2023-10-11",
+    status: LeadStatus.Prospecto,
+  },
+  {
+    empresa: "TastyDelight Foods",
+    sector: "Alimentos",
+    generadorLeads: "Camila Morales",
+    link: "https://tastydelightfoods.com",
+    fechaProspeccion: "2023-10-05",
+    contacto: "Roberto Castro",
+    posicion: "Gerente de Marketing Alimenticio",
+    fechaAConectar: "2023-10-12",
+    status: LeadStatus.CitaAgendada,
+  },
+  {
+    empresa: "GlobalLogistics Hub",
+    sector: "Logística",
+    generadorLeads: "Javier Vargas",
+    link: "https://globallogisticshub.com",
+    fechaProspeccion: "2023-10-06",
+    contacto: "Natalia López",
+    posicion: "Directora de Estrategia Logística",
+    fechaAConectar: "2023-10-13",
+    status: LeadStatus.CitaValidada,
+  },
+  {
+    empresa: "BrightFuture Education",
+    sector: "Educación",
+    generadorLeads: "Sandra Hernández",
+    link: "https://brightfutureeducation.com",
+    fechaProspeccion: "2023-10-07",
+    contacto: "Oscar Martínez",
+    posicion: "Director de Innovación Educativa",
+    fechaAConectar: "2023-10-14",
+    status: LeadStatus.Contacto,
+  },
+  {
+    empresa: "ChicStyle Fashion",
+    sector: "Moda",
+    generadorLeads: "Rafael Gómez",
+    link: "https://chicstylefashion.com",
+    fechaProspeccion: "2023-10-08",
+    contacto: "Lucía Ramírez",
+    posicion: "Diseñadora Creativa",
+    fechaAConectar: "2023-10-15",
+    status: LeadStatus.SocialSelling,
+  },
+  {
+    empresa: "QuantumTech Labs",
+    sector: "Tecnología",
+    generadorLeads: "Verónica Torres",
+    link: "https://quantumtechlabs.com",
+    fechaProspeccion: "2023-10-09",
+    contacto: "Daniel Sánchez",
+    posicion: "Gerente de Investigación Tecnológica",
+    fechaAConectar: "2023-10-16",
+    status: LeadStatus.ContactoCalido,
+  },
+  {
+    empresa: "GreenWave Energy",
+    sector: "Energía",
+    generadorLeads: "Andrés López",
+    link: "https://greenwaveenergy.com",
+    fechaProspeccion: "2023-10-10",
+    contacto: "Elena Díaz",
+    posicion: "Directora de Energías Limpias",
+    fechaAConectar: "2023-10-17",
+    status: LeadStatus.Prospecto,
+  },
+  {
+    empresa: "WellnessCare Health",
+    sector: "Salud",
+    generadorLeads: "Carmen Castro",
+    link: "https://wellnesscarehealth.com",
+    fechaProspeccion: "2023-10-11",
+    contacto: "Héctor Martínez",
+    posicion: "Coordinador de Bienestar Corporativo",
+    fechaAConectar: "2023-10-18",
+    status: LeadStatus.CitaAgendada,
+  },
+  {
+    empresa: "GourmetDelight Foods",
+    sector: "Alimentos",
+    generadorLeads: "Mario Morales",
+    link: "https://gourmetdelightfoods.com",
+    fechaProspeccion: "2023-10-12",
+    contacto: "Paula Hernández",
+    posicion: "Gerente de Experiencia Gastronómica",
+    fechaAConectar: "2023-10-19",
+    status: LeadStatus.CitaValidada,
+  },
+  {
+    empresa: "PrimeLogistics Group",
+    sector: "Logística",
+    generadorLeads: "Lorena Vargas",
+    link: "https://primelogisticsgroup.com",
+    fechaProspeccion: "2023-10-13",
+    contacto: "Fernando López",
+    posicion: "Director de Optimización Logística",
+    fechaAConectar: "2023-10-20",
+    status: LeadStatus.Contacto,
+  },
+  {
+    empresa: "FutureGen Education",
+    sector: "Educación",
+    generadorLeads: "Juan Carlos Ramírez",
+    link: "https://futuregeneducation.com",
+    fechaProspeccion: "2023-10-14",
+    contacto: "Adriana Díaz",
+    posicion: "Directora de Educación Futura",
+    fechaAConectar: "2023-10-21",
+    status: LeadStatus.SocialSelling,
+  },
+];
+
 export interface Teacher {
   id: number;
   teacherId: string;

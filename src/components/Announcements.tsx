@@ -1,56 +1,88 @@
 import { type ReactElement } from "react";
+import { Button } from "./ui/button";
+import { Bell, Check, Trash2, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export interface AnnouncementsProps {}
+interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  read: boolean;
+}
 
 export function Announcements({}: AnnouncementsProps): ReactElement {
+  const notifications: Notification[] = [
+    {
+      id: "1",
+      title: "Nuevo mensaje",
+      description: "You have a new message from John Doe",
+      time: "5 minutes ago",
+      read: false,
+    },
+    {
+      id: "2",
+      title: "Solicitud de amistad",
+      description: "Jane Smith sent you a friend request",
+      time: "Hace una hora",
+      read: false,
+    },
+    {
+      id: "3",
+      title: "Actualizar el sistema",
+      description: "Your system has been updated successfully",
+      time: "hace 2 dias",
+      read: true,
+    },
+  ];
+
   return (
     <>
-      <div className="bg-white p-4 rounded-md ">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Announcements</h1>
-          <span className="text-xs text-gray-400 ">view all</span>
-        </div>
-        <div className="flex flex-col gap-4 mt-4">
-          <div className="bg-skyLight rounded-md p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-medium">Lorem ipsu lori.</h2>
-              <span className="text-sm text-gray-400 bg-white px-1 py-1 rounded-md">
-                2025-01-01
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              this is a test text, this is not real, this is a simulation, not
-              share with anyone, please, private information, confidential
-            </p>
+      <Card className="">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xl ">Notificaciones</CardTitle>
+          <Bell className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`flex items-start space-x-4 rounded-md p-3 transition-all ${
+                  notification.read ? "bg-background" : "bg-muted"
+                }`}
+              >
+                <div className="flex-1 space-y-1">
+                  <p className="font-medium leading-none">
+                    {notification.title}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {notification.description}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {notification.time}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Check className="h-4 w-4" />
+                    <span className="sr-only">Mark as read</span>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Dismiss</span>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="bg-alPurpleLight rounded-md p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-medium">Lorem ipsu lori.</h2>
-              <span className="text-sm text-gray-400 bg-white px-1 py-1 rounded-md">
-                2025-01-01
-              </span>
-            </div>
-            <p className="text-sm text-gray-400 mt-1">
-              this is a test text, this is not real, this is a simulation, not
-              share with anyone, please, private information, confidential
-            </p>
-          </div>
-
-          <div className="bg-alYellowLight rounded-md p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-medium">Lorem ipsu lori.</h2>
-              <span className="text-sm text-gray-400 bg-white px-1 py-1 rounded-md">
-                2025-01-01
-              </span>
-            </div>
-            <p className="text-sm text-gray-400 mt-1">
-              this is a test text, this is not real, this is a simulation, not
-              share with anyone, please, private information, confidential
-            </p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </>
   );
 }
