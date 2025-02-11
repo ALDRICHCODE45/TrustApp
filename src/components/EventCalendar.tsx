@@ -53,7 +53,6 @@ export function EventCalendar({}: EventCalendarProps): ReactElement {
           className="mx-auto bg-white dark:bg-gray-800 p-2 rounded-md"
         />
         <div className="flex justify-between items-center mt-4">
-          <h2 className="text-lg font-semibold">Eventos</h2>
           <Button variant="ghost" size="icon">
             <Image src="/moreDark.png" alt="Agregar" width={20} height={20} />
           </Button>

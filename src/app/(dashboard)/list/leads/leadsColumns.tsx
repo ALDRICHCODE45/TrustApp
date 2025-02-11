@@ -27,6 +27,7 @@ import {
   SquarePen,
   Trash2,
   Globe,
+  Award,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -213,6 +214,13 @@ export const leadsColumns: ColumnDef<Lead>[] = [
             >
               <Calendar className="h-5 w-5" />
               <span>Cita Validada</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleStatusChange(LeadStatus.Cliente)}
+              className="flex items-center space-x-2"
+            >
+              <Award size={17} />
+              <span>Cliente</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

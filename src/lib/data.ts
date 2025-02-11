@@ -3,6 +3,118 @@ import { type Event } from "react-big-calendar";
 // TEMPORARY DATA
 export let role = "admin";
 
+export let usuario_logeado = {
+  role: "admin",
+  name: "Salvador Perea",
+  id: 9,
+};
+
+export enum Action {
+  eliminar = "Eliminar",
+  actualizar = "Actualizar",
+  Publicar = "Publicar",
+}
+
+export interface Log {
+  action: Action;
+  userId: number;
+  username: string;
+  fileName: string;
+}
+
+export const logs: Log[] = [
+  {
+    action: Action.eliminar,
+    userId: 123,
+    username: "juan.perez",
+    fileName: "reporte_enero.pdf",
+  },
+  {
+    action: Action.actualizar,
+    userId: 123,
+    username: "maria.gomez",
+    fileName: "presupuesto_febrero.xlsx",
+  },
+  {
+    action: Action.Publicar,
+    userId: 123,
+    username: "carlos.rodriguez",
+    fileName: "presentacion_proyecto.pptx",
+  },
+  {
+    action: Action.eliminar,
+    userId: 123,
+    username: "ana.martinez",
+    fileName: "contrato_cliente.docx",
+  },
+  {
+    action: Action.actualizar,
+    userId: 123,
+    username: "luis.torres",
+    fileName: "plan_marketing_marzo.pdf",
+  },
+  {
+    action: Action.Publicar,
+    userId: 123,
+    username: "sofia.lopez",
+    fileName: "informe_trimestral_final.docx",
+  },
+  {
+    action: Action.eliminar,
+    userId: 123,
+    username: "javier.hernandez",
+    fileName: "factura_12345.pdf",
+  },
+  {
+    action: Action.actualizar,
+    userId: 123,
+    username: "diana.flores",
+    fileName: "hoja_vida_empleado.xlsx",
+  },
+  {
+    action: Action.Publicar,
+    userId: 1223,
+    username: "raul.mendoza",
+    fileName: "manual_usuario_v2.pdf",
+  },
+  {
+    action: Action.eliminar,
+    userId: 133,
+    username: "isabel.castro",
+    fileName: "registro_asistencia.csv",
+  },
+  {
+    action: Action.actualizar,
+    userId: 333,
+    username: "pedro.ramirez",
+    fileName: "propuesta_negocio_nuevo.docx",
+  },
+  {
+    action: Action.Publicar,
+    userId: 133,
+    username: "camila.vargas",
+    fileName: "resultados_encuesta_2023.xlsx",
+  },
+  {
+    action: Action.eliminar,
+    userId: 134,
+    username: "fernando.gutierrez",
+    fileName: "backup_datos.zip",
+  },
+  {
+    action: Action.actualizar,
+    userId: 4332,
+    username: "valentina.sanchez",
+    fileName: "calendario_eventos_actualizado.ics",
+  },
+  {
+    action: Action.Publicar,
+    userId: 3432,
+    username: "andres.diaz",
+    fileName: "politicas_empresa_v3.pdf",
+  },
+];
+
 export interface Candidato {
   nombre: string;
   telefono: string;
@@ -33,7 +145,7 @@ export interface Vacante {
   fechaComision: string | null;
   monto: number;
   valorFactura: number;
-  porcentajeComision: number;
+  fee: number;
   checklist: string; // Archivo representado como string
   muestraPerfil: string; // Archivo representado como string
   ternaFinal: Candidato[]; // Lista de 3 candidatos con su información
@@ -62,7 +174,7 @@ export const vacantes: Vacante[] = [
     fechaComision: null,
     monto: 10000,
     valorFactura: 12000,
-    porcentajeComision: 20,
+    fee: 20,
     checklist: "checklist.pdf",
     muestraPerfil: "perfil.pdf",
     ternaFinal: [
@@ -114,7 +226,7 @@ export const vacantes: Vacante[] = [
     fechaComision: "2023-03-15",
     monto: 12000,
     valorFactura: 14400,
-    porcentajeComision: 20,
+    fee: 20,
     checklist: "checklist.pdf",
     muestraPerfil: "perfil.pdf",
     ternaFinal: [
@@ -153,6 +265,7 @@ export enum LeadStatus {
   Prospecto = "Prospecto",
   CitaAgendada = "C.A",
   CitaValidada = "C.V",
+  Cliente = "Cliente",
 }
 
 // Actualizamos la interfaz para usar el enum en el campo status
@@ -391,30 +504,6 @@ export const leadsData: Lead[] = [
   },
 ];
 
-export interface Teacher {
-  id: number;
-  teacherId: string;
-  name: string;
-  email: string;
-  photo: string;
-  phone: string;
-  subjects: string[];
-  classes: string[];
-  address: string;
-}
-
-export interface Students {
-  id: number;
-  studentId: string;
-  name: string;
-  email: string;
-  photo: string;
-  phone: string;
-  grade: number;
-  class: string;
-  address: string;
-}
-
 export interface Parent {
   id: number;
   name: string;
@@ -424,273 +513,455 @@ export interface Parent {
   address: string;
 }
 
-export const teachersData: Teacher[] = [
+export enum Role {
+  reclutador = "Reclutador",
+  generadorLeads = "GL",
+  admin = "Admin",
+}
+export enum Status {
+  active = "Activo",
+  inactive = "Inactivo",
+}
+
+export interface User {
+  id: number;
+  UserId: string;
+  age: number;
+  name: string;
+  email: string;
+  photo: string;
+  phone: string;
+  rol: Role;
+  status: Status;
+  clientes?: number;
+  placements?: number;
+  address: string;
+}
+
+export const UsersData: User[] = [
   {
     id: 1,
-    teacherId: "1234567890",
+    UserId: "1234567890",
+    age: 33,
     name: "John Doe",
     email: "john@doe.com",
     photo:
       "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Math", "Geometry"],
-    classes: ["1B", "2A", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 3,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 2,
-    teacherId: "1234567890",
+    age: 23,
+    UserId: "1234567890",
     name: "Jane Doe",
     email: "jane@doe.com",
     photo:
       "https://images.pexels.com/photos/936126/pexels-photo-936126.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Physics", "Chemistry"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 43,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 3,
-    teacherId: "1234567890",
+    UserId: "1234567890",
+    age: 19,
     name: "Mike Geller",
     email: "mike@geller.com",
     photo:
       "https://images.pexels.com/photos/428328/pexels-photo-428328.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Biology"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 1,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 4,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Jay French",
+    age: 33,
     email: "jay@gmail.com",
     photo:
       "https://images.pexels.com/photos/1187765/pexels-photo-1187765.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["History"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 24,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 5,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Jane Smith",
+    age: 55,
     email: "jane@gmail.com",
     photo:
       "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Music", "History"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 34,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 6,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Anna Santiago",
     email: "anna@gmail.com",
+    age: 81,
     photo:
       "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Physics"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 25,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 7,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Allen Black",
     email: "allen@black.com",
+    age: 27,
     photo:
       "https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["English", "Spanish"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 55,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 8,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Ophelia Castro",
     email: "ophelia@castro.com",
+    age: 43,
     photo:
       "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Math", "Geometry"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 13,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 9,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "Derek Briggs",
     email: "derek@briggs.com",
+    age: 33,
     photo:
       "https://images.pexels.com/photos/842980/pexels-photo-842980.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Literature", "English"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.admin,
+    status: Status.active,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 10,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "John Glover",
+    age: 28,
     email: "john@glover.com",
     photo:
       "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Biology"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 29,
     address: "123 Main St, Anytown, USA",
   },
   {
     id: 11,
-    teacherId: "1234567890",
+    UserId: "1234567890",
     name: "John Glover",
     email: "john@glover.com",
+    age: 21,
     photo:
       "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
     phone: "1234567890",
-    subjects: ["Biology"],
-    classes: ["5A", "4B", "3C"],
+    rol: Role.generadorLeads,
+    clientes: 21,
+    status: Status.inactive,
     address: "123 Main St, Anytown, USA",
   },
 ];
 
-export const studentsData: Students[] = [
+interface Contacto {
+  nombre: string;
+  puesto: string;
+  correo: string;
+  celular: string;
+}
+
+export interface Cliente {
+  id: number;
+  clienteId: string;
+  origen: string;
+  nombre: string;
+  cuenta: string;
+  asignadas: number;
+  perdidas: number;
+  canceladas: number;
+  placements: number;
+  tp_placement: number;
+  cliente: string;
+  contactos: Contacto[];
+  modalidad: string;
+  fee: number;
+  dias_credito: number;
+  tipo_factura: string;
+  razon_social: string;
+  regimen: string;
+  tipo: string;
+  rfc: string;
+  cp: string;
+  como_factura: string;
+  portal_site?: string;
+  comentarios: string[];
+}
+
+export const clientesData: Cliente[] = [
   {
     id: 1,
-    studentId: "1234567890",
-    name: "John Doe",
-    email: "john@doe.com",
-    photo:
-      "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "1B",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "1234567890",
+    origen: "Referido",
+    nombre: "Takeda",
+    cuenta: "Zendesk",
+    cliente: "Zendesk",
+    asignadas: 30,
+    perdidas: 9,
+    canceladas: 14,
+    placements: 7,
+    tp_placement: 155.88,
+    contactos: [
+      {
+        celular: "55 2247 2270",
+        correo: "amairy.correa@zendesk.com",
+        nombre: "Amalia",
+        puesto: "Dr General",
+      },
+      {
+        celular: "55 2247 2270",
+        correo: "amairy.correa@zendesk.com",
+        nombre: "Amalia",
+        puesto: "Dr General",
+      },
+    ],
+    modalidad: "Anticipo",
+    fee: 17,
+    dias_credito: 30,
+    tipo_factura: "PPD",
+    razon_social: "Zendesk",
+    regimen: "S. DE R.L. DE C.V.",
+    tipo: "Persona Moral ",
+    rfc: "ZEN1704209I4",
+    cp: "11560",
+    como_factura: "Mail a CXP",
+    comentarios: ["todo bien"],
   },
   {
     id: 2,
-    studentId: "1234567890",
-    name: "Jane Doe",
-    email: "jane@doe.com",
-    photo:
-      "https://images.pexels.com/photos/936126/pexels-photo-936126.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "0987654321",
+    origen: "Linkedin",
+    nombre: "Amazon",
+    cuenta: "AWS",
+    cliente: "AWS",
+    asignadas: 50,
+    perdidas: 5,
+    canceladas: 8,
+    placements: 12,
+    tp_placement: 250.5,
+    contactos: [
+      {
+        celular: "55 1234 5678",
+        correo: "juan.perez@amazon.com",
+        nombre: "Juan",
+        puesto: "Gerente de Operaciones",
+      },
+      {
+        celular: "55 8765 4321",
+        correo: "maria.gomez@amazon.com",
+        nombre: "María",
+        puesto: "Especialista en Facturación",
+      },
+    ],
+    modalidad: "Anticipo",
+    fee: 15,
+    dias_credito: 45,
+    tipo_factura: "PUE",
+    razon_social: "Amazon Web Services",
+    regimen: "S.A. DE C.V.",
+    tipo: "Persona Moral",
+    rfc: "AMZ010101ABC",
+    cp: "06600",
+    como_factura: "Portal en línea",
+    comentarios: ["Excelente comunicación", "Siempre paga a tiempo"],
   },
   {
     id: 3,
-    studentId: "1234567890",
-    name: "Mike Geller",
-    email: "mike@geller.com",
-    photo:
-      "https://images.pexels.com/photos/428328/pexels-photo-428328.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "1122334455",
+    origen: "Publicidad",
+    nombre: "Google",
+    cuenta: "GCP",
+    cliente: "Google Cloud ",
+    asignadas: 40,
+    perdidas: 10,
+    canceladas: 5,
+    placements: 15,
+    tp_placement: 300.0,
+    contactos: [
+      {
+        celular: "55 9876 5432",
+        correo: "carlos.rodriguez@google.com",
+        nombre: "Carlos",
+        puesto: "Director de Proyectos",
+      },
+      {
+        celular: "55 3333 4444",
+        correo: "ana.martinez@google.com",
+        nombre: "Ana",
+        puesto: "Coordinadora de Ventas",
+      },
+    ],
+    modalidad: "Crédito",
+    fee: 20,
+    dias_credito: 60,
+    tipo_factura: "PPD",
+    razon_social: "Google Cloud ",
+    regimen: "S.A.B. DE C.V.",
+    tipo: "Persona Moral",
+    rfc: "GOO987654321",
+    cp: "11590",
+    como_factura: "XML por correo",
+    comentarios: [
+      "Gran oportunidad de crecimiento",
+      "Requiere seguimiento constante",
+    ],
   },
   {
     id: 4,
-    studentId: "1234567890",
-    name: "Jay French",
-    email: "jay@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1187765/pexels-photo-1187765.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "9988776655",
+    origen: "Referido",
+    nombre: "Microsoft",
+    cuenta: "Azure",
+    cliente: "Microsoft Azure",
+    asignadas: 25,
+    perdidas: 3,
+    canceladas: 7,
+    placements: 10,
+    tp_placement: 200.75,
+    contactos: [
+      {
+        celular: "55 5555 6666",
+        correo: "luis.torres@microsoft.com",
+        nombre: "Luis",
+        puesto: "Arquitecto de Soluciones",
+      },
+      {
+        celular: "55 7777 8888",
+        correo: "sofia.lopez@microsoft.com",
+        nombre: "Sofía",
+        puesto: "Analista Financiero",
+      },
+    ],
+    modalidad: "Anticipo",
+    fee: 18,
+    dias_credito: 30,
+    tipo_factura: "PUE",
+    razon_social: "Microsoft Azure",
+    regimen: "S.A. DE C.V.",
+    tipo: "Persona Moral",
+    rfc: "MIC010101XYZ",
+    cp: "03810",
+    como_factura: "Facturación electrónica",
+    comentarios: ["Muy profesional", "Cumple con los plazos acordados"],
   },
   {
     id: 5,
-    studentId: "1234567890",
-    name: "Jane Smith",
-    email: "jane@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "4455667788",
+    origen: "Cold Call",
+    nombre: "Tesla",
+    cuenta: "Energy",
+    cliente: "Tesla Energy",
+    asignadas: 35,
+    perdidas: 8,
+    canceladas: 12,
+    placements: 9,
+    tp_placement: 180.25,
+    contactos: [
+      {
+        celular: "55 1111 2222",
+        correo: "elena.ruiz@tesla.com",
+        nombre: "Elena",
+        puesto: "Directora de Energía",
+      },
+      {
+        celular: "55 3333 4444",
+        correo: "javier.hernandez@tesla.com",
+        nombre: "Javier",
+        puesto: "Ingeniero de Proyectos",
+      },
+    ],
+    modalidad: "Anticipo",
+    fee: 16,
+    dias_credito: 45,
+    tipo_factura: "PPD",
+    razon_social: "Tesla Energy",
+    regimen: "S.A.B. DE C.V.",
+    tipo: "Persona Moral",
+    rfc: "TES987654321",
+    cp: "11310",
+    como_factura: "Correo electrónico",
+    comentarios: [
+      "Innovadores en su campo",
+      "Necesita mejor estructura contractual",
+    ],
   },
   {
     id: 6,
-    studentId: "1234567890",
-    name: "Anna Santiago",
-    email: "anna@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 7,
-    studentId: "1234567890",
-    name: "Allen Black",
-    email: "allen@black.com",
-    photo:
-      "https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 8,
-    studentId: "1234567890",
-    name: "Ophelia Castro",
-    email: "ophelia@castro.com",
-    photo:
-      "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 9,
-    studentId: "1234567890",
-    name: "Derek Briggs",
-    email: "derek@briggs.com",
-    photo:
-      "https://images.pexels.com/photos/842980/pexels-photo-842980.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 10,
-    studentId: "1234567890",
-    name: "John Glover",
-    email: "john@glover.com",
-    photo:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 11,
-    studentId: "1234567890",
-    name: "John Glover",
-    email: "john@glover.com",
-    photo:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    grade: 5,
-    class: "5A",
-    address: "123 Main St, Anytown, USA",
+    clienteId: "6677889900",
+    origen: "Evento",
+    nombre: "Oracle",
+    cuenta: "Cloud",
+    cliente: "Oracle Cloud",
+    asignadas: 45,
+    perdidas: 6,
+    canceladas: 10,
+    placements: 14,
+    tp_placement: 220.0,
+    contactos: [
+      {
+        celular: "55 4444 5555",
+        correo: "daniel.sanchez@oracle.com",
+        nombre: "Daniel",
+        puesto: "Gerente de TI",
+      },
+      {
+        celular: "55 6666 7777",
+        correo: "isabel.flores@oracle.com",
+        nombre: "Isabel",
+        puesto: "Asistente Ejecutiva",
+      },
+    ],
+    modalidad: "Exito",
+    fee: 19,
+    dias_credito: 60,
+    tipo_factura: "PUE",
+    razon_social: "Oracle Cloud",
+    regimen: "S.A. DE C.V.",
+    tipo: "Persona Moral",
+    rfc: "ORA010101DEF",
+    cp: "06100",
+    como_factura: "Portal de proveedores",
+    comentarios: ["Cliente estratégico", "Demanda atención personalizada"],
   },
 ];
 

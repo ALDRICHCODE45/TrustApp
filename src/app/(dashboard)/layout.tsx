@@ -49,14 +49,10 @@ export default function DashboardLayout({
               </Breadcrumb>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 dark:bg-[#0e0e0e]">
-            {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3"> */}
-            {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
-            {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
-            {/*   <div className="aspect-video rounded-xl bg-muted/50" /> */}
-            {/* </div> */}
-            {/* <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" /> */}
-            <div className="mb-10 dark:bg-[#0e0e0e]  ">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 dark:bg-[#0e0e0e] ">
+            <div className="mb-10 dark:bg-[#0e0e0e] max-w-[100%]">
+              {children}
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>

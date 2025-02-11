@@ -60,7 +60,7 @@ export function AttendanceChart() {
     <Card className="rounded-xl h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex flex-col">
-          <CardTitle>Bar Chart - Multiple</CardTitle>
+          <CardTitle>Rendimiento</CardTitle>
           <CardDescription>January - June 2024</CardDescription>
         </div>
         <div className="cursor-pointer">

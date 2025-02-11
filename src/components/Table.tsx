@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useSidebar } from "./ui/sidebar";
 
 export interface TableProps {}
 
@@ -53,6 +54,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pageSize, setPageSize] = useState<number>(10); // Estado para el tamaño de página
+  const { open } = useSidebar();
 
   const table = useReactTable({
     data,
@@ -103,7 +105,10 @@ export function DataTable<TData, TValue>({
               Columns
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            className="max-h-[400px] overflow-y-scroll"
+          >
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -125,13 +130,13 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
       <div className="rounded-md border dark:bg-[#0e0e0e] overflow-x-auto">
-        <Table className="min-w-[900px] w-full">
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

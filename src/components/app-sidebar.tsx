@@ -11,6 +11,7 @@ import {
   PieChart,
   Settings2,
   Shield,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -26,8 +27,8 @@ import {
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Salvador Perea",
+    email: "m@ejemplo.com",
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
@@ -56,11 +57,11 @@ const data = {
       items: [
         {
           title: "Usuarios",
-          url: "/list/teachers",
+          url: "/list/users",
         },
         {
           title: "Clientes",
-          url: "/list/students",
+          url: "/list/clientes",
         },
         {
           title: "Leads",
@@ -70,7 +71,7 @@ const data = {
     },
     {
       title: "Panel de control",
-      url: "#",
+      url: "",
       icon: MonitorCog,
       isActive: true,
       items: [
@@ -82,76 +83,52 @@ const data = {
           title: "Reclutamiento",
           url: "/list/reclutamiento",
         },
-        {
-          title: "Quantum",
-          url: "#",
-        },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
+      title: "sistema",
+      url: "",
+      icon: SlidersHorizontal,
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Logs",
+          url: "/sistema/logs",
         },
       ],
     },
     {
-      title: "Settings",
-      url: "#",
+      title: "Finanzas",
+      url: "",
       icon: Settings2,
       items: [
         {
-          title: "General",
+          title: "Cuentas Por Pagar",
           url: "#",
         },
         {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
+          title: "Cuentas Por Cobrar",
           url: "#",
         },
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
+  //projects: [
+  //{
+  //name: "Design Engineering",
+  //url: "#",
+  //icon: Frame,
+  // },
+  //{
+  //name: "Sales & Marketing",
+  //url: "#",
+  //icon: PieChart,
+  // },
+  // {
+  //name: "Travel",
+  //url: "#",
+  //icon: Map,
+  //},
+  //],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -163,7 +140,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       {/* <SidebarFooter> */}
       {/* </SidebarFooter> */}
