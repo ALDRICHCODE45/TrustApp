@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { type ReactElement } from "react";
+import Image from "next/image";
+import { Button } from "./ui/button";
 
 export interface UserCardProps {
   type: string;
@@ -16,14 +18,9 @@ export function UserCard({ type }: UserCardProps): ReactElement {
           2024/25
         </Badge>
         {/* Avatar for Icon */}
-        <Avatar className="w-5 h-5">
-          <AvatarImage
-            src="/more.png"
-            alt="More options"
-            className="hover:cursor-pointer"
-          />
-          <AvatarFallback>...</AvatarFallback>
-        </Avatar>
+        <Button size="sm" variant="ghost">
+          <Image src="/more.png" alt="More options" width={20} height={20} />
+        </Button>
       </CardHeader>
       <CardContent className="p-0 mt-4">
         {/* Main Number */}

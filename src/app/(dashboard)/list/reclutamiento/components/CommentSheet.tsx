@@ -7,13 +7,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { MessageCircleMore } from "lucide-react";
 
 export const CommentSheet = ({ comments }: { comments: string[] }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          Comentarios
+        <Button variant="outline">
+          <MessageCircleMore />
         </Button>
       </SheetTrigger>
       <SheetContent className="p-4">

@@ -17,7 +17,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import {
   Table,
   TableBody,
@@ -36,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useSidebar } from "./ui/sidebar";
 
 export interface TableProps {}
 
@@ -54,7 +52,6 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pageSize, setPageSize] = useState<number>(10); // Estado para el tamaño de página
-  const { open } = useSidebar();
 
   const table = useReactTable({
     data,
@@ -85,7 +82,7 @@ export function DataTable<TData, TValue>({
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <div className="flex items-center py-4 dark:bg-[#0e0e0e]">
         <Input
-          placeholder="Filter ..."
+          placeholder="Filtrar ..."
           value={
             table.getColumn("email")?.getCanFilter()
               ? (table.getColumn("email")?.getFilterValue() as string) ?? ""
@@ -102,7 +99,7 @@ export function DataTable<TData, TValue>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns
+              Columnas
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -184,8 +181,8 @@ export function DataTable<TData, TValue>({
 
       <div className="flex items-center justify-between">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} de{" "}
+          {table.getFilteredRowModel().rows.length} fila(s) seleccionadas.
         </div>
         <div className="flex items-center gap-2 mr-4">
           <span className="text-sm text-muted-foreground">
@@ -213,7 +210,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            Anterior
           </Button>
           <Button
             variant="outline"
@@ -221,7 +218,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Siguiente
           </Button>
         </div>
       </div>

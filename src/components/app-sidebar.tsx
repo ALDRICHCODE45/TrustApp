@@ -2,20 +2,15 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
   MonitorCog,
-  PieChart,
   Settings2,
   Shield,
   SlidersHorizontal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -50,7 +45,7 @@ const data = {
   ],
   navMain: [
     {
-      title: "Administracion",
+      title: "Administración",
       url: "#",
       icon: Shield,
       isActive: true,
@@ -102,12 +97,12 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "Cuentas Por Pagar",
-          url: "#",
+          title: "Cuentas",
+          url: "/list/cuentas",
         },
         {
-          title: "Cuentas Por Cobrar",
-          url: "#",
+          title: "Facturas",
+          url: "/list/facturas",
         },
       ],
     },

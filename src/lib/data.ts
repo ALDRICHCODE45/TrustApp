@@ -9,6 +9,218 @@ export let usuario_logeado = {
   id: 9,
 };
 
+export interface Cuenta {
+  fecha: string;
+  concepto: string;
+  detalle: string;
+  subtotal: number;
+  iva: number;
+  total: number;
+}
+
+export const cuentaData: Cuenta[] = [
+  {
+    fecha: "2023-10-01",
+    concepto: "Venta de productos",
+    detalle: "Compra de artículos varios",
+    subtotal: 500,
+    iva: 80,
+    total: 580,
+  },
+  {
+    fecha: "2023-10-02",
+    concepto: "Servicio técnico",
+    detalle: "Reparación de computadora",
+    subtotal: 300,
+    iva: 48,
+    total: 348,
+  },
+  {
+    fecha: "2023-10-03",
+    concepto: "Consulta médica",
+    detalle: "Consulta con especialista",
+    subtotal: 400,
+    iva: 64,
+    total: 464,
+  },
+  {
+    fecha: "2023-10-04",
+    concepto: "Venta de muebles",
+    detalle: "Silla y mesa de oficina",
+    subtotal: 700,
+    iva: 112,
+    total: 812,
+  },
+  {
+    fecha: "2023-10-05",
+    concepto: "Compra de electrónicos",
+    detalle: "Smartphone y accesorios",
+    subtotal: 1200,
+    iva: 192,
+    total: 1392,
+  },
+  {
+    fecha: "2023-10-06",
+    concepto: "Instalación eléctrica",
+    detalle: "Revisión y reparación",
+    subtotal: 250,
+    iva: 40,
+    total: 290,
+  },
+  {
+    fecha: "2023-10-07",
+    concepto: "Venta de ropa",
+    detalle: "Camisas y pantalones",
+    subtotal: 600,
+    iva: 96,
+    total: 696,
+  },
+  {
+    fecha: "2023-10-08",
+    concepto: "Clases de yoga",
+    detalle: "Curso mensual",
+    subtotal: 150,
+    iva: 24,
+    total: 174,
+  },
+  {
+    fecha: "2023-10-09",
+    concepto: "Mantenimiento vehicular",
+    detalle: "Cambio de aceite",
+    subtotal: 200,
+    iva: 32,
+    total: 232,
+  },
+  {
+    fecha: "2023-10-10",
+    concepto: "Venta de libros",
+    detalle: "Novelas y ensayos",
+    subtotal: 350,
+    iva: 56,
+    total: 406,
+  },
+  {
+    fecha: "2023-10-11",
+    concepto: "Limpieza de hogar",
+    detalle: "Servicio completo",
+    subtotal: 450,
+    iva: 72,
+    total: 522,
+  },
+  {
+    fecha: "2023-10-12",
+    concepto: "Compra de herramientas",
+    detalle: "Martillos y destornilladores",
+    subtotal: 800,
+    iva: 128,
+    total: 928,
+  },
+  {
+    fecha: "2023-10-13",
+    concepto: "Clases de música",
+    detalle: "Guitarra básica",
+    subtotal: 300,
+    iva: 48,
+    total: 348,
+  },
+  {
+    fecha: "2023-10-14",
+    concepto: "Venta de alimentos",
+    detalle: "Frutas y verduras",
+    subtotal: 200,
+    iva: 32,
+    total: 232,
+  },
+  {
+    fecha: "2023-10-15",
+    concepto: "Reparación de electrodomésticos",
+    detalle: "Lavadora",
+    subtotal: 400,
+    iva: 64,
+    total: 464,
+  },
+  {
+    fecha: "2023-10-16",
+    concepto: "Compra de calzado",
+    detalle: "Zapatos deportivos",
+    subtotal: 500,
+    iva: 80,
+    total: 580,
+  },
+  {
+    fecha: "2023-10-17",
+    concepto: "Servicio de catering",
+    detalle: "Evento corporativo",
+    subtotal: 1000,
+    iva: 160,
+    total: 1160,
+  },
+  {
+    fecha: "2023-10-18",
+    concepto: "Venta de juguetes",
+    detalle: "Muñecas y carros",
+    subtotal: 600,
+    iva: 96,
+    total: 696,
+  },
+  {
+    fecha: "2023-10-19",
+    concepto: "Consulta veterinaria",
+    detalle: "Revisión de mascota",
+    subtotal: 250,
+    iva: 40,
+    total: 290,
+  },
+  {
+    fecha: "2023-10-20",
+    concepto: "Compra de muebles de jardín",
+    detalle: "Sillones y mesas",
+    subtotal: 900,
+    iva: 144,
+    total: 1044,
+  },
+  {
+    fecha: "2023-10-21",
+    concepto: "Clases de baile",
+    detalle: "Curso de salsa",
+    subtotal: 200,
+    iva: 32,
+    total: 232,
+  },
+  {
+    fecha: "2023-10-22",
+    concepto: "Venta de artesanías",
+    detalle: "Collares y pulseras",
+    subtotal: 300,
+    iva: 48,
+    total: 348,
+  },
+  {
+    fecha: "2023-10-23",
+    concepto: "Reparación de bicicletas",
+    detalle: "Cambio de llantas",
+    subtotal: 150,
+    iva: 24,
+    total: 174,
+  },
+  {
+    fecha: "2023-10-24",
+    concepto: "Compra de productos de limpieza",
+    detalle: "Detergentes y desinfectantes",
+    subtotal: 250,
+    iva: 40,
+    total: 290,
+  },
+  {
+    fecha: "2023-10-25",
+    concepto: "Venta de tecnología",
+    detalle: "Tablet y accesorios",
+    subtotal: 1100,
+    iva: 176,
+    total: 1276,
+  },
+];
+
 export enum Action {
   eliminar = "Eliminar",
   actualizar = "Actualizar",
@@ -20,6 +232,8 @@ export interface Log {
   userId: number;
   username: string;
   fileName: string;
+  fecha: string;
+  hora: string;
 }
 
 export const logs: Log[] = [
@@ -28,90 +242,120 @@ export const logs: Log[] = [
     userId: 123,
     username: "juan.perez",
     fileName: "reporte_enero.pdf",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.actualizar,
     userId: 123,
     username: "maria.gomez",
     fileName: "presupuesto_febrero.xlsx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.Publicar,
     userId: 123,
     username: "carlos.rodriguez",
     fileName: "presentacion_proyecto.pptx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.eliminar,
     userId: 123,
     username: "ana.martinez",
     fileName: "contrato_cliente.docx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.actualizar,
     userId: 123,
     username: "luis.torres",
     fileName: "plan_marketing_marzo.pdf",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.Publicar,
     userId: 123,
     username: "sofia.lopez",
     fileName: "informe_trimestral_final.docx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.eliminar,
     userId: 123,
     username: "javier.hernandez",
     fileName: "factura_12345.pdf",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.actualizar,
     userId: 123,
     username: "diana.flores",
     fileName: "hoja_vida_empleado.xlsx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.Publicar,
     userId: 1223,
     username: "raul.mendoza",
     fileName: "manual_usuario_v2.pdf",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.eliminar,
     userId: 133,
     username: "isabel.castro",
     fileName: "registro_asistencia.csv",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.actualizar,
     userId: 333,
     username: "pedro.ramirez",
     fileName: "propuesta_negocio_nuevo.docx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.Publicar,
     userId: 133,
     username: "camila.vargas",
     fileName: "resultados_encuesta_2023.xlsx",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.eliminar,
     userId: 134,
     username: "fernando.gutierrez",
     fileName: "backup_datos.zip",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.actualizar,
     userId: 4332,
     username: "valentina.sanchez",
     fileName: "calendario_eventos_actualizado.ics",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
   {
     action: Action.Publicar,
     userId: 3432,
     username: "andres.diaz",
     fileName: "politicas_empresa_v3.pdf",
+    fecha: "2023-02-14",
+    hora: "4:32:pm",
   },
 ];
 
@@ -124,6 +368,7 @@ export interface Candidato {
 }
 
 export interface Vacante {
+  id: number;
   año: number;
   reclutador: string;
   tipo: "Nueva" | "Recompra";
@@ -153,11 +398,12 @@ export interface Vacante {
 
 export const vacantes: Vacante[] = [
   {
+    id: 1,
     año: 2023,
     reclutador: "Juan Pérez",
     tipo: "Nueva",
     estado: "Hunting",
-    puesto: "Desarrollador Frontend",
+    puesto: "Frontend",
     comentarios: [
       "Buscando candidatos con experiencia en React",
       "Prioridad alta",
@@ -169,7 +415,10 @@ export const vacantes: Vacante[] = [
     fechaUltimaTerna: "2023-02-10",
     duracionTotal: 30,
     fechaOferta: null,
-    candidatoContratado: null,
+    candidatoContratado: {
+      nombre: "Francisco Javier",
+      cv: "cv.pdf",
+    },
     salario: 50000,
     fechaComision: null,
     monto: 10000,
@@ -202,11 +451,12 @@ export const vacantes: Vacante[] = [
     ],
   },
   {
+    id: 2,
     año: 2023,
     reclutador: "Laura Martínez",
     tipo: "Recompra",
     estado: "Entrevistas",
-    puesto: "Desarrollador Backend",
+    puesto: "Backend",
     comentarios: [
       "Segunda ronda de entrevistas",
       "Candidato fuerte en Node.js",
@@ -256,7 +506,48 @@ export const vacantes: Vacante[] = [
   // ... (38 items más)
 ];
 
-// Nota: Puedes continuar agregando más items siguiendo el mismo formato.
+export interface Factura {
+  id: number;
+  folio: string;
+  clientId: number;
+  vacanteId: number;
+  tipo: string;
+  fecha_emision: string;
+  fecha_pago: string;
+  status: string;
+  complemento: boolean;
+  anticipo: number;
+  banco: string;
+}
+
+export const dataFactura: Factura[] = [
+  {
+    id: 1,
+    folio: "FAC-001",
+    clientId: 1,
+    vacanteId: 1,
+    tipo: "Full",
+    fecha_emision: "2023-10-01",
+    fecha_pago: "2023-10-10",
+    status: "Pagada",
+    complemento: false,
+    anticipo: 0,
+    banco: "Banco A",
+  },
+  {
+    id: 2,
+    folio: "FAC-002",
+    clientId: 2,
+    vacanteId: 2,
+    tipo: "LIQ",
+    fecha_emision: "2023-10-02",
+    fecha_pago: "2023-10-11",
+    status: "Pendiente",
+    complemento: true,
+    anticipo: 100,
+    banco: "Banco B",
+  },
+];
 
 export enum LeadStatus {
   Contacto = "Contacto",
@@ -761,7 +1052,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PPD",
     razon_social: "Zendesk",
     regimen: "S. DE R.L. DE C.V.",
-    tipo: "Persona Moral ",
+    tipo: "Moral ",
     rfc: "ZEN1704209I4",
     cp: "11560",
     como_factura: "Mail a CXP",
@@ -799,7 +1090,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PUE",
     razon_social: "Amazon Web Services",
     regimen: "S.A. DE C.V.",
-    tipo: "Persona Moral",
+    tipo: "Moral",
     rfc: "AMZ010101ABC",
     cp: "06600",
     como_factura: "Portal en línea",
@@ -837,7 +1128,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PPD",
     razon_social: "Google Cloud ",
     regimen: "S.A.B. DE C.V.",
-    tipo: "Persona Moral",
+    tipo: "Moral",
     rfc: "GOO987654321",
     cp: "11590",
     como_factura: "XML por correo",
@@ -878,7 +1169,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PUE",
     razon_social: "Microsoft Azure",
     regimen: "S.A. DE C.V.",
-    tipo: "Persona Moral",
+    tipo: "Moral",
     rfc: "MIC010101XYZ",
     cp: "03810",
     como_factura: "Facturación electrónica",
@@ -916,7 +1207,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PPD",
     razon_social: "Tesla Energy",
     regimen: "S.A.B. DE C.V.",
-    tipo: "Persona Moral",
+    tipo: "Moral",
     rfc: "TES987654321",
     cp: "11310",
     como_factura: "Correo electrónico",
@@ -957,7 +1248,7 @@ export const clientesData: Cliente[] = [
     tipo_factura: "PUE",
     razon_social: "Oracle Cloud",
     regimen: "S.A. DE C.V.",
-    tipo: "Persona Moral",
+    tipo: "Moral",
     rfc: "ORA010101DEF",
     cp: "06100",
     como_factura: "Portal de proveedores",

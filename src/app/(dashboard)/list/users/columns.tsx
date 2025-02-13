@@ -2,7 +2,7 @@
 import { Role, Status, User } from "@/lib/data";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import Image from "next/image";
-import { MoreHorizontal, ArrowUpDown, MapPin } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown, MapPin, EyeOff, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,8 +21,8 @@ import Link from "next/link";
 
 const handleCopyTeacherId = (teacherId: string, teacherName: string) => {
   navigator.clipboard.writeText(teacherId);
-  toast("Teacher Id has been copied", {
-    description: `Teacher's of name ${teacherName} has been copied`,
+  toast("El usuario ha sido copiado", {
+    description: `Los datos del ususaio con nombre: "${teacherName}" han sido copiado`,
   });
 };
 
@@ -91,6 +91,50 @@ export const UserColumns: ColumnDef<User>[] = [
     },
   },
   {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Id
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    id: "password",
+    header: "Contraseñas",
+    cell: ({ row }) => {
+      const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad
+      const password = "1234455"; // Contraseña por defecto
+
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPassword(!showPassword)} // Alternar estado
+          >
+            {showPassword ? (
+              <EyeOff /> // Ícono de ocultar
+            ) : (
+              <Eye /> // Ícono de mostrar
+            )}
+          </Button>
+
+          {/* Contraseña (visible u oculta) */}
+          <span className="font-mono text-sm">
+            {showPassword ? password : "•".repeat(password.length)}
+          </span>
+        </div>
+      );
+    },
+  },
+
+  {
     accessorKey: "email", // Columna oculta para filtrar
     header: "", // Encabezado vacío
     enableHiding: false, // Desactiva la opción de ocultar esta columna manualmente
@@ -142,20 +186,6 @@ export const UserColumns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: "id",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Id
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
     id: "actions",
     cell: ({ row }) => {
       const teacherId = row.original.id.toString();
@@ -169,15 +199,17 @@ export const UserColumns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => handleCopyTeacherId(teacherId, teacherName)}
             >
-              Copy User ID
+              copiar usuario
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link href={`/profile/${teacherId}`}>Ver mas</Link>
+            <DropdownMenuItem asChild>
+              <Link href={`/profile/${teacherId}`} className="cursor-pointer">
+                Ver más
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

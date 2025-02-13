@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TrendingDown, TrendingUp, TriangleRight } from "lucide-react";
 
 export const PriorityDropdown = ({
   priority,
@@ -22,12 +23,15 @@ export const PriorityDropdown = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => onPriorityChange("Alta")}>
+          <TrendingUp />
           Alta
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onPriorityChange("Media")}>
+          <TriangleRight />
           Media
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onPriorityChange("Baja")}>
+          <TrendingDown />
           Baja
         </DropdownMenuItem>
       </DropdownMenuContent>

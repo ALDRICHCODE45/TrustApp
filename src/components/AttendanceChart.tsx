@@ -1,7 +1,5 @@
 "use client";
-
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
 import {
   Card,
   CardContent,
@@ -61,7 +59,7 @@ export function AttendanceChart() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex flex-col">
           <CardTitle>Rendimiento</CardTitle>
-          <CardDescription>January - June 2024</CardDescription>
+          <CardDescription>Junio - Julio 2024</CardDescription>
         </div>
         <div className="cursor-pointer">
           <Image src="/moreDark.png" alt="" width={20} height={20} />

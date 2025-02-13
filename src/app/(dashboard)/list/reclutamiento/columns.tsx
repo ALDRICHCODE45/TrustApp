@@ -13,6 +13,8 @@ import { Vacante } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   BookCheck,
+  BriefcaseBusiness,
+  Calendar1,
   Clipboard,
   MoreHorizontal,
   SquarePen,
@@ -27,6 +29,8 @@ import { PriorityDropdown } from "./components/PriorityDropdown";
 import { StatusDropdown } from "./components/StatusDropdown";
 import { RecruiterDropDown } from "./components/RecruiterDropdown";
 import { TypeDropdown } from "./components/TypeDropDown";
+import { MesAsignadoCell } from "./components/MesAsignadoCell";
+import { MesEntregaCell } from "./components/MesEntregaCell";
 
 const handleCopyRecruiterName = (leadId: string, leadName: string) => {
   navigator.clipboard.writeText(leadId);
@@ -61,6 +65,15 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   {
     accessorKey: "año",
     header: "Año",
+    cell: ({ row }) => {
+      const year = row.original.año;
+      return (
+        <div className="flex flex-row gap-2 items-center">
+          <Calendar1 className="" size={15} />
+          <span>{year}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "reclutador",
@@ -109,6 +122,15 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   {
     accessorKey: "puesto",
     header: "Puesto",
+    cell: ({ row }) => {
+      const puesto = row.original.puesto;
+      return (
+        <div className="flex gap-2 items-center">
+          <BriefcaseBusiness size={15} />
+          <div>{puesto}</div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "comentarios",
@@ -146,10 +168,16 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   {
     accessorKey: "mesAsignado",
     header: "Mes Asignado",
+    cell: ({ row }) => {
+      return <MesAsignadoCell row={row} />;
+    },
   },
   {
     accessorKey: "fechaEntrega",
-    header: "Fecha de Entrega",
+    header: "Entrega",
+    cell: ({ row }) => {
+      return <MesEntregaCell row={row} />;
+    },
   },
   {
     accessorKey: "fechaUltimaTerna",
@@ -180,7 +208,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "candidatoContratado",
-    header: "Candidato Contratado",
+    header: "Contratado",
     cell: ({ row }) => (
       <div>
         {row.original.candidatoContratado ? (

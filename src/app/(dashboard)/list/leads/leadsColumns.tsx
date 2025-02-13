@@ -1,5 +1,4 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -163,13 +162,10 @@ export const leadsColumns: ColumnDef<Lead>[] = [
 
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Badge
-              variant="outline"
-              className="text-xs px-2 py-1 rounded-md border border-neutral-500 bg-transparent text-neutral-800 dark:text-neutral-200 dark:border-neutral-400 "
-            >
-              <span>{newStatus}</span>
-            </Badge>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              {newStatus}
+            </Button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-48">
@@ -235,10 +231,10 @@ export const leadsColumns: ColumnDef<Lead>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <div>
               <span className="sr-only">Open Menu</span>
               <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>

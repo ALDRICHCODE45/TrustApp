@@ -111,8 +111,8 @@ export function FinanceChart() {
     <Card className="">
       <CardHeader className="flex flex-row justify-between">
         <div className="flex flex-col items-start">
-          <CardTitle>Finance Chart - Multiple</CardTitle>
-          <CardDescription>January - June 2024</CardDescription>
+          <CardTitle>Grafica Financiera </CardTitle>
+          <CardDescription>Junio - Julio 2024</CardDescription>
         </div>
         <div className="items-end cursor-pointer">
           <Image src="/moreDark.png" alt="more.." width={20} height={20} />

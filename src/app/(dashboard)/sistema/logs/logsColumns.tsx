@@ -2,13 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Log } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Dot,
-  UserCog,
-  File,
-  Fingerprint,
-  SlidersHorizontal,
-} from "lucide-react";
+import { UserCog, File, Fingerprint, Clock, Calendar } from "lucide-react";
 
 export const logsColumns: ColumnDef<Log>[] = [
   {
@@ -58,6 +52,32 @@ export const logsColumns: ColumnDef<Log>[] = [
         <div className="flex gap-2 items-center">
           <File size={18} />
           <span>{fileName}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "fecha",
+    header: "Fecha",
+    cell: ({ row }) => {
+      const fecha = row.original.fecha;
+      return (
+        <div className="flex gap-2 items-center">
+          <Calendar size={18} />
+          <span>{fecha}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "hora",
+    header: "Hora",
+    cell: ({ row }) => {
+      const hora = row.original.hora;
+      return (
+        <div className="flex items-center gap-2">
+          <Clock size={18} />
+          <span>{hora}</span>
         </div>
       );
     },

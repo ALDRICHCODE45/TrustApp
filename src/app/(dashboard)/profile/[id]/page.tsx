@@ -1,5 +1,5 @@
 "use client";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -105,9 +105,7 @@ export default function UserProfile() {
       {/* RIGHT SECTION */}
       <div className="w-full xl:w-1/3 flex flex-col gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Eventos</CardTitle>
-          </CardHeader>
+          <CardHeader></CardHeader>
           <CardContent>
             <EventCalendar />
           </CardContent>

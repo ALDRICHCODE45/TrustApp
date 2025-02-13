@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Settings,
-  Sparkles,
-} from "lucide-react";
+import { ChevronsUpDown, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -80,9 +72,14 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Settings />
-                <Link href={`/profile/${usuario_logeado.id}`}>Perfil</Link>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/profile/${usuario_logeado.id}`}
+                  className="cursor-pointer"
+                >
+                  <Settings />
+                  Perfil
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

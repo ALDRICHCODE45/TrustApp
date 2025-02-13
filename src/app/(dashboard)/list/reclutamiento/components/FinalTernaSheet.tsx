@@ -7,8 +7,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Candidato } from "@/lib/data";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { FileText, Mail } from "lucide-react";
+import { FileText, Mail, Users } from "lucide-react";
 
 export const FinalTernaSheet = ({
   ternaFinal,
@@ -19,7 +18,7 @@ export const FinalTernaSheet = ({
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm">
-          Terna Final
+          <Users />
         </Button>
       </SheetTrigger>
       <SheetContent className="p-4">

@@ -18,6 +18,7 @@ export const RecruiterDropDown = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
+          <User />
           {reclutador}
         </Button>
       </DropdownMenuTrigger>
