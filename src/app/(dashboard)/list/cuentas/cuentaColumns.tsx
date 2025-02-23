@@ -89,8 +89,8 @@ export const cuentaColumns: ColumnDef<Cuenta>[] = [
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => {
-                toast("Usuario copiado", {
-                  description: "usuario con Id 234 copiado al portapapeles",
+                toast("Realizado", {
+                  description: "Datos copiados al portapapeles",
                   action: {
                     label: "OK",
                     onClick: () => console.log(""),
@@ -99,7 +99,7 @@ export const cuentaColumns: ColumnDef<Cuenta>[] = [
               }}
             >
               <Files />
-              Copiar usuario
+              Copiar datos
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">

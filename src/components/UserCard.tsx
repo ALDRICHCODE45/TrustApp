@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { type ReactElement } from "react";
 import Image from "next/image";
@@ -24,7 +23,9 @@ export function UserCard({ type }: UserCardProps): ReactElement {
       </CardHeader>
       <CardContent className="p-0 mt-4">
         {/* Main Number */}
-        <CardTitle className="text-2xl font-semibold ">1,234</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-black">
+          1,234
+        </CardTitle>
         {/* Type Label */}
         <p className="capitalize text-sm font-medium text-gray-600 mt-2">
           {type}

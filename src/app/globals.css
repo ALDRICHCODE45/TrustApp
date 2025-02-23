@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background-pinned-column: #ffffff; /* Color claro para modo claro */
+}
+
+[data-theme="dark"] {
+  --background-pinned-column: #1f1f1f; /* Color oscuro para modo oscuro */
+}
+
 @keyframes blink {
   0%,
   100% {

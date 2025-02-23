@@ -37,9 +37,13 @@ export const logsColumns: ColumnDef<Log>[] = [
     cell: ({ row }) => {
       const action = row.original.action;
       return (
-        <div className="flex gap-2 items-center">
-          <Badge variant="destructive">{action}</Badge>
-        </div>
+        <Badge variant="outline" className="gap-1.5">
+          <span
+            className="size-1.5 rounded-full bg-emerald-500"
+            aria-hidden="true"
+          ></span>
+          {action}
+        </Badge>
       );
     },
   },

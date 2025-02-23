@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -24,16 +29,18 @@ export const CommentSheet = ({ comments }: { comments: string[] }) => {
         <div className="space-y-2">
           {comments.map((comentario, index) => (
             <Card key={index} className="shadow-sm">
-              <CardHeader className="p-3">
-                <h3 className="font-semibold text-sm">
-                  Comentario {index + 1}
-                </h3>
+              <CardHeader className="p-3 flex flex-row justify-between items-center">
+                <p className="font-semibold">Comentario {index + 1}</p>
+                <p className="">12/23/25</p>
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {comentario}
                 </p>
               </CardContent>
+              <CardFooter className="p-3 text-sm text-gray-400">
+                <p>By: Angela Flores</p>
+              </CardFooter>
             </Card>
           ))}
         </div>

@@ -5,8 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Lead, LeadStatus } from "@/lib/data";
@@ -17,24 +15,22 @@ import {
   User,
   Contact,
   BriefcaseBusiness,
-  MoreHorizontal,
-  Clipboard,
   UserRound,
   UserSearch,
   CalendarCheck,
   CalendarClock,
-  SquarePen,
-  Trash2,
   Globe,
   Award,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ActionsCell } from "./components/ActionsCell";
+import { GeneratorDropDown } from "./components/SelectGLDropDown";
 
-const handleCopyTeacherId = (leadId: string, leadName: string) => {
+const handleCopy = (leadId: string, leadName: string) => {
   navigator.clipboard.writeText(leadId);
-  toast("Lead Id has been copied", {
-    description: `Lead of name ${leadName} has been copied`,
+  toast("Realizado", {
+    description: `Usuario con nombre ${leadName} ha sido copiado`,
   });
 };
 
@@ -75,19 +71,31 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     },
   },
   {
+    id: "Origen",
+    accessorKey: "origen",
+    header: "Origen",
+  },
+  {
     accessorKey: "sector",
     header: "Sector",
   },
   {
+    id: "generadorLeads",
     accessorKey: "generadorLeads",
     header: "Generador",
     cell: ({ row }) => {
-      const user = row.getValue("generadorLeads") as string;
+      const [generador, setNewGenerador] = useState(
+        row.original.generadorLeads.name
+      );
+
+      const handleGeneratorChange = (newGenerador: string) => {
+        setNewGenerador(newGenerador);
+      };
       return (
-        <div className="flex gap-2 items-center">
-          <User size={17} />
-          <span>{user}</span>
-        </div>
+        <GeneratorDropDown
+          generador={generador}
+          onGeneratorChange={handleGeneratorChange}
+        />
       );
     },
   },
@@ -226,36 +234,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const teacherId = row.original.generadorLeads;
-      const teacherName = row.original.generadorLeads;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div>
-              <span className="sr-only">Open Menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => handleCopyTeacherId(teacherId, teacherName)}
-            >
-              <Clipboard />
-              Copiar Id
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <SquarePen />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Trash2 />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <ActionsCell row={row} />;
     },
   },
 ];

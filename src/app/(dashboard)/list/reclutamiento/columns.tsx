@@ -34,8 +34,8 @@ import { MesEntregaCell } from "./components/MesEntregaCell";
 
 const handleCopyRecruiterName = (leadId: string, leadName: string) => {
   navigator.clipboard.writeText(leadId);
-  toast("Lead Id has been copied", {
-    description: `Lead of name ${leadName} has been copied`,
+  toast("Realizado", {
+    description: `Usuario con nombre ${leadName} copiado al portapapeles`,
   });
 };
 
@@ -63,6 +63,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     enableHiding: false,
   },
   {
+    id: "año",
     accessorKey: "año",
     header: "Año",
     cell: ({ row }) => {
@@ -76,10 +77,13 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     },
   },
   {
+    id: "reclutador",
     accessorKey: "reclutador",
     header: "Reclutador",
     cell: ({ row }) => {
-      const [reclutador, setNewReclutador] = useState(row.original.reclutador);
+      const [reclutador, setNewReclutador] = useState(
+        row.original.reclutador.name
+      );
       const handleReclutadorChange = (newReclutador: string) => {
         setNewReclutador(newReclutador);
       };
@@ -92,6 +96,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     },
   },
   {
+    id: "tipo",
     accessorKey: "tipo",
     header: "Tipo",
     cell: ({ row }) => {
@@ -103,6 +108,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     },
   },
   {
+    id: "estado",
     accessorKey: "estado",
     header: "Estatus",
     cell: ({ row }) => {
@@ -120,8 +126,9 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     },
   },
   {
+    id: "posicion",
     accessorKey: "puesto",
-    header: "Puesto",
+    header: "Posicion",
     cell: ({ row }) => {
       const puesto = row.original.puesto;
       return (
@@ -133,13 +140,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     },
   },
   {
+    id: "comentarios",
     accessorKey: "comentarios",
     header: "Comentarios",
     cell: ({ row }) => <CommentSheet comments={row.original.comentarios} />,
   },
   {
     accessorKey: "tiempoTranscurrido",
-    header: "Tiempo",
+    header: "Tiempo transcurrido",
     cell: ({ row }) => {
       const tiempo = row.original.tiempoTranscurrido;
       return <span>{tiempo} días</span>;
@@ -174,7 +182,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "fechaEntrega",
-    header: "Entrega",
+    header: "Placement",
     cell: ({ row }) => {
       return <MesEntregaCell row={row} />;
     },
@@ -275,7 +283,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "muestraPerfil",
-    header: "Perfil Muestra",
+    header: "Job Description",
     cell: ({ row }) => (
       <a
         href={row.original.muestraPerfil}
@@ -308,11 +316,9 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => handleCopyRecruiterName(teacherId, teacherName)}
-            >
+            <DropdownMenuItem>
               <Clipboard />
-              Copiar Id
+              Copiar Usuario
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

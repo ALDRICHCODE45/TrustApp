@@ -16,6 +16,7 @@ import { ContactosSheet } from "./components/ContactosSheet";
 import {
   ArrowRightToLine,
   Ban,
+  Eye,
   MessageCircleMore,
   MoreHorizontal,
   Trash,
@@ -241,6 +242,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href={`/cliente/${clienteId}`} className="cursor-pointer">
+                <Eye />
                 Ver mas
               </Link>
             </DropdownMenuItem>

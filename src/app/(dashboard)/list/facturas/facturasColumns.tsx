@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -69,6 +68,10 @@ export const facturasColumns: ColumnDef<Factura>[] = [
   {
     accessorKey: "complemento",
     header: "Complemento",
+    cell: ({ row }) => {
+      const complemento = row.original.complemento;
+      return <>{complemento ? <span>SI</span> : <span>NO</span>}</>;
+    },
   },
   {
     accessorKey: "anticipo",
@@ -181,7 +184,7 @@ export const facturasColumns: ColumnDef<Factura>[] = [
                       Reclutador
                     </span>
                     <span className="text-sm font-semibold">
-                      {vacante?.reclutador}
+                      {vacante?.reclutador?.name}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -231,7 +234,7 @@ export const facturasColumns: ColumnDef<Factura>[] = [
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuItem>
               <Clipboard />
-              Copiar Id
+              Copiar Datos
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

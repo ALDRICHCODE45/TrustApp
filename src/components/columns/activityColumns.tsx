@@ -1,3 +1,4 @@
+"use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Activity } from "../ActivityList";
 import { Checkbox } from "../ui/checkbox";

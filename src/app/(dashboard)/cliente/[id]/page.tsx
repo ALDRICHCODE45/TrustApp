@@ -10,10 +10,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useParams } from "next/navigation";
-import { clientesData } from "@/lib/data";
+import { clientesData, usuario_logeado } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { AttendanceChart } from "@/components/AttendanceChart";
 import { CountCharts } from "@/components/CountCharts";
+import EditProfile from "../../list/users/components/EditUserDropDown";
 
 // Simulación de función para obtener datos del cliente
 const fetchClient = (clientId: number) => {
@@ -52,17 +53,27 @@ export default function ClientProfile() {
               <TabsContent value="details">
                 <div className="p-6 flex flex-col gap-6">
                   {/* INFORMACIÓN GENERAL */}
-                  <div className="flex flex-col items-center gap-4 justify-center">
-                    <Avatar className="w-16 h-16">
-                      <AvatarFallback>{client.nombre.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h2 className="text-xl font-bold">{client.nombre}</h2>
-                      <p className="text-gray-500 text-center">
-                        {client.cuenta}
-                      </p>
+
+                  <Card className="p-5 relative">
+                    {usuario_logeado?.role === "admin" && (
+                      <div className="absolute top-4 right-4">
+                        <EditProfile />
+                      </div>
+                    )}
+                    <div className="flex flex-col items-center gap-4 justify-center">
+                      <Avatar className="w-16 h-16">
+                        <AvatarFallback>
+                          {client.nombre.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h2 className="text-xl font-bold">{client.nombre}</h2>
+                        <p className="text-gray-500 text-center">
+                          {client.cuenta}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
 
                   {/* DATOS PRINCIPALES EN CARDS */}
                   {/* DATOS PRINCIPALES EN CARDS */}

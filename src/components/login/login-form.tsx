@@ -13,7 +13,7 @@ export function LoginForm({
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Ingresa a tu cuenta</h1>
         <p className="text-balance text-sm text-muted-foreground">
-          A continuacion proporciona tus datos
+          A continuación proporciona tus datos
         </p>
       </div>
       <div className="grid gap-6">

@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Role } from "@/lib/data";
-import { DollarSign, Shield, UserRoundSearch } from "lucide-react";
+import { BadgeCent, DollarSign, Shield, UserRoundSearch } from "lucide-react";
 
 export const RoleDropDown = ({
   role,
@@ -34,6 +34,10 @@ export const RoleDropDown = ({
         <DropdownMenuItem onClick={() => onRoleChange(Role.admin)}>
           <Shield />
           Admin
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onRoleChange(Role.marketing)}>
+          <BadgeCent />
+          Marketing
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

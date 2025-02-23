@@ -1,14 +1,192 @@
 import { type Event } from "react-big-calendar";
 
 // TEMPORARY DATA
-export let role = "admin";
+export let role = "";
 
-export let usuario_logeado = {
+export enum Status {
+  active = "Activo",
+  inactive = "Inactivo",
+}
+
+export interface Userlogged {
+  role: string;
+  name: string;
+  id: number;
+  email: string;
+  avatar: string;
+}
+
+export let usuario_logeado: Userlogged = {
   role: "admin",
-  name: "Salvador Perea",
-  id: 9,
+  name: "John Doe",
+  id: 1,
+  email: "salvador@topsales.expert",
+  avatar:
+    "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
 };
 
+export enum Role {
+  reclutador = "Reclutador",
+  generadorLeads = "GL",
+  admin = "Admin",
+  marketing = "MK",
+}
+
+export const UsersData: User[] = [
+  {
+    id: 1,
+    UserId: "1234567890",
+    age: 33,
+    name: "John Doe",
+    email: "john@doe.com",
+    photo:
+      "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 3,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 2,
+    age: 23,
+    UserId: "1234567890",
+    name: "Jane Doe",
+    email: "jane@doe.com",
+    photo:
+      "https://images.pexels.com/photos/936126/pexels-photo-936126.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 43,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 3,
+    UserId: "1234567890",
+    age: 19,
+    name: "Mike Geller",
+    email: "mike@geller.com",
+    photo:
+      "https://images.pexels.com/photos/428328/pexels-photo-428328.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 1,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 4,
+    UserId: "1234567890",
+    name: "Jay French",
+    age: 33,
+    email: "jay@gmail.com",
+    photo:
+      "https://images.pexels.com/photos/1187765/pexels-photo-1187765.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 24,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 5,
+    UserId: "1234567890",
+    name: "Jane Smith",
+    age: 55,
+    email: "jane@gmail.com",
+    photo:
+      "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 34,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 6,
+    UserId: "1234567890",
+    name: "Anna Santiago",
+    email: "anna@gmail.com",
+    age: 81,
+    photo:
+      "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 25,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 7,
+    UserId: "1234567890",
+    name: "Allen Black",
+    email: "allen@black.com",
+    age: 27,
+    photo:
+      "https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 55,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 8,
+    UserId: "1234567890",
+    name: "Ophelia Castro",
+    email: "ophelia@castro.com",
+    age: 43,
+    photo:
+      "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.generadorLeads,
+    status: Status.active,
+    clientes: 13,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 9,
+    UserId: "1234567890",
+    name: "Derek Briggs",
+    email: "derek@briggs.com",
+    age: 33,
+    photo:
+      "https://images.pexels.com/photos/842980/pexels-photo-842980.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.admin,
+    status: Status.active,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 10,
+    UserId: "1234567890",
+    name: "John Glover",
+    age: 28,
+    email: "john@glover.com",
+    photo:
+      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.reclutador,
+    status: Status.active,
+    placements: 29,
+    address: "123 Main St, Anytown, USA",
+  },
+  {
+    id: 11,
+    UserId: "1234567890",
+    name: "John Glover",
+    email: "john@glover.com",
+    age: 21,
+    photo:
+      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    phone: "1234567890",
+    rol: Role.generadorLeads,
+    clientes: 21,
+    status: Status.inactive,
+    address: "123 Main St, Anytown, USA",
+  },
+];
 export interface Cuenta {
   fecha: string;
   concepto: string;
@@ -370,7 +548,7 @@ export interface Candidato {
 export interface Vacante {
   id: number;
   año: number;
-  reclutador: string;
+  reclutador: User;
   tipo: "Nueva" | "Recompra";
   estado: "Hunting" | "Cancelada" | "Entrevistas" | "Perdida" | "Placement";
   puesto: string;
@@ -400,7 +578,7 @@ export const vacantes: Vacante[] = [
   {
     id: 1,
     año: 2023,
-    reclutador: "Juan Pérez",
+    reclutador: UsersData[0],
     tipo: "Nueva",
     estado: "Hunting",
     puesto: "Frontend",
@@ -453,7 +631,7 @@ export const vacantes: Vacante[] = [
   {
     id: 2,
     año: 2023,
-    reclutador: "Laura Martínez",
+    reclutador: UsersData[1],
     tipo: "Recompra",
     estado: "Entrevistas",
     puesto: "Backend",
@@ -563,235 +741,256 @@ export enum LeadStatus {
 export interface Lead {
   empresa: string;
   sector: string;
-  generadorLeads: string;
+  generadorLeads: User;
   link: string;
   fechaProspeccion: string;
   contacto: string;
   posicion: string;
   fechaAConectar: string;
   status: LeadStatus; // Usamos el enum aquí
+  origen: string;
 }
 
 export const leadsData: Lead[] = [
   {
     empresa: "Innovatech Solutions",
     sector: "Tecnología",
-    generadorLeads: "Carlos Mendoza",
+    generadorLeads: UsersData[2],
     link: "https://innovatechsolutions.com",
     fechaProspeccion: "2023-09-25",
     contacto: "Laura González",
     posicion: "Gerente de Producto",
     fechaAConectar: "2023-10-02",
     status: LeadStatus.Contacto,
+    origen: "Linkedin",
   },
   {
     empresa: "PowerGrid Energy",
     sector: "Energía",
-    generadorLeads: "María Fernández",
+    generadorLeads: UsersData[2],
     link: "https://powergridenergy.com",
     fechaProspeccion: "2023-09-26",
     contacto: "Javier Torres",
     posicion: "Director de Energías Renovables",
     fechaAConectar: "2023-10-03",
     status: LeadStatus.SocialSelling,
+    origen: "Linkedin",
   },
   {
     empresa: "MedLife Clinics",
     sector: "Salud",
-    generadorLeads: "Ricardo López",
+    generadorLeads: UsersData[2],
     link: "https://medlifeclinics.com",
     fechaProspeccion: "2023-09-27",
     contacto: "Ana Ramírez",
     posicion: "Coordinadora Médica",
     fechaAConectar: "2023-10-04",
     status: LeadStatus.ContactoCalido,
+    origen: "Pagina web",
   },
   {
     empresa: "FreshBites Foods",
     sector: "Alimentos",
-    generadorLeads: "Sofía Morales",
+    generadorLeads: UsersData[2],
     link: "https://freshbitesfoods.com",
     fechaProspeccion: "2023-09-28",
     contacto: "Diego Sánchez",
     posicion: "Gerente de Desarrollo de Productos",
     fechaAConectar: "2023-10-05",
     status: LeadStatus.Prospecto,
+    origen: "Linkedin",
   },
   {
     empresa: "SwiftLogistics",
     sector: "Logística",
-    generadorLeads: "Luisa Castro",
+    generadorLeads: UsersData[2],
     link: "https://swiftlogistics.com",
     fechaProspeccion: "2023-09-29",
     contacto: "Miguel Díaz",
     posicion: "Director de Operaciones Logísticas",
     fechaAConectar: "2023-10-06",
     status: LeadStatus.CitaAgendada,
+    origen: "Linkedin",
   },
   {
     empresa: "LearnSmart Education",
     sector: "Educación",
-    generadorLeads: "Patricia Vargas",
+    generadorLeads: UsersData[2],
     link: "https://learnsmarteducation.com",
     fechaProspeccion: "2023-09-30",
     contacto: "Raúl Martínez",
     posicion: "Director Académico",
     fechaAConectar: "2023-10-07",
     status: LeadStatus.CitaValidada,
+    origen: "Linkedin",
   },
   {
     empresa: "StyleVogue Fashion",
     sector: "Moda",
-    generadorLeads: "Gabriel Hernández",
+    generadorLeads: UsersData[2],
     link: "https://stylevoguefashion.com",
     fechaProspeccion: "2023-10-01",
     contacto: "Isabel Pérez",
     posicion: "Diseñadora Principal",
     fechaAConectar: "2023-10-08",
     status: LeadStatus.Contacto,
+    origen: "Linkedin",
   },
   {
     empresa: "CloudTech Innovations",
     sector: "Tecnología",
-    generadorLeads: "Fernando Gómez",
+    generadorLeads: UsersData[2],
     link: "https://cloudtechinnovations.com",
     fechaProspeccion: "2023-10-02",
     contacto: "Carolina López",
     posicion: "Gerente de Soluciones en la Nube",
     fechaAConectar: "2023-10-09",
     status: LeadStatus.SocialSelling,
+    origen: "Marketing",
   },
   {
     empresa: "SolarWave Energy",
     sector: "Energía",
-    generadorLeads: "Daniela Ramírez",
+    generadorLeads: UsersData[2],
     link: "https://solarwaveenergy.com",
     fechaProspeccion: "2023-10-03",
     contacto: "Alejandro Torres",
     posicion: "Ingeniero de Proyectos Solares",
     fechaAConectar: "2023-10-10",
     status: LeadStatus.ContactoCalido,
+    origen: "Linkedin",
   },
   {
     empresa: "CarePlus Health",
     sector: "Salud",
-    generadorLeads: "Martín Sánchez",
+    generadorLeads: UsersData[2],
     link: "https://careplushealth.com",
     fechaProspeccion: "2023-10-04",
     contacto: "Valeria Díaz",
     posicion: "Directora de Servicios de Salud",
     fechaAConectar: "2023-10-11",
     status: LeadStatus.Prospecto,
+    origen: "Linkedin",
   },
   {
     empresa: "TastyDelight Foods",
     sector: "Alimentos",
-    generadorLeads: "Camila Morales",
+    generadorLeads: UsersData[2],
     link: "https://tastydelightfoods.com",
     fechaProspeccion: "2023-10-05",
     contacto: "Roberto Castro",
     posicion: "Gerente de Marketing Alimenticio",
     fechaAConectar: "2023-10-12",
     status: LeadStatus.CitaAgendada,
+    origen: "Pagina web",
   },
   {
     empresa: "GlobalLogistics Hub",
     sector: "Logística",
-    generadorLeads: "Javier Vargas",
+    generadorLeads: UsersData[2],
     link: "https://globallogisticshub.com",
     fechaProspeccion: "2023-10-06",
     contacto: "Natalia López",
     posicion: "Directora de Estrategia Logística",
     fechaAConectar: "2023-10-13",
     status: LeadStatus.CitaValidada,
+    origen: "GL",
   },
   {
     empresa: "BrightFuture Education",
     sector: "Educación",
-    generadorLeads: "Sandra Hernández",
+    generadorLeads: UsersData[2],
     link: "https://brightfutureeducation.com",
     fechaProspeccion: "2023-10-07",
     contacto: "Oscar Martínez",
     posicion: "Director de Innovación Educativa",
     fechaAConectar: "2023-10-14",
     status: LeadStatus.Contacto,
+    origen: "Linkedin",
   },
   {
     empresa: "ChicStyle Fashion",
     sector: "Moda",
-    generadorLeads: "Rafael Gómez",
+    generadorLeads: UsersData[2],
     link: "https://chicstylefashion.com",
     fechaProspeccion: "2023-10-08",
     contacto: "Lucía Ramírez",
     posicion: "Diseñadora Creativa",
     fechaAConectar: "2023-10-15",
     status: LeadStatus.SocialSelling,
+    origen: "Linkedin",
   },
   {
     empresa: "QuantumTech Labs",
     sector: "Tecnología",
-    generadorLeads: "Verónica Torres",
+    generadorLeads: UsersData[2],
     link: "https://quantumtechlabs.com",
     fechaProspeccion: "2023-10-09",
     contacto: "Daniel Sánchez",
     posicion: "Gerente de Investigación Tecnológica",
     fechaAConectar: "2023-10-16",
     status: LeadStatus.ContactoCalido,
+    origen: "Linkedin",
   },
   {
     empresa: "GreenWave Energy",
     sector: "Energía",
-    generadorLeads: "Andrés López",
+    generadorLeads: UsersData[2],
     link: "https://greenwaveenergy.com",
     fechaProspeccion: "2023-10-10",
     contacto: "Elena Díaz",
     posicion: "Directora de Energías Limpias",
     fechaAConectar: "2023-10-17",
     status: LeadStatus.Prospecto,
+    origen: "Linkedin",
   },
   {
     empresa: "WellnessCare Health",
     sector: "Salud",
-    generadorLeads: "Carmen Castro",
+    generadorLeads: UsersData[2],
     link: "https://wellnesscarehealth.com",
     fechaProspeccion: "2023-10-11",
     contacto: "Héctor Martínez",
     posicion: "Coordinador de Bienestar Corporativo",
     fechaAConectar: "2023-10-18",
     status: LeadStatus.CitaAgendada,
+    origen: "Linkedin",
   },
   {
     empresa: "GourmetDelight Foods",
     sector: "Alimentos",
-    generadorLeads: "Mario Morales",
+    generadorLeads: UsersData[2],
     link: "https://gourmetdelightfoods.com",
     fechaProspeccion: "2023-10-12",
     contacto: "Paula Hernández",
     posicion: "Gerente de Experiencia Gastronómica",
     fechaAConectar: "2023-10-19",
     status: LeadStatus.CitaValidada,
+    origen: "Linkedin",
   },
   {
     empresa: "PrimeLogistics Group",
     sector: "Logística",
-    generadorLeads: "Lorena Vargas",
+    generadorLeads: UsersData[2],
     link: "https://primelogisticsgroup.com",
     fechaProspeccion: "2023-10-13",
     contacto: "Fernando López",
     posicion: "Director de Optimización Logística",
     fechaAConectar: "2023-10-20",
     status: LeadStatus.Contacto,
+    origen: "Linkedin",
   },
   {
     empresa: "FutureGen Education",
     sector: "Educación",
-    generadorLeads: "Juan Carlos Ramírez",
+    generadorLeads: UsersData[2],
     link: "https://futuregeneducation.com",
     fechaProspeccion: "2023-10-14",
     contacto: "Adriana Díaz",
     posicion: "Directora de Educación Futura",
     fechaAConectar: "2023-10-21",
     status: LeadStatus.SocialSelling,
+    origen: "Linkedin",
   },
 ];
 
@@ -802,16 +1001,6 @@ export interface Parent {
   email: string;
   phone: string;
   address: string;
-}
-
-export enum Role {
-  reclutador = "Reclutador",
-  generadorLeads = "GL",
-  admin = "Admin",
-}
-export enum Status {
-  active = "Activo",
-  inactive = "Inactivo",
 }
 
 export interface User {
@@ -828,162 +1017,6 @@ export interface User {
   placements?: number;
   address: string;
 }
-
-export const UsersData: User[] = [
-  {
-    id: 1,
-    UserId: "1234567890",
-    age: 33,
-    name: "John Doe",
-    email: "john@doe.com",
-    photo:
-      "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 3,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 2,
-    age: 23,
-    UserId: "1234567890",
-    name: "Jane Doe",
-    email: "jane@doe.com",
-    photo:
-      "https://images.pexels.com/photos/936126/pexels-photo-936126.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 43,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 3,
-    UserId: "1234567890",
-    age: 19,
-    name: "Mike Geller",
-    email: "mike@geller.com",
-    photo:
-      "https://images.pexels.com/photos/428328/pexels-photo-428328.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.generadorLeads,
-    status: Status.active,
-    clientes: 1,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 4,
-    UserId: "1234567890",
-    name: "Jay French",
-    age: 33,
-    email: "jay@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1187765/pexels-photo-1187765.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 24,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 5,
-    UserId: "1234567890",
-    name: "Jane Smith",
-    age: 55,
-    email: "jane@gmail.com",
-    photo:
-      "https://images.pexels.com/photos/1102341/pexels-photo-1102341.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.generadorLeads,
-    status: Status.active,
-    clientes: 34,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 6,
-    UserId: "1234567890",
-    name: "Anna Santiago",
-    email: "anna@gmail.com",
-    age: 81,
-    photo:
-      "https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 25,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 7,
-    UserId: "1234567890",
-    name: "Allen Black",
-    email: "allen@black.com",
-    age: 27,
-    photo:
-      "https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 55,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 8,
-    UserId: "1234567890",
-    name: "Ophelia Castro",
-    email: "ophelia@castro.com",
-    age: 43,
-    photo:
-      "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.generadorLeads,
-    status: Status.active,
-    clientes: 13,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 9,
-    UserId: "1234567890",
-    name: "Derek Briggs",
-    email: "derek@briggs.com",
-    age: 33,
-    photo:
-      "https://images.pexels.com/photos/842980/pexels-photo-842980.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.admin,
-    status: Status.active,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 10,
-    UserId: "1234567890",
-    name: "John Glover",
-    age: 28,
-    email: "john@glover.com",
-    photo:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.reclutador,
-    status: Status.active,
-    placements: 29,
-    address: "123 Main St, Anytown, USA",
-  },
-  {
-    id: 11,
-    UserId: "1234567890",
-    name: "John Glover",
-    email: "john@glover.com",
-    age: 21,
-    photo:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    phone: "1234567890",
-    rol: Role.generadorLeads,
-    clientes: 21,
-    status: Status.inactive,
-    address: "123 Main St, Anytown, USA",
-  },
-];
 
 interface Contacto {
   nombre: string;

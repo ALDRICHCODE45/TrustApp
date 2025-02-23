@@ -2,7 +2,14 @@
 import { Role, Status, User } from "@/lib/data";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import Image from "next/image";
-import { MoreHorizontal, ArrowUpDown, MapPin, EyeOff, Eye } from "lucide-react";
+import {
+  MoreHorizontal,
+  ArrowUpDown,
+  MapPin,
+  EyeOff,
+  Eye,
+  Clipboard,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,8 +28,8 @@ import Link from "next/link";
 
 const handleCopyTeacherId = (teacherId: string, teacherName: string) => {
   navigator.clipboard.writeText(teacherId);
-  toast("El usuario ha sido copiado", {
-    description: `Los datos del ususaio con nombre: "${teacherName}" han sido copiado`,
+  toast("Realizado", {
+    description: "Usuario copiado al portapapeles",
   });
 };
 
@@ -64,6 +71,7 @@ export const UserColumns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
+    id: "info",
     accessorKey: "info", // Nombre de la columna combinada
     header: "Info",
     cell: ({ row }) => {
@@ -91,6 +99,7 @@ export const UserColumns: ColumnDef<User>[] = [
     },
   },
   {
+    id: "identificador",
     accessorKey: "id",
     header: ({ column }) => {
       return (
@@ -142,10 +151,12 @@ export const UserColumns: ColumnDef<User>[] = [
     filterFn: myCustomFilterFn,
   },
   {
+    id: "phone",
     accessorKey: "phone",
     header: "Celular",
   },
   {
+    id: "rol",
     accessorKey: "rol",
     header: "Role",
     cell: ({ row }) => {
@@ -159,6 +170,7 @@ export const UserColumns: ColumnDef<User>[] = [
     },
   },
   {
+    id: "status",
     accessorKey: "status",
     header: "Estado",
 
@@ -173,6 +185,7 @@ export const UserColumns: ColumnDef<User>[] = [
     },
   },
   {
+    id: "address",
     accessorKey: "address",
     header: "Dirección",
     cell: ({ row }) => {
@@ -203,11 +216,13 @@ export const UserColumns: ColumnDef<User>[] = [
             <DropdownMenuItem
               onClick={() => handleCopyTeacherId(teacherId, teacherName)}
             >
-              copiar usuario
+              <Clipboard />
+              Copiar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href={`/profile/${teacherId}`} className="cursor-pointer">
+                <Eye />
                 Ver más
               </Link>
             </DropdownMenuItem>

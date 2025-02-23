@@ -8,6 +8,7 @@ import {
   Settings2,
   Shield,
   SlidersHorizontal,
+  UserSearch,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -18,8 +19,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { usuario_logeado } from "@/lib/data";
 
 // This is sample data.
+
 const data = {
   user: {
     name: "Salvador Perea",
@@ -45,22 +48,44 @@ const data = {
   ],
   navMain: [
     {
+      title: "Reclutamiento",
+      url: "#",
+      icon: UserSearch,
+      roles: ["reclutador"],
+      items: [
+        {
+          title: "Tus vacantes",
+          url: "/reclutador",
+          roles: ["reclutador"],
+        },
+        {
+          title: "Kanban",
+          url: "/reclutador/kanban",
+          roles: ["reclutador"],
+        },
+      ],
+    },
+    {
       title: "Administración",
       url: "#",
       icon: Shield,
       isActive: true,
+      roles: ["admin"], // Solo visible para administradores
       items: [
         {
           title: "Usuarios",
           url: "/list/users",
+          roles: ["admin"], // Solo visible para administradores
         },
         {
           title: "Clientes",
           url: "/list/clientes",
+          roles: ["admin", "user"], // Visible para administradores y usuarios normales
         },
         {
           title: "Leads",
           url: "/list/leads",
+          roles: ["admin", "user"], // Visible para administradores y usuarios normales
         },
       ],
     },
@@ -69,25 +94,30 @@ const data = {
       url: "",
       icon: MonitorCog,
       isActive: true,
+      roles: ["admin", "user"], // Visible para administradores y usuarios normales
       items: [
         {
           title: "Dashboard Administrativo",
           url: "/admin",
+          roles: ["admin"], // Solo visible para administradores
         },
         {
           title: "Reclutamiento",
           url: "/list/reclutamiento",
+          roles: ["admin", "user"], // Visible para administradores y usuarios normales
         },
       ],
     },
     {
-      title: "sistema",
+      title: "Sistema",
       url: "",
       icon: SlidersHorizontal,
+      roles: ["admin"], // Solo visible para administradores
       items: [
         {
           title: "Logs",
           url: "/sistema/logs",
+          roles: ["admin"], // Solo visible para administradores
         },
       ],
     },
@@ -95,50 +125,43 @@ const data = {
       title: "Finanzas",
       url: "",
       icon: Settings2,
+      roles: ["admin", "user"], // Visible para administradores y usuarios normales
       items: [
         {
           title: "Cuentas",
           url: "/list/cuentas",
+          roles: ["admin", "user"], // Visible para administradores y usuarios normales
         },
         {
           title: "Facturas",
           url: "/list/facturas",
+          roles: ["admin", "user"], // Visible para administradores y usuarios normales
         },
       ],
     },
   ],
-  //projects: [
-  //{
-  //name: "Design Engineering",
-  //url: "#",
-  //icon: Frame,
-  // },
-  //{
-  //name: "Sales & Marketing",
-  //url: "#",
-  //icon: PieChart,
-  // },
-  // {
-  //name: "Travel",
-  //url: "#",
-  //icon: Map,
-  //},
-  //],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // Filtrar los elementos del menú según el rol del usuario logeado
+  const filteredNavMain = data.navMain
+    .filter((item) => item.roles?.includes(usuario_logeado.role))
+    .map((item) => ({
+      ...item,
+      items: item.items?.filter((subItem) =>
+        subItem.roles?.includes(usuario_logeado.role)
+      ),
+    }));
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
-        <NavUser user={data.user} />
+        <NavUser user={usuario_logeado} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
+        {/* Pasar los elementos filtrados */}
+        <NavMain items={filteredNavMain} />
       </SidebarContent>
-      {/* <SidebarFooter> */}
-      {/* </SidebarFooter> */}
       <SidebarRail />
     </Sidebar>
   );
