@@ -19,13 +19,13 @@ interface EmployeeData {
 export const EmployeeDistribution: React.FC = () => {
   const chartData: EmployeeData[] = [
     { name: "Total", cantidad: 100, fill: "#f1f5f9" },
-    { name: "Hombres", cantidad: 55, fill: "#3b82f6" },
-    { name: "Mujeres", cantidad: 45, fill: "#a5b4fc" },
+    { name: "Oficina 1", cantidad: 55, fill: "#3b82f6" },
+    { name: "Oficina 2", cantidad: 45, fill: "#a5b4fc" },
   ];
 
   const chartConfig: Record<string, { label: string; color: string }> = {
-    men: { label: "Hombres", color: "#3b82f6" },
-    women: { label: "Mujeres", color: "#a5b4fc" },
+    Oficina_1: { label: "Oficina 1", color: "#3b82f6" },
+    Oficina_2: { label: "Oficina 2", color: "#a5b4fc" },
   };
 
   return (
@@ -61,12 +61,12 @@ export const EmployeeDistribution: React.FC = () => {
         <div className="flex flex-col items-center gap-1">
           <div className="w-4 h-4 bg-blue-500 rounded-full" />
           <p className="font-medium">55</p>
-          <p className="text-slate-500 text-xs">Hombres (55%)</p>
+          <p className="text-slate-500 text-xs">Oficina 1(55%)</p>
         </div>
         <div className="flex flex-col items-center gap-1">
           <div className="w-4 h-4 bg-indigo-300 rounded-full" />
           <p className="font-medium">45</p>
-          <p className="text-slate-500 text-xs">Mujeres (45%)</p>
+          <p className="text-slate-500 text-xs">Oficina 2(45%)</p>
         </div>
       </CardFooter>
     </Card>

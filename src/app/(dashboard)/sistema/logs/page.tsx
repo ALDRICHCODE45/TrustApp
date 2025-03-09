@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/Table";
 import { logs } from "@/lib/data";
 import { type ReactElement } from "react";
-import { logsColumns } from "./logsColumns";
+import { logsColumns } from "./components/logsColumns";
 
 export interface pageProps {}
 

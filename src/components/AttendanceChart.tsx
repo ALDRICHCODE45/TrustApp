@@ -27,8 +27,8 @@ export const AttendanceChart: React.FC = () => {
   ];
 
   const chartConfig: Record<string, { label: string; color: string }> = {
-    present: { label: "Presente", color: "#3b82f6" },
-    absent: { label: "Ausente", color: "#e2e8f0" },
+    present: { label: "Jhon Doe", color: "#3b82f6" },
+    absent: { label: "Carlos", color: "#e2e8f0" },
   };
 
   return (

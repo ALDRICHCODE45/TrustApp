@@ -19,7 +19,7 @@ export const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between flex-col md:flex-row">
+        <div className="flex items-start  justify-between flex-col md:flex-row">
           <div className="text-2xl font-bold">{value}</div>
         </div>
       </CardContent>

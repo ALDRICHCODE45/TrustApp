@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Desactiva los controles en navegadores basados en WebKit (Chrome, Safari, etc.) */
+  margin: 0; /* Elimina cualquier margen adicional */
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Desactiva los controles en Firefox */
+}
+
 :root {
   --background-pinned-column: #ffffff; /* Color claro para modo claro */
 }

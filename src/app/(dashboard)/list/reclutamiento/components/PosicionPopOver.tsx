@@ -19,9 +19,8 @@ export function PosicionPopOver({ row }: { row: any }) {
             <Info size={16} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80">
+        <PopoverContent className="w-52">
           <div className="grid gap-1">
-            <h4 className="font-medium">Detalles del puesto</h4>
             <p className="text-sm">{puesto}</p>
           </div>
         </PopoverContent>

@@ -184,6 +184,9 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
                 <div>
                   <h2 className="text-2xl font-bold">{user?.name}</h2>
                   <p className="text-muted-foreground">{user?.email}</p>
+                  <Badge variant="outline" className="mt-1">
+                    <p className="">Oficina 2</p>
+                  </Badge>
                 </div>
 
                 <div className="mt-4 md:mt-0">
