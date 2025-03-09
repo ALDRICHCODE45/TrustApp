@@ -1,16 +1,16 @@
 "use client";
-
-import "react-calendar/dist/Calendar.css";
-import { useState, type ReactElement } from "react";
-import Calendar from "react-calendar";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
-export interface EventCalendarProps {}
-type ValuePiece = Date | null;
-type Value = ValuePiece | [ValuePiece, ValuePiece];
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Calendar } from "./ui/calendar";
+import { Separator } from "./ui/separator";
+import { Loader2 } from "lucide-react";
+import { es } from "date-fns/locale";
 
 interface Event {
   id: number;
@@ -19,85 +19,96 @@ interface Event {
   description: string;
 }
 
-// Temporary Data
-const events: Event[] = [
-  {
-    id: 1,
-    title: "Cambiar esquema",
-    time: "12:00 PM - 2:00 PM",
-    description: "Cambiar el esquema del modelo",
-  },
-];
-export function EventCalendar({}: EventCalendarProps): ReactElement {
-  const [value, onChange] = useState<Value>(new Date());
+export const EventCalendar: React.FC = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: 1,
+      title: "Reunión de equipo",
+      time: "10:00 AM - 11:00 AM",
+      description: "Discutir el progreso del proyecto.",
+    },
+    {
+      id: 2,
+      title: "Entrega de informe",
+      time: "02:00 PM - 03:00 PM",
+      description: "Enviar el informe mensual al cliente.",
+    },
+  ]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleDateSelect = async (date: Date | undefined) => {
+    if (!date) return;
+    setSelectedDate(date);
+    setLoading(true);
+
+    // Simulate loading
+    setTimeout(() => {
+      setEvents([
+        {
+          id: 1,
+          title: "Reunión de equipo",
+          time: "10:00 AM - 11:00 AM",
+          description: "Discutir el progreso del proyecto.",
+        },
+        {
+          id: 2,
+          title: "Entrega de informe",
+          time: "02:00 PM - 03:00 PM",
+          description: "Enviar el informe mensual al cliente.",
+        },
+      ]);
+      setLoading(false);
+    }, 600);
+  };
 
   return (
-    <Card className="p-4 bg-background text-foreground">
-      <CardContent>
-        <Calendar
-          onChange={onChange}
-          value={value}
-          className="mx-auto bg-white dark:bg-gray-800 p-2 rounded-md"
-        />
-        <div className="flex justify-end items-center mt-4">
-          <Button variant="ghost" size="icon">
-            <Image src="/moreDark.png" alt="Agregar" width={20} height={20} />
-          </Button>
+    <Card className=" shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Calendario</CardTitle>
+        <CardDescription>Eventos y reuniones</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="flex justify-center mb-4">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            className="rounded-md border-0 max-w-[280px]"
+            locale={es}
+          />
         </div>
+
         <Separator className="my-4" />
-        <div className="flex flex-col gap-4">
-          <Card className="animate-pulse border border-red-500 dark:border-red-700 bg-red-100 dark:bg-red-900">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-red-800 dark:text-red-200">
-                  Titulo
-                </h3>
-                <span className="text-red-500 dark:text-red-400 text-xs">
-                  12:00 PM - 2:00 PM
-                </span>
-              </div>
-              <p className="mt-2 text-red-600 dark:text-red-300 text-sm">
-                Revisar estados de cuenta.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-blue-500 dark:border-blue-700 bg-blue-100 dark:bg-blue-900">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-blue-800 dark:text-blue-200">
-                  Titulo
-                </h3>
-                <span className="text-blue-500 dark:text-blue-400 text-xs">
-                  12:00 PM - 2:00 PM
-                </span>
-              </div>
-              <p className="mt-2 text-blue-600 dark:text-blue-300 text-sm">
-                Realizar Pagos de Nomina
-              </p>
-            </CardContent>
-          </Card>
-          {events.map((event) => (
-            <Card
-              key={event.id}
-              className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">
-                    {event.title}
-                  </h3>
-                  <span className="text-gray-500 dark:text-gray-400 text-xs">
-                    {event.time}
-                  </span>
-                </div>
-                <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm">
-                  {event.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+
+        <div className="space-y-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="animate-spin h-5 w-5 text-blue-500" />
+            </div>
+          ) : events.length > 0 ? (
+            events.map((event) => (
+              <Card key={event.id} className="border shadow-none ">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-sm">{event.title}</h3>
+                    <span className="text-xs text-slate-500">{event.time}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {event.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <p className="text-center text-sm text-slate-500 py-4">
+              No hay eventos para este día.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
   );
-}
+};

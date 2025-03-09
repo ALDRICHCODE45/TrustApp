@@ -4,10 +4,11 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  HandCoins,
+  Landmark,
   MonitorCog,
-  Settings2,
-  Shield,
-  SlidersHorizontal,
+  ShieldBan,
+  UserRoundCog,
   UserSearch,
 } from "lucide-react";
 
@@ -54,7 +55,7 @@ const data = {
       roles: ["reclutador"],
       items: [
         {
-          title: "Tus vacantes",
+          title: "Vacantes",
           url: "/reclutador",
           roles: ["reclutador"],
         },
@@ -66,9 +67,27 @@ const data = {
       ],
     },
     {
+      title: "Generacion de Leads",
+      url: "#",
+      icon: HandCoins,
+      roles: ["gl"],
+      items: [
+        {
+          title: "Tus Prospecciones",
+          url: "/leads",
+          roles: ["gl"],
+        },
+        {
+          title: "Kanban Board",
+          url: "/leads/kanban",
+          roles: ["gl"],
+        },
+      ],
+    },
+    {
       title: "Administración",
       url: "#",
-      icon: Shield,
+      icon: ShieldBan,
       isActive: true,
       roles: ["admin"], // Solo visible para administradores
       items: [
@@ -80,12 +99,12 @@ const data = {
         {
           title: "Clientes",
           url: "/list/clientes",
-          roles: ["admin", "user"], // Visible para administradores y usuarios normales
+          roles: ["admin", "user"],
         },
         {
           title: "Leads",
           url: "/list/leads",
-          roles: ["admin", "user"], // Visible para administradores y usuarios normales
+          roles: ["admin", "user"],
         },
       ],
     },
@@ -111,31 +130,31 @@ const data = {
     {
       title: "Sistema",
       url: "",
-      icon: SlidersHorizontal,
-      roles: ["admin"], // Solo visible para administradores
+      icon: UserRoundCog,
+      roles: ["admin"],
       items: [
         {
           title: "Logs",
           url: "/sistema/logs",
-          roles: ["admin"], // Solo visible para administradores
+          roles: ["admin"],
         },
       ],
     },
     {
       title: "Finanzas",
       url: "",
-      icon: Settings2,
-      roles: ["admin", "user"], // Visible para administradores y usuarios normales
+      icon: Landmark,
+      roles: ["admin", "user"],
       items: [
         {
-          title: "Cuentas",
+          title: "CXP",
           url: "/list/cuentas",
-          roles: ["admin", "user"], // Visible para administradores y usuarios normales
+          roles: ["admin", "user"],
         },
         {
-          title: "Facturas",
+          title: "CXC",
           url: "/list/facturas",
-          roles: ["admin", "user"], // Visible para administradores y usuarios normales
+          roles: ["admin", "user"],
         },
       ],
     },
@@ -154,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }));
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <NavUser user={usuario_logeado} />
       </SidebarHeader>

@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,14 +7,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RefreshCcw, SquarePlus } from "lucide-react";
+import { useState } from "react";
 
-export const TypeDropdown = ({
-  tipo,
-  onTipoChange,
-}: {
-  tipo: string;
-  onTipoChange: (newReclutador: string) => void;
-}) => {
+export const TypeDropdown = ({ row }: { row: any }) => {
+  const [tipo, setTipo] = useState(row.original.tipo);
+  const handleTipoChange = (newTipo: string) => {
+    setTipo(newTipo as "Garantia");
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,13 +22,13 @@ export const TypeDropdown = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onTipoChange("Nueva")}>
+        <DropdownMenuItem onClick={() => handleTipoChange("Nueva")}>
           <SquarePlus />
           Nueva
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onTipoChange("Recompra")}>
+        <DropdownMenuItem onClick={() => handleTipoChange("Garantia")}>
           <RefreshCcw />
-          Recompra
+          Garantía
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

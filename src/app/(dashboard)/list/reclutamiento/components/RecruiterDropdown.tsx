@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,14 +7,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "lucide-react";
+import { useState } from "react";
 
-export const RecruiterDropDown = ({
-  reclutador,
-  onReclutadorChange,
-}: {
-  reclutador: string;
-  onReclutadorChange: (newReclutador: string) => void;
-}) => {
+export const RecruiterDropDown = ({ row }: { row: any }) => {
+  const [reclutador, setNewReclutador] = useState(row.original.reclutador.name);
+  const handleReclutadorChange = (newReclutador: string) => {
+    setNewReclutador(newReclutador);
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,23 +23,31 @@ export const RecruiterDropDown = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onReclutadorChange("Cesar Romero")}>
+        <DropdownMenuItem
+          onClick={() => handleReclutadorChange("Cesar Romero")}
+        >
           <User />
           Cesar Romero
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onReclutadorChange("Aylin Perez")}>
+        <DropdownMenuItem onClick={() => handleReclutadorChange("Aylin Perez")}>
           <User />
           Aylin Perez
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onReclutadorChange("Rodrigo Herrera")}>
+        <DropdownMenuItem
+          onClick={() => handleReclutadorChange("Rodrigo Herrera")}
+        >
           <User />
           Rodrigo Herrera
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onReclutadorChange("Manuel Morales")}>
+        <DropdownMenuItem
+          onClick={() => handleReclutadorChange("Manuel Morales")}
+        >
           <User />
           Manuel Morales
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onReclutadorChange("Melissa Flores")}>
+        <DropdownMenuItem
+          onClick={() => handleReclutadorChange("Melissa Flores")}
+        >
           <User />
           Melissa Flores
         </DropdownMenuItem>

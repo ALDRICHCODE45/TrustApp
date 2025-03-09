@@ -30,15 +30,22 @@ import {
   SquarePen,
   Trash2,
   User,
-  Building2,
-  BriefcaseBusiness,
-  Globe,
-  Contact,
-  UserPen,
-  GitCommitVertical,
   ChevronDown,
 } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { Card } from "@/components/ui/card";
+import { usuario_logeado } from "@/lib/data";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const ActionsCell = ({ row }: { row: any }) => {
   const teacherId = row.original.generadorLeads;
@@ -46,17 +53,24 @@ export const ActionsCell = ({ row }: { row: any }) => {
 
   // Estado para controlar la visibilidad del diálogo y del dropdown
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
-  const handleCopyTeacherId = (id: string, name: string) => {
-    navigator.clipboard.writeText(id);
-    console.log(`Copied ID: ${id} (${name})`);
-  };
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("Seleccionar Generador");
 
   const handleEditClick = () => {
     setIsMenuOpen(false); // Cierra el menú antes de abrir el diálogo
     setTimeout(() => setIsDialogOpen(true), 100); // Abre el diálogo después de un pequeño delay
   };
+
+  const users = [
+    { id: 1, name: "Francisco Flores" },
+    { id: 2, name: "Aylin Perez" },
+    { id: 3, name: "Ronaldo Perez" },
+    { id: 4, name: "Sofia Martinez" },
+    { id: 5, name: "Carlos Ruiz" },
+    { id: 6, name: "Marta Lopez" },
+  ];
 
   return (
     <>
@@ -70,11 +84,9 @@ export const ActionsCell = ({ row }: { row: any }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="z-40" align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => handleCopyTeacherId(teacherId, teacherName)}
-          >
+          <DropdownMenuItem className="cursor-pointer">
             <Clipboard className="mr-2 h-4 w-4" />
-            Copiar usuario
+            Copiar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -84,10 +96,34 @@ export const ActionsCell = ({ row }: { row: any }) => {
             <SquarePen className="mr-2 h-4 w-4" />
             Editar
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Eliminar
-          </DropdownMenuItem>
+          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Se eliminará
+                  permanentemente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={() => console.log("eliminar")}>
+                  Sí, eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -107,93 +143,64 @@ export const ActionsCell = ({ row }: { row: any }) => {
           <div className="overflow-y-auto">
             <div className="px-6 pb-6 pt-4">
               <form className="space-y-4">
-                <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="">
                   <div className="flex-1 space-y-2">
                     <Label
                       htmlFor="first-name"
                       className="flex gap-2 items-center"
                     >
-                      <Building2 size={17} />
                       <span>Empresa</span>
                     </Label>
                     <Input id="empresa" placeholder="Amazon" type="text" />
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <Label
-                      htmlFor="last-name"
-                      className="flex gap-2 items-center"
-                    >
-                      <BriefcaseBusiness size={17} />
-                      <span>Sector</span>
-                    </Label>
-                    <Input id="sector" placeholder="Tecnologia" type="text" />
-                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  {/* Label */}
-                  <Label
-                    htmlFor="generador"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Generador
-                  </Label>
+                  {usuario_logeado.role === "admin" ? (
+                    <>
+                      <Label
+                        htmlFor="generador"
+                        className="text-sm font-medium flex items-center gap-2"
+                      >
+                        <User size={17} />
+                        Generador
+                      </Label>
 
-                  {/* Input con Popover */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="relative">
-                        {/* Input personalizado */}
-                        <Input
-                          id="generador"
-                          placeholder="Selecciona un generador"
-                          className="pr-10 bg-white dark:bg-black text-black dark:text-white   focus:border-primary dark:focus:border-primary focus:ring-primary dark:focus:ring-primary rounded-md"
-                        />
-                        {/* Flecha para abrir el Popover */}
-                        <button
-                          type="button"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                          aria-label="Abrir opciones de generador"
-                        >
-                          <ChevronDown size={16} />
-                        </button>
-                      </div>
-                    </PopoverTrigger>
-
-                    {/* Contenido del Popover */}
-                    <PopoverContent
-                      className="w-64 max-h-48 overflow-y-auto bg-white dark:bg-black text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-md p-4 space-y-2 mt-1"
-                      align="start" // Alinea el Popover al inicio (final del input)
-                      sideOffset={4} // Ajusta la distancia entre el Popover y el input
-                    >
-                      {/* Título */}
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                        Selecciona un generador:
-                      </div>
-
-                      {/* Lista de usuarios */}
-                      <div className="space-y-1">
-                        {[
-                          "John Doe",
-                          "Jane Smith",
-                          "Alice Johnson",
-                          "Bob Brown",
-                          "Charlie Davis",
-                        ].map((user, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full flex justify-between"
                           >
-                            <span className="text-sm">{user}</span>
-                            <User
-                              size={16}
-                              className="text-gray-400 dark:text-gray-500"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                            {selectedOption}
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          className="w-[200px] z-[999] bg-white dark:bg-black overflow-scroll max-h-[300px]"
+                        >
+                          <Card className="overflow-scroll h-[120px]">
+                            {users.map((user) => (
+                              <Button
+                                key={user.id}
+                                variant="ghost"
+                                className="w-full text-left flex justify-start"
+                                onClick={() => setSelectedOption(user.name)} // Cambiar opción seleccionada
+                                type="button"
+                              >
+                                <User className="mr-2 h-4 w-4" />
+                                <span>{user.name}</span>
+                              </Button>
+                            ))}
+                          </Card>
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  ) : null}
+
+                  {/* Label */}
                 </div>
                 <div className="flex flex-col gap-4 sm:flex-row pt-3">
                   <div className="flex-1 space-y-2">
@@ -201,7 +208,6 @@ export const ActionsCell = ({ row }: { row: any }) => {
                       htmlFor="first-name"
                       className="flex gap-2 items-center"
                     >
-                      <Globe size={17} />
                       <span>Pagina Web</span>
                     </Label>
                     <Input id="web" placeholder="https://..." type="text" />
@@ -221,39 +227,14 @@ export const ActionsCell = ({ row }: { row: any }) => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 sm:flex-row pt-3">
-                  <div className="flex-1 space-y-2">
-                    <Label
-                      htmlFor="website"
-                      className="flex gap-2 items-center"
-                    >
-                      <Contact size={17} />
-                      <span>Contacto</span>
-                    </Label>
-                    <div className="flex rounded-lg shadow-sm shadow-black/5">
-                      <Input
-                        id="Contacto"
-                        placeholder="+52 55..."
-                        type="text"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Label
-                      htmlFor="website"
-                      className="flex gap-2 items-center"
-                    >
-                      <UserPen size={17} />
-                      <span>Posicion</span>
-                    </Label>
-                    <div className="flex rounded-lg shadow-sm shadow-black/5">
-                      <Input
-                        id="posicion"
-                        placeholder="Software Developer"
-                        type="text"
-                      />
-                    </div>
-                  </div>
+                <div className="flex-1 space-y-2">
+                  <Label
+                    htmlFor="last-name"
+                    className="flex gap-2 items-center"
+                  >
+                    <span>Sector</span>
+                  </Label>
+                  <Input id="sector" placeholder="Tecnologia" type="text" />
                 </div>
 
                 <div className="flex flex-col gap-4 sm:flex-row pt-3">
@@ -275,10 +256,9 @@ export const ActionsCell = ({ row }: { row: any }) => {
                   <div className="flex-1 space-y-2">
                     <Label
                       htmlFor="website"
-                      className="flex gap-2 items-center"
+                      className="flex gap-1 items-center"
                     >
-                      <GitCommitVertical size={17} />
-                      <span>State</span>
+                      <span>Status</span>
                     </Label>
                     <div className="flex rounded-lg shadow-sm shadow-black/5">
                       <Input id="Estado" placeholder="Contacto" type="text" />

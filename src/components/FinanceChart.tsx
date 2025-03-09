@@ -1,121 +1,54 @@
 "use client";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import Image from "next/image";
+} from "./ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
-const data = [
-  {
-    month: "Ene",
-    income: 4000,
-    expense: 2400,
-    amt: 2400,
-  },
-  {
-    month: "Feb",
-    income: 3000,
-    expense: 1398,
-    amt: 2210,
-  },
-  {
-    month: "Mar",
-    income: 2000,
-    expense: 9800,
-    amt: 2290,
-  },
-  {
-    month: "Abr",
-    income: 2780,
-    expense: 3908,
-    amt: 2000,
-  },
-  {
-    month: "May",
-    income: 1890,
-    expense: 4800,
-    amt: 2181,
-  },
-  {
-    month: "Jun",
-    income: 2390,
-    expense: 3800,
-    amt: 2500,
-  },
-  {
-    month: "Jul",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-  {
-    month: "Ago",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-  {
-    month: "Sep",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-  {
-    month: "Oct",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-  {
-    month: "Nov",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-  {
-    month: "Dic",
-    income: 3490,
-    expense: 4300,
-    amt: 2100,
-  },
-];
+interface FinanceData {
+  month: string;
+  income: number;
+  expense: number;
+}
 
-const chartConfig = {
-  expense: {
-    label: "Expense",
-    color: "#C3EBFA",
-  },
-  income: {
-    label: "Income",
-    color: "#60a8fb",
-  },
-  amt: {
-    label: "Amounth",
-    color: "#ddd",
-  },
-} satisfies ChartConfig;
+export const FinanceChart: React.FC = () => {
+  const data: FinanceData[] = [
+    { month: "Ene", income: 4000, expense: 2400 },
+    { month: "Feb", income: 3000, expense: 1398 },
+    { month: "Mar", income: 2000, expense: 9800 },
+    { month: "Abr", income: 2780, expense: 3908 },
+    { month: "May", income: 1890, expense: 4800 },
+    { month: "Jun", income: 2390, expense: 3800 },
+    { month: "Jul", income: 3490, expense: 4300 },
+    { month: "Ago", income: 3490, expense: 4300 },
+    { month: "Sep", income: 3490, expense: 4300 },
+    { month: "Oct", income: 3490, expense: 4300 },
+    { month: "Nov", income: 3490, expense: 4300 },
+    { month: "Dic", income: 3490, expense: 4300 },
+  ];
 
-export function FinanceChart() {
+  const chartConfig: Record<string, { label: string; color: string }> = {
+    expense: { label: "Gastos", color: "#94a3b8" },
+    income: { label: "Ingresos", color: "#3b82f6" },
+  };
+
   return (
-    <Card className="">
-      <CardHeader className="flex flex-row justify-between">
-        <div className="flex flex-col items-start">
-          <CardTitle>Grafica Financiera </CardTitle>
-          <CardDescription>Junio - Julio 2024</CardDescription>
-        </div>
-        <div className="items-end cursor-pointer">
-          <Image src="/moreDark.png" alt="more.." width={20} height={20} />
+    <Card className=" shadow-sm">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-base">Finanzas</CardTitle>
+            <CardDescription>Evolución anual</CardDescription>
+          </div>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -123,12 +56,14 @@ export function FinanceChart() {
           <LineChart
             accessibilityLayer
             data={data}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12, top: 20, bottom: 10 }}
+            height={300}
           >
-            <CartesianGrid vertical={true} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              opacity={0.2}
+            />
             <XAxis
               dataKey="month"
               tickLine={false}
@@ -140,27 +75,22 @@ export function FinanceChart() {
             <Line
               dataKey="income"
               type="monotone"
-              stroke="var(--color-expense)"
+              stroke="var(--color-income)"
               strokeWidth={2}
-              dot={true}
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
             />
             <Line
               dataKey="expense"
               type="monotone"
-              stroke="var(--color-income)"
+              stroke="var(--color-expense)"
               strokeWidth={2}
-              dot={true}
-            />
-            <Line
-              dataKey="amt"
-              type="monotone"
-              stroke="var(--color-amt)"
-              strokeWidth={2}
-              dot={true}
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>
   );
-}
+};

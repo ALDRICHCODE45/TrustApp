@@ -1,21 +1,34 @@
-import { DataTable } from "@/components/Table";
 import { type ReactElement } from "react";
 import { vacantesColumns } from "./columns";
-import { vacantes } from "@/lib/data";
+import { Vacante, vacantes } from "@/lib/data";
+import { CreateVacanteForm } from "./components/CreateVacanteForm";
+import { RecruiterTable } from "./table/RecruiterTable";
+import { ColumnDef } from "@tanstack/react-table";
 
 export interface pageProps {}
 
-export default function ReclutamientoPage({}: pageProps): ReactElement {
+const fetchVacantes = async () => {
+  return new Promise<{ columns: ColumnDef<Vacante>[]; data: Vacante[] }>(
+    (resolve) => {
+      setTimeout(() => {
+        resolve({
+          columns: vacantesColumns,
+          data: vacantes,
+        });
+      }, 2000); // Retraso de 2 segundos
+    }
+  );
+};
+
+export default async function ReclutamientoPage({}: pageProps): Promise<ReactElement> {
+  const { columns, data } = await fetchVacantes();
   return (
     <>
-      <div
-        className={` dark:bg-[#0e0e0e] bg-white p-4 rounded-md flex-1 m-4 mt-0 w-full `}
-      >
-        {/* LIST */}
-        <div className="mt-4">
-          <DataTable columns={vacantesColumns} data={vacantes} />
-        </div>
-      </div>
+      {/* Reclutamiento Form */}
+      <CreateVacanteForm />
+
+      {/* LIST */}
+      <RecruiterTable columns={columns} data={data} />
     </>
   );
 }

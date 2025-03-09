@@ -22,10 +22,14 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
   {
     accessorKey: "tiempoTranscurrido",
     header: "Tiempo",
+    cell: ({ row }) => {
+      const tiempo = row.original.tiempoTranscurrido;
+      return <span>{tiempo} dias</span>;
+    },
   },
   {
     accessorKey: "mesAsignado",
-    header: "Mes",
+    header: "Mes asignación",
   },
   {
     accessorKey: "prioridad",
@@ -33,7 +37,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "fechaEntrega",
-    header: "Entrega",
+    header: "Placement",
   },
   {
     accessorKey: "comentarios",
@@ -66,18 +70,6 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
         </Button>
       </a>
     ),
-  },
-  {
-    accessorKey: "fee",
-    header: "Fee",
-    cell: ({ row }) => {
-      const fee = row.original.fee;
-      return (
-        <>
-          <span>{fee}%</span>
-        </>
-      );
-    },
   },
   {
     accessorKey: "ternaFinal",

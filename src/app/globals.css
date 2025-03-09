@@ -10,6 +10,12 @@
   --background-pinned-column: #1f1f1f; /* Color oscuro para modo oscuro */
 }
 
+.urgent-row {
+  background-color: rgba(255, 0, 0, 0.2); /* Rojo suave */
+  animation: blink 1s infinite; /* Parpadeo */
+}
+
+/* Animación de parpadeo */
 @keyframes blink {
   0%,
   100% {
@@ -206,5 +212,14 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

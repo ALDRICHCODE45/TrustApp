@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,37 +6,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Role } from "@/lib/data";
+import { Role, User } from "@/lib/data";
+import { Row } from "@tanstack/react-table";
 import { BadgeCent, DollarSign, Shield, UserRoundSearch } from "lucide-react";
+import { useState } from "react";
 
-export const RoleDropDown = ({
-  role,
-  onRoleChange,
-}: {
-  role: string;
-  onRoleChange: (newRole: Role) => void;
-}) => {
+interface Props {
+  row: Row<User>;
+}
+
+export const RoleDropDown = ({ row }: Props) => {
+  const actualRole = row.original.rol;
+  const [rol, setRole] = useState(actualRole);
+
+  const handleChangeRole = (newRole: Role) => {
+    setRole(newRole);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {role}
+          {rol}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onRoleChange(Role.reclutador)}>
+        <DropdownMenuItem onClick={() => handleChangeRole(Role.reclutador)}>
           <UserRoundSearch />
           Reclutador
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onRoleChange(Role.generadorLeads)}>
+        <DropdownMenuItem onClick={() => handleChangeRole(Role.generadorLeads)}>
           <DollarSign />
           G.L
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onRoleChange(Role.admin)}>
+        <DropdownMenuItem onClick={() => handleChangeRole(Role.admin)}>
           <Shield />
           Admin
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onRoleChange(Role.marketing)}>
+        <DropdownMenuItem onClick={() => handleChangeRole(Role.marketing)}>
           <BadgeCent />
           Marketing
         </DropdownMenuItem>

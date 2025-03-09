@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,14 +7,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Ban, Lightbulb, MessageCircleOff, Search, Users } from "lucide-react";
+import { useState } from "react";
 
-export const StatusDropdown = ({
-  status,
-  onStatusChange,
-}: {
-  status: string;
-  onStatusChange: (newStatus: string) => void;
-}) => {
+export const StatusDropdown = ({ row }: { row: any }) => {
+  const [status, setStatus] = useState(row.original.estado);
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus as "Hunting");
+    // Aquí puedes agregar lógica para actualizar el estatus en tu backend o estado global
+    console.log(`Estatus cambiado a: ${newStatus}`);
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,23 +25,23 @@ export const StatusDropdown = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onStatusChange("Hunting")}>
+        <DropdownMenuItem onClick={() => handleStatusChange("Hunting")}>
           <Users />
           Hunting
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStatusChange("Cancelada")}>
+        <DropdownMenuItem onClick={() => handleStatusChange("Cancelada")}>
           <Ban />
           Cancelada
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStatusChange("Entrevistas")}>
+        <DropdownMenuItem onClick={() => handleStatusChange("Entrevistas")}>
           <Search />
           Entrevistas
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStatusChange("Perdida")}>
+        <DropdownMenuItem onClick={() => handleStatusChange("Perdida")}>
           <MessageCircleOff />
           Perdida
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStatusChange("Placement")}>
+        <DropdownMenuItem onClick={() => handleStatusChange("Placement")}>
           <Lightbulb />
           Placement
         </DropdownMenuItem>

@@ -1,59 +1,80 @@
 "use client";
+import React, { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation"; // Next.js 14 uses the new router
+import { ArrowLeft } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Separator } from "@radix-ui/react-dropdown-menu";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/themeToggle";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const router = useRouter();
+
   const pathName = usePathname();
   const currentUrl = pathName.split("/").at(-1);
+
   return (
     <>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator className=" h-4" />
-              <div className="p-2">
-                <ModeToggle />
-              </div>
+          {/* Header with fixed position */}
+          <header className="sticky z-10 top-0 flex justify-between h-16 shrink-0 items-center border-b bg-white dark:bg-[#121212] px-4">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition-colors" />
+              <Separator orientation="vertical" className="h-6" />
+              <ModeToggle />
+              <Separator
+                orientation="vertical"
+                className="h-6 hidden md:block"
+              />
+              {/* Improved Breadcrumb with back button */}
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/">Inicio</BreadcrumbLink>
+                    <button
+                      onClick={() => router.back()}
+                      className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
+                      aria-label="Go back"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span className="text-sm font-medium">Back</span>
+                    </button>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>{currentUrl}</BreadcrumbPage>
+                    <BreadcrumbPage className="font-medium text-primary">
+                      {currentUrl}
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
+
+            {/* Right side of navbar - add user profile or actions */}
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 dark:bg-[#0e0e0e] ">
-            <div className="mb-10 dark:bg-[#0e0e0e] max-w-[100%]">
+
+          {/* Content container with better padding */}
+          <main className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0e0e0e]">
+            <div className="container mx-auto py-6 px-4 md:px-6">
               {children}
             </div>
-          </div>
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </>

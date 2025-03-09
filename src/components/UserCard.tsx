@@ -1,36 +1,28 @@
+"use client";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { type ReactElement } from "react";
-import Image from "next/image";
-import { Button } from "./ui/button";
 
-export interface UserCardProps {
-  type: string;
+interface StatCardProps {
+  title: string;
+  value: string;
+  trend: "up" | "down";
+  icon: React.ReactNode;
 }
 
-export function UserCard({ type }: UserCardProps): ReactElement {
+export const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
   return (
-    <Card className="rounded-2xl odd:bg-[#c3ebfa]  even:bg-[#60a8fb] p-4 flex-1 min-w-[130px]">
-      <CardHeader className="flex flex-row justify-between items-center p-0">
-        {/* Badge for Year */}
-        <Badge variant="secondary" className="text-xs px-2 py-1 rounded-full">
-          2024/25
-        </Badge>
-        {/* Avatar for Icon */}
-        <Button size="sm" variant="ghost">
-          <Image src="/more.png" alt="More options" width={20} height={20} />
-        </Button>
-      </CardHeader>
-      <CardContent className="p-0 mt-4">
-        {/* Main Number */}
-        <CardTitle className="text-2xl font-semibold text-black">
-          1,234
+    <Card className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-blue-400 ">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+          <span>{title}</span>
+          {icon}
         </CardTitle>
-        {/* Type Label */}
-        <p className="capitalize text-sm font-medium text-gray-600 mt-2">
-          {type}
-        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between flex-col md:flex-row">
+          <div className="text-2xl font-bold">{value}</div>
+        </div>
       </CardContent>
     </Card>
   );
-}
+};

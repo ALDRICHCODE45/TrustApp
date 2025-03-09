@@ -1,74 +1,57 @@
 "use client";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import Image from "next/image";
+} from "./ui/card";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 
-const data = [
-  {
-    month: "Lun",
-    present: 60,
-    absent: 39,
-  },
-  {
-    month: "Mar",
-    present: 99,
-    absent: 34,
-  },
-  {
-    month: "Mie",
-    present: 23,
-    absent: 11,
-  },
-  {
-    month: "Jue",
-    present: 32,
-    absent: 87,
-  },
-  {
-    month: "Vie",
-    present: 88,
-    absent: 29,
-  },
-];
-const chartConfig = {
-  desktop: {
-    label: "Present",
-    color: "#2563eb",
-  },
-  mobile: {
-    label: "Absent",
-    color: "#60a8fb",
-  },
-} satisfies ChartConfig;
+interface PerformanceData {
+  month: string;
+  present: number;
+  absent: number;
+}
+/* PERFORMANCE CHART */
+export const AttendanceChart: React.FC = () => {
+  const data: PerformanceData[] = [
+    { month: "Lun", present: 60, absent: 39 },
+    { month: "Mar", present: 99, absent: 34 },
+    { month: "Mie", present: 23, absent: 11 },
+    { month: "Jue", present: 32, absent: 87 },
+    { month: "Vie", present: 88, absent: 29 },
+  ];
 
-export function AttendanceChart() {
+  const chartConfig: Record<string, { label: string; color: string }> = {
+    present: { label: "Presente", color: "#3b82f6" },
+    absent: { label: "Ausente", color: "#e2e8f0" },
+  };
+
   return (
-    <Card className="rounded-xl h-full">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div className="flex flex-col">
-          <CardTitle>Rendimiento</CardTitle>
-          <CardDescription>Junio - Julio 2024</CardDescription>
-        </div>
-        <div className="cursor-pointer">
-          <Image src="/moreDark.png" alt="" width={20} height={20} />
+    <Card className=" shadow-sm h-full">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-base">Rendimiento</CardTitle>
+            <CardDescription>Junio - Julio 2024</CardDescription>
+          </div>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="">
-        <ChartContainer config={chartConfig} className="w-full h-[345px]">
+      <CardContent>
+        <ChartContainer config={chartConfig} className="w-full h-[260px]">
           <BarChart accessibilityLayer data={data}>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              opacity={0.2}
+            />
             <XAxis
               dataKey="month"
               tickLine={false}
@@ -80,11 +63,11 @@ export function AttendanceChart() {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="present" fill="var(--color-desktop)" radius={4} />
-            <Bar dataKey="absent" fill="var(--color-mobile)" radius={4} />
+            <Bar dataKey="present" fill="var(--color-present)" radius={4} />
+            <Bar dataKey="absent" fill="var(--color-absent)" radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
   );
-}
+};

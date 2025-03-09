@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,29 +6,35 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Status } from "@/lib/data";
+import { Status, User } from "@/lib/data";
+import { Row } from "@tanstack/react-table";
 import { Ban, CircleUser } from "lucide-react";
+import { useState } from "react";
 
-export const StateDropdown = ({
-  state,
-  onStateChange,
-}: {
-  state: Status;
-  onStateChange: (newRole: Status) => void;
-}) => {
+interface Props {
+  row: Row<User>;
+}
+
+export const StateDropdown = ({ row }: Props) => {
+  const actualState = row.original.status;
+  const [status, setStatus] = useState(actualState);
+
+  const handleChangeState = (newState: Status) => {
+    setStatus(newState);
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {state}
+          {status}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onStateChange(Status.active)}>
+        <DropdownMenuItem onClick={() => handleChangeState(Status.active)}>
           <CircleUser />
           Activo
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStateChange(Status.inactive)}>
+        <DropdownMenuItem onClick={() => handleChangeState(Status.inactive)}>
           <Ban />
           Inactivo
         </DropdownMenuItem>

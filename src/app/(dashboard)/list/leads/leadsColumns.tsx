@@ -1,38 +1,18 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Lead, LeadStatus } from "@/lib/data";
+import { Lead } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Building,
-  Calendar,
-  User,
-  Contact,
-  BriefcaseBusiness,
-  UserRound,
-  UserSearch,
-  CalendarCheck,
-  CalendarClock,
-  Globe,
-  Award,
-} from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Building, Calendar, Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
 import { GeneratorDropDown } from "./components/SelectGLDropDown";
-
-const handleCopy = (leadId: string, leadName: string) => {
-  navigator.clipboard.writeText(leadId);
-  toast("Realizado", {
-    description: `Usuario con nombre ${leadName} ha sido copiado`,
-  });
-};
+import { LeadContactosSheet } from "./components/LeadContactosSheet";
+import { LeadChangeStatus } from "./components/LeadChangeStatus";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 export const leadsColumns: ColumnDef<Lead>[] = [
   {
@@ -64,7 +44,10 @@ export const leadsColumns: ColumnDef<Lead>[] = [
       const empresa = row.original.empresa;
       return (
         <div className="flex flex-row gap-2 items-center">
-          <Building size={15} className="text-black dark:text-white" />
+          <Building
+            size={15}
+            className="hidden md:block text-black dark:text-white"
+          />
           <span className="text-black dark:text-white">{empresa}</span>
         </div>
       );
@@ -84,19 +67,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     accessorKey: "generadorLeads",
     header: "Generador",
     cell: ({ row }) => {
-      const [generador, setNewGenerador] = useState(
-        row.original.generadorLeads.name
-      );
-
-      const handleGeneratorChange = (newGenerador: string) => {
-        setNewGenerador(newGenerador);
-      };
-      return (
-        <GeneratorDropDown
-          generador={generador}
-          onGeneratorChange={handleGeneratorChange}
-        />
-      );
+      return <GeneratorDropDown row={row} />;
     },
   },
   {
@@ -115,120 +86,81 @@ export const leadsColumns: ColumnDef<Lead>[] = [
   },
   {
     accessorKey: "fechaProspeccion",
-    header: "Fecha Prospeccion",
+    header: "Fecha Prospección",
     cell: ({ row }) => {
       const fecha = row.getValue("fechaProspeccion") as string;
+
       return (
         <div className="flex flex-row gap-2 items-center">
-          <Calendar size={17} />
-          <span>{fecha}</span>
+          {/* Icono del calendario */}
+          <Calendar size={17} className="hidden md:block" />
+
+          {/* Fecha visible en desktop */}
+          <span className="hidden md:block">{fecha}</span>
+
+          {/* Popover para mobile */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden">
+                <Calendar size={17} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4">
+              <p className="text-sm font-medium">Fecha de Prospección:</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Lun {fecha}
+              </p>
+            </PopoverContent>
+          </Popover>
         </div>
       );
     },
   },
   {
-    accessorKey: "contacto",
-    header: "Contacto",
-    cell: ({ row }) => {
-      const contact = row.getValue("contacto") as string;
-      return (
-        <div className="flex flex-row gap-2 items-center">
-          <Contact size={17} />
-          <span>{contact}</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "posicion",
-    header: "Posicion",
-    cell: ({ row }) => {
-      const posicion = row.getValue("posicion") as string;
-      return (
-        <div className="flex flex-row gap-2 items-center">
-          <BriefcaseBusiness size={17} />
-          <span>{posicion}</span>
-        </div>
-      );
-    },
+    accessorKey: "contactos",
+    header: "Contactos",
+    cell: ({ row }) => (
+      <LeadContactosSheet contactos={row.original.contactos} />
+    ),
   },
   {
     accessorKey: "fechaAConectar",
     header: "Fecha de Coneccion",
+    cell: ({ row }) => {
+      const fecha = row.original.fechaAConectar;
+      return (
+        <>
+          <div className="flex flex-row gap-2 items-center">
+            {/* Icono del calendario */}
+            <Calendar size={17} className="hidden md:block" />
+
+            {/* Fecha visible en desktop */}
+            <span className="hidden md:block">{fecha}</span>
+
+            {/* Popover para mobile */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden">
+                  <Calendar size={17} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4">
+                <p className="text-sm font-medium">Fecha a conectar:</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Lun {fecha}
+                </p>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </>
+      );
+    },
   },
   {
     accessorKey: "status",
-    header: "Estado",
+    header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as LeadStatus;
-      const [newStatus, setStatus] = useState(status);
-
-      const handleStatusChange = (newStatus: LeadStatus) => {
-        setStatus(newStatus);
-        // Aquí se puede realizar cualquier acción adicional, como hacer una llamada a la API para actualizar el estado
-      };
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              {newStatus}
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.Contacto)}
-              className="flex items-center space-x-2"
-            >
-              <Contact className="h-5 w-5 " />
-              <span>Contacto</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.SocialSelling)}
-              className="flex items-center space-x-2"
-            >
-              <UserRound className="h-5 w-5 " />
-              <span>Social Selling</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.ContactoCalido)}
-              className="flex items-center space-x-2"
-            >
-              <UserSearch className="h-5 w-5 " />
-              <span>Contacto Calido</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.Prospecto)}
-              className="flex items-center space-x-2"
-            >
-              <CalendarCheck className="h-5 w-5 " />
-              <span>Prospecto</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.CitaAgendada)}
-              className="flex items-center space-x-2"
-            >
-              <CalendarClock className="h-5 w-5" />
-              <span>Cita Agendada</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.CitaValidada)}
-              className="flex items-center space-x-2"
-            >
-              <Calendar className="h-5 w-5" />
-              <span>Cita Validada</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleStatusChange(LeadStatus.Cliente)}
-              className="flex items-center space-x-2"
-            >
-              <Award size={17} />
-              <span>Cliente</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <LeadChangeStatus row={row} />;
     },
   },
   {

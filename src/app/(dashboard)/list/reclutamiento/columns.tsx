@@ -1,44 +1,43 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Vacante } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   BookCheck,
-  BriefcaseBusiness,
-  Calendar1,
-  Clipboard,
-  MoreHorizontal,
-  SquarePen,
-  Trash2,
+  ChevronDown,
+  ChevronUp,
+  SortAsc,
   UserPen,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { CommentSheet } from "./components/CommentSheet";
 import { FinalTernaSheet } from "./components/FinalTernaSheet";
-import { PriorityDropdown } from "./components/PriorityDropdown";
 import { StatusDropdown } from "./components/StatusDropdown";
 import { RecruiterDropDown } from "./components/RecruiterDropdown";
 import { TypeDropdown } from "./components/TypeDropDown";
-import { MesAsignadoCell } from "./components/MesAsignadoCell";
-import { MesEntregaCell } from "./components/MesEntregaCell";
+import { ActionsRecruitment } from "./components/ActionsRecruitment";
+import { PosicionPopOver } from "./components/PosicionPopOver";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-const handleCopyRecruiterName = (leadId: string, leadName: string) => {
-  navigator.clipboard.writeText(leadId);
-  toast("Realizado", {
-    description: `Usuario con nombre ${leadName} copiado al portapapeles`,
-  });
+// Componente para headers ordenables
+const SortableHeader = ({ column, title }: { column: any; title: string }) => {
+  return (
+    <div
+      className="flex items-center cursor-pointer"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {title}
+      {column.getIsSorted() === "asc" ? (
+        <ChevronUp className="ml-2 h-4 w-4" />
+      ) : column.getIsSorted() === "desc" ? (
+        <ChevronDown className="ml-2 h-4 w-4" />
+      ) : (
+        <SortAsc className="ml-2 h-4 w-4 " />
+      )}
+    </div>
+  );
 };
-
 export const vacantesColumns: ColumnDef<Vacante>[] = [
   {
     id: "select",
@@ -63,80 +62,60 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     enableHiding: false,
   },
   {
-    id: "año",
-    accessorKey: "año",
-    header: "Año",
+    id: "mesAño",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Asignación" />
+    ),
+    accessorKey: "fechaAsignacion", // Usa la fecha completa como fuente
     cell: ({ row }) => {
-      const year = row.original.año;
+      const fecha = row.original.fechaAsignacion as Date;
       return (
-        <div className="flex flex-row gap-2 items-center">
-          <Calendar1 className="" size={15} />
-          <span>{year}</span>
-        </div>
+        <>
+          <Button variant="outline">
+            <span>{format(fecha, "EEE dd/MM/yy", { locale: es })} </span>
+          </Button>
+        </>
       );
     },
   },
   {
     id: "reclutador",
     accessorKey: "reclutador",
-    header: "Reclutador",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Reclutador" />
+    ),
     cell: ({ row }) => {
-      const [reclutador, setNewReclutador] = useState(
-        row.original.reclutador.name
-      );
-      const handleReclutadorChange = (newReclutador: string) => {
-        setNewReclutador(newReclutador);
-      };
-      return (
-        <RecruiterDropDown
-          reclutador={reclutador}
-          onReclutadorChange={handleReclutadorChange}
-        />
-      );
+      return <RecruiterDropDown row={row} />;
     },
   },
   {
     id: "tipo",
     accessorKey: "tipo",
-    header: "Tipo",
+    header: ({ column }) => <SortableHeader column={column} title="Tipo" />,
     cell: ({ row }) => {
-      const [tipo, setTipo] = useState(row.original.tipo);
-      const handleTipoChange = (newTipo: string) => {
-        setTipo(newTipo as "Nueva");
-      };
-      return <TypeDropdown onTipoChange={handleTipoChange} tipo={tipo} />;
+      return <TypeDropdown row={row} />;
     },
+  },
+  {
+    id: "cliente",
+    accessorKey: "cliente",
+    header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
   },
   {
     id: "estado",
     accessorKey: "estado",
-    header: "Estatus",
+    header: ({ column }) => <SortableHeader column={column} title="Estado" />,
+
     cell: ({ row }) => {
-      const [status, setStatus] = useState(row.original.estado);
-
-      const handleStatusChange = (newStatus: string) => {
-        setStatus(newStatus as "Hunting");
-        // Aquí puedes agregar lógica para actualizar el estatus en tu backend o estado global
-        console.log(`Estatus cambiado a: ${newStatus}`);
-      };
-
-      return (
-        <StatusDropdown status={status} onStatusChange={handleStatusChange} />
-      );
+      return <StatusDropdown row={row} />;
     },
   },
   {
     id: "posicion",
     accessorKey: "puesto",
-    header: "Posicion",
+    header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
     cell: ({ row }) => {
-      const puesto = row.original.puesto;
-      return (
-        <div className="flex gap-2 items-center">
-          <BriefcaseBusiness size={15} />
-          <div>{puesto}</div>
-        </div>
-      );
+      return <PosicionPopOver row={row} />;
     },
   },
   {
@@ -146,69 +125,55 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => <CommentSheet comments={row.original.comentarios} />,
   },
   {
+    accessorKey: "fechaUltimaTerna",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Fecha Terna" />
+    ),
+    cell: ({ row }) => {
+      const fecha = row.original.fechaUltimaTerna;
+      return (
+        <>
+          {fecha ? (
+            <Button variant="outline">
+              <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
+            </Button>
+          ) : (
+            <Button variant="outline">
+              <span className="text-red-500">N.A</span>
+            </Button>
+          )}
+        </>
+      );
+    },
+  },
+  {
     accessorKey: "tiempoTranscurrido",
-    header: "Tiempo transcurrido",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Tiempo trranscurrido" />
+    ),
+
     cell: ({ row }) => {
       const tiempo = row.original.tiempoTranscurrido;
       return <span>{tiempo} días</span>;
     },
   },
   {
-    accessorKey: "prioridad",
-    header: "Prioridad",
-    cell: ({ row }) => {
-      const [priority, setPriority] = useState(row.original.prioridad);
-
-      const handlePriorityChange = (newPriority: string) => {
-        setPriority(newPriority as "Alta");
-        // Aquí puedes agregar lógica para actualizar la prioridad en tu backend o estado global
-        console.log(`Prioridad cambiada a: ${newPriority}`);
-      };
-
-      return (
-        <PriorityDropdown
-          priority={priority}
-          onPriorityChange={handlePriorityChange}
-        />
-      );
-    },
-  },
-  {
-    accessorKey: "mesAsignado",
-    header: "Mes Asignado",
-    cell: ({ row }) => {
-      return <MesAsignadoCell row={row} />;
-    },
-  },
-  {
-    accessorKey: "fechaEntrega",
-    header: "Placement",
-    cell: ({ row }) => {
-      return <MesEntregaCell row={row} />;
-    },
-  },
-  {
-    accessorKey: "fechaUltimaTerna",
-    header: "Fecha Terna",
-  },
-  {
-    accessorKey: "duracionTotal",
-    header: "Duración Total",
-    cell: ({ row }) => {
-      const total = row.original.duracionTotal;
-      return <span>{total} días</span>;
-    },
-  },
-  {
     accessorKey: "fechaOferta",
-    header: "Fecha de Oferta",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Fecha oferta" />
+    ),
     cell: ({ row }) => {
+      const fecha = row.original.fechaOferta;
       return (
         <div>
-          {row.original.fechaOferta ? (
-            <p>{row.original.fechaOferta}</p>
+          {fecha ? (
+            <Button variant="outline">
+              <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
+            </Button>
           ) : (
-            <p className="text-red-500">N.A</p>
+            <Button variant="outline">
+              <p className="text-red-500">N.A</p>
+            </Button>
           )}
         </div>
       );
@@ -216,7 +181,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "candidatoContratado",
-    header: "Contratado",
+    header: "Finalista",
     cell: ({ row }) => (
       <div>
         {row.original.candidatoContratado ? (
@@ -229,7 +194,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "salario",
-    header: "Salario",
+    header: ({ column }) => <SortableHeader column={column} title="Salario" />,
     cell: ({ row }) => {
       const salario = row.original.salario;
       return <span>${salario}</span>;
@@ -237,14 +202,21 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "fechaComision",
-    header: "Fecha de Comisión",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Fecha comision" />
+    ),
     cell: ({ row }) => {
+      const fecha = row.original.fechaComision;
       return (
         <div>
-          {row.original.fechaComision ? (
-            <p>{row.original.fechaComision}</p>
+          {fecha ? (
+            <Button variant="outline">
+              <span> {format(fecha, "EEE dd/MM/yy", { locale: es })} </span>
+            </Button>
           ) : (
-            <p className="text-red-500">N.A</p>
+            <Button variant="outline">
+              <span className="text-red-500">N.A</span>
+            </Button>
           )}
         </div>
       );
@@ -252,11 +224,13 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "valorFactura",
-    header: "Valor Factura",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Valor factura" />
+    ),
   },
   {
     accessorKey: "fee",
-    header: "Fee",
+    header: ({ column }) => <SortableHeader column={column} title="Fee" />,
     cell: ({ row }) => {
       const fee = row.original.fee;
       return <span>{fee}%</span>;
@@ -264,7 +238,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "monto",
-    header: "Monto",
+    header: ({ column }) => <SortableHeader column={column} title="Monto" />,
   },
   {
     accessorKey: "checklist",
@@ -302,36 +276,22 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => <FinalTernaSheet ternaFinal={row.original.ternaFinal} />,
   },
   {
-    id: "actions",
+    accessorKey: "duracionTotal",
+
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Duración Total" />
+    ),
     cell: ({ row }) => {
-      const teacherId = row.original.reclutador;
-      const teacherName = row.original.estado;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open Menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Clipboard />
-              Copiar Usuario
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <SquarePen />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Trash2 />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      const total = row.original.duracionTotal;
+      return <span>{total} días</span>;
+    },
+  },
+
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      return <ActionsRecruitment row={row} />;
     },
   },
 ];

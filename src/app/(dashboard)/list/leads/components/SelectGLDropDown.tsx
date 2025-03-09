@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,14 +7,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "lucide-react";
+import { useState } from "react";
 
-export const GeneratorDropDown = ({
-  generador,
-  onGeneratorChange,
-}: {
-  generador: string;
-  onGeneratorChange: (newGl: string) => void;
-}) => {
+export const GeneratorDropDown = ({ row }: { row: any }) => {
+  const [generador, setNewGenerador] = useState(
+    row.original.generadorLeads.name
+  );
+
+  const handleGeneratorChange = (newGenerador: string) => {
+    setNewGenerador(newGenerador);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,23 +27,29 @@ export const GeneratorDropDown = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => onGeneratorChange("Cesar Romero")}>
+        <DropdownMenuItem onClick={() => handleGeneratorChange("Cesar Romero")}>
           <User />
           Cesar Romero
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onGeneratorChange("Aylin Perez")}>
+        <DropdownMenuItem onClick={() => handleGeneratorChange("Aylin Perez")}>
           <User />
           Aylin Perez
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onGeneratorChange("Rodrigo Herrera")}>
+        <DropdownMenuItem
+          onClick={() => handleGeneratorChange("Rodrigo Herrera")}
+        >
           <User />
           Rodrigo Herrera
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onGeneratorChange("Manuel Morales")}>
+        <DropdownMenuItem
+          onClick={() => handleGeneratorChange("Manuel Morales")}
+        >
           <User />
           Manuel Morales
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onGeneratorChange("Melissa Flores")}>
+        <DropdownMenuItem
+          onClick={() => handleGeneratorChange("Melissa Flores")}
+        >
           <User />
           Melissa Flores
         </DropdownMenuItem>

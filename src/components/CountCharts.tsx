@@ -1,5 +1,5 @@
-"use client";
-import { RadialBar, RadialBarChart } from "recharts";
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
@@ -7,73 +7,47 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import Image from "next/image";
+} from "./ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
+import { RadialBar, RadialBarChart } from "recharts";
 
-const chartData = [
-  {
-    name: "Total",
-    cantidad: 100,
-    fill: "#c3ebfa",
-  },
-  {
-    name: "Boys",
-    cantidad: 50,
-    fill: "var(--color-boys)",
-  },
-  {
-    name: "Girls",
-    cantidad: 50,
-    fill: "var(--color-girls)",
-  },
-];
+interface EmployeeData {
+  name: string;
+  cantidad: number;
+  fill: string;
+}
+export const EmployeeDistribution: React.FC = () => {
+  const chartData: EmployeeData[] = [
+    { name: "Total", cantidad: 100, fill: "#f1f5f9" },
+    { name: "Hombres", cantidad: 55, fill: "#3b82f6" },
+    { name: "Mujeres", cantidad: 45, fill: "#a5b4fc" },
+  ];
 
-const chartConfig = {
-  boys: {
-    label: "Boys",
-    color: "#2563eb", // Color amarillo
-  },
-  girls: {
-    label: "Girls",
-    color: "#60a8fb", // Color azul claro
-  },
-} satisfies ChartConfig;
+  const chartConfig: Record<string, { label: string; color: string }> = {
+    men: { label: "Hombres", color: "#3b82f6" },
+    women: { label: "Mujeres", color: "#a5b4fc" },
+  };
 
-export function CountCharts() {
   return (
-    <Card className="flex flex-col  w-full h-full">
-      {/* Header */}
-      <CardHeader className="items-center p-5">
-        <div className="flex  flex-row justify-between items-center w-full">
-          <div className="flex flex-col">
-            <CardTitle>Empleados</CardTitle>
-            <CardDescription className="items-start">
-              Descripcion general
-            </CardDescription>
+    <Card className=" shadow-sm h-full">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center w-full">
+          <div>
+            <CardTitle className="text-base">Empleados</CardTitle>
+            <CardDescription>Personal</CardDescription>
           </div>
-          <Image
-            src="/moreDark.png"
-            alt="More options"
-            width={20}
-            height={20}
-            className="cursor-pointer"
-          />
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
 
-      {/* Content */}
       <CardContent className="flex-1 pb-0 relative">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="mx-auto aspect-square max-h-[220px]"
         >
-          <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
+          <RadialBarChart data={chartData} innerRadius={30} outerRadius={90}>
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel nameKey="name" />}
@@ -83,19 +57,18 @@ export function CountCharts() {
         </ChartContainer>
       </CardContent>
 
-      {/* Footer */}
       <CardFooter className="flex justify-center gap-8 text-sm">
         <div className="flex flex-col items-center gap-1">
-          <div className="w-5 h-5 bg-[#60a8fb] rounded-full" />
-          <h1 className="font-bold">50</h1>
-          <h2 className="text-muted-foreground">Boys (50%)</h2>
+          <div className="w-4 h-4 bg-blue-500 rounded-full" />
+          <p className="font-medium">55</p>
+          <p className="text-slate-500 text-xs">Hombres (55%)</p>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <div className="w-5 h-5 bg-[#C3EBFA] rounded-full" />
-          <h1 className="font-bold">50</h1>
-          <h2 className="text-muted-foreground">Girls (50%)</h2>
+          <div className="w-4 h-4 bg-indigo-300 rounded-full" />
+          <p className="font-medium">45</p>
+          <p className="text-slate-500 text-xs">Mujeres (45%)</p>
         </div>
       </CardFooter>
     </Card>
   );
-}
+};

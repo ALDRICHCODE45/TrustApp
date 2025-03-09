@@ -1,341 +1,128 @@
-"use client";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useState,
-  DragEvent,
-  FormEvent,
-} from "react";
-import { motion } from "framer-motion";
-import { Pencil, Save, X } from "lucide-react";
-import { Card as CardUi } from "@/components/ui/card";
+import KanbanBoardPage from "../components/kanbanReclutadorBoard";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  PlusCircle,
+  Briefcase,
+  Search,
+  Filter,
+  Download,
+  Menu,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function CustomKanban() {
+export default function KanbanReclutadorPage() {
   return (
-    <CardUi>
-      <Board />
-    </CardUi>
+    <div className="min-h-screen">
+      <header className="border-b">
+        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col space-y-4">
+            {/* Top row with title and actions */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2 w-full">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex-grow">
+                  Seguimiento de Vacantes
+                </h1>
+
+                {/* Mobile actions dropdown */}
+                <div className="sm:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Menu />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Badge
+                          variant="secondary"
+                          className="text-sm px-3 py-1 mr-2"
+                        >
+                          Activas: <span className="font-semibold">12</span>{" "}
+                          vacantes
+                        </Badge>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Nueva Vacante
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {/* Desktop actions */}
+              <div className="hidden sm:flex items-center gap-2">
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  Activas: <span className="font-semibold">12</span> vacantes
+                </Badge>
+                <Button size="sm" variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar
+                </Button>
+                <Button size="sm">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Nueva Vacante
+                </Button>
+              </div>
+            </div>
+
+            {/* Separator line */}
+            <Separator />
+
+            {/* Bottom row with filters and search */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <Tabs defaultValue="all" className="w-full sm:w-auto">
+                <TabsList>
+                  <TabsTrigger value="all">Todas</TabsTrigger>
+                  <TabsTrigger value="my">Mis vacantes</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <Button variant="ghost" size="sm" className="w-full sm:w-auto">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtros
+                </Button>
+                <div className="w-full sm:w-64">
+                  <Input
+                    placeholder="Buscar por puesto o departamento..."
+                    className="h-8 w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <Card className="border-none shadow-sm">
+          <CardContent className="p-0">
+            <KanbanBoardPage />
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   );
 }
-
-const Board = () => {
-  const [cards, setCards] = useState(DEFAULT_CARDS);
-  return (
-    <div className="flex h-full w-full gap-3 overflow-scroll p-12">
-      <Column
-        title="Asignada"
-        column="asignada"
-        headingColor="text-yellow-600 dark:text-yellow-200"
-        cards={cards}
-        setCards={setCards}
-      />
-      <Column
-        title="En entrevistas"
-        column="entrevistas"
-        headingColor="text-blue-600 dark:text-blue-200"
-        cards={cards}
-        setCards={setCards}
-      />
-      <Column
-        title="Reclutada"
-        column="reclutada"
-        headingColor="text-emerald-600 dark:text-emerald-200"
-        cards={cards}
-        setCards={setCards}
-      />
-      <Column
-        title="Placement"
-        column="placement"
-        headingColor="text-indigo-600 dark:text-indigo-200"
-        cards={cards}
-        setCards={setCards}
-      />
-      <BurnBarrel setCards={setCards} />
-    </div>
-  );
-};
-
-type ColumnProps = {
-  title: string;
-  headingColor: string;
-  cards: CardType[];
-  column: ColumnType;
-  setCards: Dispatch<SetStateAction<CardType[]>>;
-};
-
-const Column = ({
-  title,
-  headingColor,
-  cards,
-  column,
-  setCards,
-}: ColumnProps) => {
-  const [active, setActive] = useState(false);
-
-  const handleDragStart = (e: DragEvent, card: CardType) => {
-    e.dataTransfer.setData("cardId", card.id);
-  };
-
-  const handleDragEnd = (e: DragEvent) => {
-    const cardId = e.dataTransfer.getData("cardId");
-    setActive(false);
-    clearHighlights();
-    const indicators = getIndicators();
-    const { element } = getNearestIndicator(e, indicators);
-    const before = element.dataset.before || "-1";
-    if (before !== cardId) {
-      let copy = [...cards];
-      let cardToTransfer = copy.find((c) => c.id === cardId);
-      if (!cardToTransfer) return;
-      cardToTransfer = { ...cardToTransfer, column };
-      copy = copy.filter((c) => c.id !== cardId);
-      const moveToBack = before === "-1";
-      if (moveToBack) {
-        copy.push(cardToTransfer);
-      } else {
-        const insertAtIndex = copy.findIndex((el) => el.id === before);
-        if (insertAtIndex === undefined) return;
-        copy.splice(insertAtIndex, 0, cardToTransfer);
-      }
-      setCards(copy);
-    }
-  };
-
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    highlightIndicator(e);
-    setActive(true);
-  };
-
-  const clearHighlights = (els?: HTMLElement[]) => {
-    const indicators = els || getIndicators();
-    indicators.forEach((i) => {
-      i.style.opacity = "0";
-    });
-  };
-
-  const highlightIndicator = (e: DragEvent) => {
-    const indicators = getIndicators();
-    clearHighlights(indicators);
-    const el = getNearestIndicator(e, indicators);
-    el.element.style.opacity = "1";
-  };
-
-  const getNearestIndicator = (e: DragEvent, indicators: HTMLElement[]) => {
-    const DISTANCE_OFFSET = 50;
-    const el = indicators.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = e.clientY - (box.top + DISTANCE_OFFSET);
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      },
-      {
-        offset: Number.NEGATIVE_INFINITY,
-        element: indicators[indicators.length - 1],
-      }
-    );
-    return el;
-  };
-
-  const getIndicators = () => {
-    return Array.from(
-      document.querySelectorAll(
-        `[data-column="${column}"]`
-      ) as unknown as HTMLElement[]
-    );
-  };
-
-  const handleDragLeave = () => {
-    clearHighlights();
-    setActive(false);
-  };
-
-  const filteredCards = cards.filter((c) => c.column === column);
-  return (
-    <div className="w-56 shrink-0">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className={`font-medium ${headingColor}`}>{title}</h3>
-        <span className="rounded text-sm text-neutral-400 dark:text-neutral-500">
-          {filteredCards.length}
-        </span>
-      </div>
-      <div
-        onDrop={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`h-full w-full transition-colors ${
-          active
-            ? "bg-neutral-200/50 dark:bg-neutral-800/50"
-            : "bg-neutral-200/0 dark:bg-neutral-800/0"
-        }`}
-      >
-        {filteredCards.map((c) => {
-          return <Card key={c.id} {...c} handleDragStart={handleDragStart} />;
-        })}
-        <DropIndicator beforeId={null} column={column} />
-        <AddCard column={column} setCards={setCards} />
-      </div>
-    </div>
-  );
-};
-
-type CardProps = CardType & {
-  handleDragStart: Function;
-};
-
-const Card = ({ title, id, column, handleDragStart }: CardProps) => {
-  return (
-    <>
-      <DropIndicator beforeId={id} column={column} />
-      <motion.div
-        layout
-        layoutId={id}
-        draggable="true"
-        onDragStart={(e) => handleDragStart(e, { title, id, column })}
-        className="cursor-grab rounded border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 p-3 active:cursor-grabbing"
-      >
-        <p className="text-sm text-neutral-900 dark:text-neutral-100">
-          {title}
-        </p>
-      </motion.div>
-    </>
-  );
-};
-
-type DropIndicatorProps = {
-  beforeId: string | null;
-  column: string;
-};
-
-const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
-  return (
-    <div
-      data-before={beforeId || "-1"}
-      data-column={column}
-      className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0"
-    />
-  );
-};
-
-const BurnBarrel = ({
-  setCards,
-}: {
-  setCards: Dispatch<SetStateAction<CardType[]>>;
-}) => {
-  const [active, setActive] = useState(false);
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    setActive(true);
-  };
-  const handleDragLeave = () => {
-    setActive(false);
-  };
-  const handleDragEnd = (e: DragEvent) => {
-    const cardId = e.dataTransfer.getData("cardId");
-    setCards((pv) => pv.filter((c) => c.id !== cardId));
-    setActive(false);
-  };
-  return (
-    <div
-      onDrop={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
-        active
-          ? "border-red-600 bg-red-100 dark:border-red-800 dark:bg-red-800/20 text-red-600 dark:text-red-500"
-          : "border-neutral-300 bg-neutral-100 dark:border-neutral-500 dark:bg-neutral-500/20 text-neutral-500 dark:text-neutral-400"
-      }`}
-    >
-      {active ? <Pencil className="animate-bounce" /> : <X />}
-    </div>
-  );
-};
-
-type AddCardProps = {
-  column: ColumnType;
-  setCards: Dispatch<SetStateAction<CardType[]>>;
-};
-
-const AddCard = ({ column, setCards }: AddCardProps) => {
-  const [text, setText] = useState("");
-  const [adding, setAdding] = useState(false);
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!text.trim().length) return;
-    const newCard = {
-      column,
-      title: text.trim(),
-      id: Math.random().toString(),
-    };
-    setCards((pv) => [...pv, newCard]);
-    setAdding(false);
-  };
-  return (
-    <>
-      {adding ? (
-        <motion.form layout onSubmit={handleSubmit}>
-          <textarea
-            onChange={(e) => setText(e.target.value)}
-            autoFocus
-            placeholder="Add new task..."
-            className="w-full rounded border border-violet-400 bg-violet-100 dark:bg-violet-400/20 p-3 text-sm text-neutral-900 dark:text-neutral-100 placeholder-violet-300 focus:outline-0"
-          />
-          <div className="mt-1.5 flex items-center justify-end gap-1.5">
-            <button
-              onClick={() => setAdding(false)}
-              className="px-3 py-1.5 text-xs text-neutral-500 dark:text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
-            >
-              Cerrar
-            </button>
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 rounded bg-neutral-900 dark:bg-neutral-100 px-3 py-1.5 text-xs text-neutral-100 dark:text-neutral-900 transition-colors hover:bg-neutral-700 dark:hover:bg-neutral-300"
-            >
-              <span>Guardar</span>
-              <Save />
-            </button>
-          </div>
-        </motion.form>
-      ) : (
-        <motion.button
-          layout
-          onClick={() => setAdding(true)}
-          className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 dark:text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
-        >
-          <span>Agregar</span>
-          <Save />
-        </motion.button>
-      )}
-    </>
-  );
-};
-
-type ColumnType = "asignada" | "entrevistas" | "reclutada" | "placement";
-type CardType = {
-  title: string;
-  id: string;
-  column: ColumnType;
-};
-
-const DEFAULT_CARDS: CardType[] = [
-  // ASIGNADA
-  { title: "Social media", id: "1", column: "asignada" },
-  { title: "Review survey results", id: "2", column: "asignada" },
-  { title: "Research video marketing", id: "3", column: "asignada" },
-
-  // EN ENTREVISTAS
-  { title: "Blog post live", id: "4", column: "entrevistas" },
-  { title: "Email campaign", id: "5", column: "entrevistas" },
-
-  // RECLUTADA
-  { title: "Morning emails and to-do list", id: "6", column: "reclutada" },
-  { title: "Blog post", id: "7", column: "reclutada" },
-  { title: "Reconcile accounts", id: "8", column: "reclutada" },
-
-  // PLACEMENT
-  { title: "Website AB test", id: "9", column: "placement" },
-];
