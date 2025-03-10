@@ -19,6 +19,7 @@ import { ActionsRecruitment } from "./components/ActionsRecruitment";
 import { PosicionPopOver } from "./components/PosicionPopOver";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { ClientesDropDown } from "./components/ClientesDropdown";
 
 // Componente para headers ordenables
 const SortableHeader = ({ column, title }: { column: any; title: string }) => {
@@ -100,6 +101,9 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     id: "cliente",
     accessorKey: "cliente",
     header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
+    cell: ({ row }) => {
+      return <ClientesDropDown row={row} />;
+    },
   },
   {
     id: "estado",

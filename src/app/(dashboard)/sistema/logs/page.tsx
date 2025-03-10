@@ -8,7 +8,7 @@ export interface pageProps {}
 export default function Logspage({}: pageProps): ReactElement {
   return (
     <>
-      {/* LIST */}
+      {/* LOGS LIST */}
       <DataTable columns={logsColumns} data={logs} />
     </>
   );

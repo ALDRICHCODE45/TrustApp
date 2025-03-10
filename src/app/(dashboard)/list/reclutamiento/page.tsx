@@ -26,7 +26,6 @@ export default async function ReclutamientoPage({}: pageProps): Promise<ReactEle
     <>
       {/* Reclutamiento Form */}
       <CreateVacanteForm />
-
       {/* LIST */}
       <RecruiterTable columns={columns} data={data} />
     </>

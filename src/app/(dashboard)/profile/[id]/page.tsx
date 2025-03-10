@@ -23,13 +23,6 @@ const fetchUser = async (userId: number): Promise<User | undefined> => {
 };
 
 // Interfaz para las actividades
-export interface Activity {
-  id: number;
-  title: string;
-  dueDate: string;
-  description: string;
-  completed: boolean;
-}
 
 export default async function UserProfile() {
   const { id } = useParams();

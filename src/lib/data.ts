@@ -40,7 +40,6 @@ export const UsersData: User[] = [
   {
     id: 1,
     oficina: Oficina.dos,
-
     UserId: "user1",
     age: 32,
     name: "Ana García",
@@ -55,8 +54,8 @@ export const UsersData: User[] = [
     address: "Madrid, España",
   },
   {
+    id: 2,
     oficina: Oficina.uno,
-    id: 25,
     UserId: "user3",
     age: 29,
     name: "Laura Martínez",
@@ -71,7 +70,7 @@ export const UsersData: User[] = [
     address: "Valencia, España",
   },
   {
-    id: 24,
+    id: 3,
     oficina: Oficina.dos,
     UserId: "user2",
     age: 35,
@@ -87,7 +86,7 @@ export const UsersData: User[] = [
     address: "Barcelona, España",
   },
   {
-    id: 23,
+    id: 4,
     oficina: Oficina.dos,
     UserId: "user1",
     age: 32,
@@ -103,8 +102,8 @@ export const UsersData: User[] = [
     address: "Madrid, España",
   },
   {
+    id: 5,
     oficina: Oficina.dos,
-    id: 22,
     UserId: "user3",
     age: 29,
     name: "Laura Martínez",
@@ -119,24 +118,7 @@ export const UsersData: User[] = [
     address: "Valencia, España",
   },
   {
-    oficina: Oficina.dos,
-    id: 21,
-    UserId: "user1",
-    age: 32,
-    name: "Ana García",
-    email: "ana@example.com",
-    photo:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
-    phone: "+34 612345678",
-    rol: Role.reclutador,
-    status: Status.active,
-    clientes: 5,
-    placements: 12,
-    address: "Madrid, España",
-  },
-
-  {
-    id: 20,
+    id: 6,
     oficina: Oficina.dos,
     UserId: "user1",
     age: 32,
@@ -151,9 +133,24 @@ export const UsersData: User[] = [
     placements: 12,
     address: "Madrid, España",
   },
-
   {
-    id: 1,
+    id: 7,
+    oficina: Oficina.dos,
+    UserId: "user1",
+    age: 32,
+    name: "Ana García",
+    email: "ana@example.com",
+    photo:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
+    phone: "+34 612345678",
+    rol: Role.reclutador,
+    status: Status.active,
+    clientes: 5,
+    placements: 12,
+    address: "Madrid, España",
+  },
+  {
+    id: 8,
     oficina: Oficina.dos,
     UserId: "1234567890",
     age: 33,
@@ -168,7 +165,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 2,
+    id: 9,
     oficina: Oficina.uno,
     age: 23,
     UserId: "1234567890",
@@ -183,7 +180,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 3,
+    id: 10,
     oficina: Oficina.dos,
     UserId: "1234567890",
     age: 19,
@@ -198,7 +195,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 4,
+    id: 11,
     oficina: Oficina.dos,
     UserId: "1234567890",
     name: "Jay French",
@@ -214,7 +211,7 @@ export const UsersData: User[] = [
   },
   {
     oficina: Oficina.dos,
-    id: 5,
+    id: 12,
     UserId: "1234567890",
     name: "Jane Smith",
     age: 55,
@@ -228,7 +225,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 6,
+    id: 13,
     oficina: Oficina.dos,
     UserId: "1234567890",
     name: "Anna Santiago",
@@ -243,7 +240,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 7,
+    id: 14,
     oficina: Oficina.uno,
     UserId: "1234567890",
     name: "Allen Black",
@@ -258,7 +255,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 8,
+    id: 15,
     oficina: Oficina.uno,
     UserId: "1234567890",
     name: "Ophelia Castro",
@@ -273,7 +270,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 9,
+    id: 16,
     oficina: Oficina.uno,
     UserId: "1234567890",
     name: "Derek Briggs",
@@ -287,7 +284,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 10,
+    id: 17,
     oficina: Oficina.uno,
     UserId: "1234567890",
     name: "John Glover",
@@ -302,7 +299,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
   {
-    id: 11,
+    id: 18,
     oficina: Oficina.dos,
     UserId: "1234567890",
     name: "John Glover",
@@ -317,6 +314,7 @@ export const UsersData: User[] = [
     address: "123 Main St, Anytown, USA",
   },
 ];
+
 export interface Cuenta {
   fecha: string;
   concepto: string;

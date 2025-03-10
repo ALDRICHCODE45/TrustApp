@@ -77,14 +77,11 @@ export default async function ClientProfilePage() {
           <Tabs defaultValue="details" className="w-full">
             <Card>
               <CardHeader className="px-6 pb-2 pt-6">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-3 h-full">
                   <TabsTrigger value="details" className="text-xs md:text-base">
                     Detalles
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="comments"
-                    className="text-xs md:text-base"
-                  >
+                  <TabsTrigger value="comments" className="text-xs :text-base">
                     Comentarios
                   </TabsTrigger>
                   <TabsTrigger

@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -78,14 +79,14 @@ export function RecruiterTable<TData, TValue>({
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       {/* FILTRO POR EMAIL */}
       <div className="flex items-center py-4 dark:bg-[#0e0e0e]">
-        {/* <Input */}
-        {/*   placeholder="Filtrar..." */}
-        {/*   value={(table.getColumn("email")?.getFilterValue() as string) ?? ""} */}
-        {/*   onChange={(event) => */}
-        {/*     table.getColumn("email")?.setFilterValue(event.target.value) */}
-        {/*   } */}
-        {/*   className="max-w-sm" */}
-        {/* /> */}
+        <Input
+          placeholder="Filtrar..."
+          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("email")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
