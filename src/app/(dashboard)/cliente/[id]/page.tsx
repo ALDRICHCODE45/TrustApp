@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { notFound, useParams } from "next/navigation";
@@ -15,6 +16,8 @@ import { ClientesComentariosSections } from "./components/ClientesComentariosSct
 import { ResumenFinancieroCard } from "./components/ResumenFinancieroCard";
 import { ClientesContactosCard } from "./components/ClientesContactosCard";
 import { CardCommercialInformation } from "./components/CardCommercialInformation";
+import Loading from "./loading";
+import { useEffect, useState } from "react";
 
 const fetchClient = async (clientId: number): Promise<Cliente | undefined> => {
   return new Promise((resolve) => {
@@ -25,18 +28,42 @@ const fetchClient = async (clientId: number): Promise<Cliente | undefined> => {
   });
 };
 
-export default async function ClientProfilePage() {
+export default function ClientProfilePage() {
   const { id } = useParams();
-  const client = await fetchClient(Number(id));
+  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!client) {
-    notFound(); // Redirige automáticamente a la página 404
+  useEffect(() => {
+    const loadCliente = async () => {
+      try {
+        setIsLoading(true);
+        const client = await fetchClient(Number(id));
+        if (!client) {
+          notFound();
+        }
+        setCliente(client);
+      } catch {
+        notFound();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCliente();
+  }, [id]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!cliente) {
+    return notFound();
   }
 
   return (
     <div className="container mx-auto py-6 px-4">
       {/* Encabezado y resumen general */}
-      <ClientProfileHeader client={client} />
+      <ClientProfileHeader client={cliente} />
       {/* Contenido principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda y central (2/3) */}
@@ -47,7 +74,7 @@ export default async function ClientProfilePage() {
               borderColor="border-l-primary"
               Icon={TrendingUp}
               iconColor="text-green-500"
-              info={client.asignadas}
+              info={cliente.asignadas}
               title="Asignadas"
             />
 
@@ -55,21 +82,21 @@ export default async function ClientProfilePage() {
               borderColor="border-l-[#ff0033]"
               Icon={X}
               iconColor="text-destructive"
-              info={client.perdidas}
+              info={cliente.perdidas}
               title="Perdidas"
             />
             <CardGeneralInformation
               borderColor="border-l-[#f5a010]"
               Icon={AlertCircle}
               iconColor="text-amber-500"
-              info={client.canceladas}
+              info={cliente.canceladas}
               title="Canceladas"
             />
             <CardGeneralInformation
               borderColor="border-l-green-500"
               Icon={Check}
               iconColor="text-green-500"
-              info={client.placements}
+              info={cliente.placements}
               title="Placements"
             />
           </div>
@@ -97,9 +124,9 @@ export default async function ClientProfilePage() {
                 <TabsContent value="details" className="mt-0">
                   <div className="grid gap-6 sm:grid-cols-2">
                     {/* Información comercial */}
-                    <CardCommercialInformation client={client} />
+                    <CardCommercialInformation client={cliente} />
                     {/* Información fiscal */}
-                    <CardFiscalInformation client={client} />
+                    <CardFiscalInformation client={cliente} />
                   </div>
                 </TabsContent>
                 {/* Pestaña de comentarios */}
@@ -118,7 +145,7 @@ export default async function ClientProfilePage() {
                     </div>
 
                     {/* Comentarios renderizados */}
-                    <ClientesComentariosSections client={client} />
+                    <ClientesComentariosSections client={cliente} />
                   </div>
                 </TabsContent>
 
@@ -149,9 +176,9 @@ export default async function ClientProfilePage() {
         {/* Columna derecha (1/3) */}
         <div className="space-y-6">
           {/* Resumen financiero Component */}
-          <ResumenFinancieroCard client={client} />
+          <ResumenFinancieroCard client={cliente} />
           {/* Contactos */}
-          <ClientesContactosCard client={client} />
+          <ClientesContactosCard client={cliente} />
         </div>
       </div>
     </div>
