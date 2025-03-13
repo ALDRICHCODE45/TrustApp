@@ -6,6 +6,7 @@ import { StatCard } from "@/components/UserCard";
 import { FinanceChart } from "@/components/FinanceChart";
 import { EventCalendar } from "@/components/EventCalendar";
 import { Announcments } from "@/components/Announcements";
+
 export const userStatsMockData = {
   users: {
     title: "Usuarios",
@@ -32,10 +33,6 @@ export const userStatsMockData = {
     icon: <DollarSign />,
   },
 };
-
-
-
-
 
 export default function Dashboard() {
   return (

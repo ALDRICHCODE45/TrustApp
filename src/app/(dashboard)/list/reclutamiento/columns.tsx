@@ -17,11 +17,10 @@ import { RecruiterDropDown } from "./components/RecruiterDropdown";
 import { TypeDropdown } from "./components/TypeDropDown";
 import { ActionsRecruitment } from "./components/ActionsRecruitment";
 import { PosicionPopOver } from "./components/PosicionPopOver";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { ClientesDropDown } from "./components/ClientesDropdown";
+import { ChangeDateComponent } from "./components/AsignacionDatePickerComponent";
 
-// Componente para headers ordenables
+// headers ordenables
 const SortableHeader = ({ column, title }: { column: any; title: string }) => {
   return (
     <div
@@ -63,20 +62,68 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     enableHiding: false,
   },
   {
-    id: "mesAño",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Asignación" />
-    ),
-    accessorKey: "fechaAsignacion", // Usa la fecha completa como fuente
+    id: "asignacion",
+    header: "Asignacion",
+    accessorKey: "fechaAsignacion",
     cell: ({ row }) => {
-      const fecha = row.original.fechaAsignacion as Date;
       return (
-        <>
-          <Button variant="outline">
-            <span>{format(fecha, "EEE dd/MM/yy", { locale: es })} </span>
-          </Button>
-        </>
+        <ChangeDateComponent
+          fecha={row.original.fechaAsignacion}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || (!filterValue.from && !filterValue.to)) {
+        return true;
+      }
+
+      const cellValue = row.getValue(columnId);
+      if (!cellValue) return false;
+
+      let date: Date;
+      if (typeof cellValue === "string") {
+        date = new Date(cellValue);
+      } else if (cellValue instanceof Date) {
+        date = cellValue;
+      } else {
+        return false;
+      }
+
+      const dateOnly = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
+
+      const fromDate = filterValue.from
+        ? new Date(
+            filterValue.from.getFullYear(),
+            filterValue.from.getMonth(),
+            filterValue.from.getDate(),
+          )
+        : null;
+
+      const toDate = filterValue.to
+        ? new Date(
+            filterValue.to.getFullYear(),
+            filterValue.to.getMonth(),
+            filterValue.to.getDate(),
+          )
+        : null;
+
+      if (fromDate && toDate) {
+        return dateOnly >= fromDate && dateOnly <= toDate;
+      } else if (fromDate) {
+        return dateOnly >= fromDate;
+      } else if (toDate) {
+        return dateOnly <= toDate;
+      }
+
+      return true;
     },
   },
   {
@@ -88,6 +135,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <RecruiterDropDown row={row} />;
     },
+    accessorFn: (row) => row.reclutador?.name,
   },
   {
     id: "tipo",
@@ -96,6 +144,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <TypeDropdown row={row} />;
     },
+    accessorFn: (row) => row.tipo,
   },
   {
     id: "cliente",
@@ -104,6 +153,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <ClientesDropDown row={row} />;
     },
+    accessorFn: (row) => row.cliente.cuenta,
   },
   {
     id: "estado",
@@ -134,19 +184,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       <SortableHeader column={column} title="Fecha Terna" />
     ),
     cell: ({ row }) => {
-      const fecha = row.original.fechaUltimaTerna;
       return (
-        <>
-          {fecha ? (
-            <Button variant="outline">
-              <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
-            </Button>
-          ) : (
-            <Button variant="outline">
-              <span className="text-red-500">N.A</span>
-            </Button>
-          )}
-        </>
+        <ChangeDateComponent
+          fecha={row.original.fechaAsignacion}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
     },
   },
@@ -167,19 +212,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       <SortableHeader column={column} title="Fecha oferta" />
     ),
     cell: ({ row }) => {
-      const fecha = row.original.fechaOferta;
       return (
-        <div>
-          {fecha ? (
-            <Button variant="outline">
-              <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
-            </Button>
-          ) : (
-            <Button variant="outline">
-              <p className="text-red-500">N.A</p>
-            </Button>
-          )}
-        </div>
+        <ChangeDateComponent
+          fecha={row.original.fechaAsignacion}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
     },
   },
@@ -210,19 +250,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       <SortableHeader column={column} title="Fecha comision" />
     ),
     cell: ({ row }) => {
-      const fecha = row.original.fechaComision;
       return (
-        <div>
-          {fecha ? (
-            <Button variant="outline">
-              <span> {format(fecha, "EEE dd/MM/yy", { locale: es })} </span>
-            </Button>
-          ) : (
-            <Button variant="outline">
-              <span className="text-red-500">N.A</span>
-            </Button>
-          )}
-        </div>
+        <ChangeDateComponent
+          fecha={row.original.fechaAsignacion}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
     },
   },

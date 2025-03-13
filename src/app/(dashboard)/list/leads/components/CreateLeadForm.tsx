@@ -10,10 +10,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
   BriefcaseIcon,
-  CalendarIcon,
   CreditCardIcon,
   LinkIcon,
-  Plus,
+  PlusCircle,
   User as UserIcon,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,8 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Role, User, UsersData } from "@/lib/data";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import Link from "next/link";
 
 export const CreateLeadForm = () => {
@@ -41,7 +39,7 @@ export const CreateLeadForm = () => {
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline">
-            <Plus />
+            <PlusCircle />
             Crear Lead
           </Button>
         </DialogTrigger>
@@ -80,7 +78,7 @@ function NuevoLeadForm() {
     toast("Form submitted successfully!");
   }
   const generadores = UsersData.filter(
-    (user) => user.rol === Role.generadorLeads
+    (user) => user.rol === Role.generadorLeads,
   );
   const [isOpen, setIsOpen] = useState(false);
   const [glUsers] = useState<User[]>(generadores);

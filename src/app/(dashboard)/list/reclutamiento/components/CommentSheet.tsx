@@ -89,7 +89,7 @@ export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
                       "flex items-center gap-1",
                       comentario.tipo === "Tarea"
                         ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-                        : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+                        : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700",
                     )}
                   >
                     <div
@@ -97,7 +97,7 @@ export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
                         "w-2 h-2 rounded-full",
                         comentario.tipo === "Tarea"
                           ? "bg-blue-600 dark:bg-blue-400"
-                          : "bg-gray-500 dark:bg-gray-400"
+                          : "bg-gray-500 dark:bg-gray-400",
                       )}
                     ></div>
                     {comentario.tipo}
@@ -139,7 +139,7 @@ export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
   );
 };
 
-const NuevoComentarioForm = () => {
+export const NuevoComentarioForm = () => {
   const form = useForm({
     defaultValues: {
       texto: "",
@@ -207,7 +207,7 @@ const NuevoComentarioForm = () => {
                       variant="outline"
                       className={cn(
                         "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (

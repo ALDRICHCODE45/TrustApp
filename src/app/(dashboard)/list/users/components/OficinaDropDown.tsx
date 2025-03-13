@@ -45,6 +45,14 @@ export const OficinaDropDown = ({ row }: Props) => {
           <House />
           Oficina 1
         </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => handleChangeOficina(Oficina.tres)}
+          className="cursor-pointer"
+        >
+          <House />
+          Oficina 3
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -11,7 +11,9 @@ import { Hotel } from "lucide-react";
 import { useState } from "react";
 
 export const ClientesDropDown = ({ row }: { row: Row<Vacante> }) => {
-  const [cliente, setCliente] = useState(row.original.cliente || "Cliente");
+  const [cliente, setCliente] = useState(
+    row.original.cliente.cuenta || "Cliente",
+  );
   const handleClienteChange = (newCliente: string) => {
     setCliente(newCliente);
   };

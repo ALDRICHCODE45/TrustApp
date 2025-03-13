@@ -14,8 +14,8 @@ const fetchLeads = async () => {
           columns: leadsColumns,
           data: leadsData,
         });
-      }, 2000); // Retraso de 2 segundos
-    }
+      }, 2000);
+    },
   );
 };
 

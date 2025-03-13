@@ -16,7 +16,7 @@ const fetchVacantes = async () => {
           data: vacantes,
         });
       }, 2000); // Retraso de 2 segundos
-    }
+    },
   );
 };
 

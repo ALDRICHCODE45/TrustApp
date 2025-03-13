@@ -1,4 +1,11 @@
 "use client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -18,6 +25,7 @@ import { ClientesContactosCard } from "./components/ClientesContactosCard";
 import { CardCommercialInformation } from "./components/CardCommercialInformation";
 import Loading from "./loading";
 import { useEffect, useState } from "react";
+import { NuevoComentarioForm } from "../../list/reclutamiento/components/CommentSheet";
 
 const fetchClient = async (clientId: number): Promise<Cliente | undefined> => {
   return new Promise((resolve) => {
@@ -136,12 +144,23 @@ export default function ClientProfilePage() {
                       <h3 className="text-sm md:text-lg  font-normal md:font-medium">
                         Historial de comentarios
                       </h3>
-                      <Button size="sm" variant="outline" className="gap-1">
-                        <PlusCircle size={16} />
-                        <span className="hidden md:block">
-                          Nuevo comentario
-                        </span>
-                      </Button>
+
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <PlusCircle />
+                            Agregar Comentario
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] z-[200]">
+                          <DialogHeader>
+                            <DialogTitle>Nuevo Comentario</DialogTitle>
+                            <Separator />
+                          </DialogHeader>
+                          {/* Formulario dentro del diálogo */}
+                          <NuevoComentarioForm />
+                        </DialogContent>
+                      </Dialog>
                     </div>
 
                     {/* Comentarios renderizados */}

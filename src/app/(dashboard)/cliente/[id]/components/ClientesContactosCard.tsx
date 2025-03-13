@@ -3,7 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Cliente } from "@/lib/data";
-import { Mail, Phone, PlusCircle, Users } from "lucide-react";
+import { Mail, Phone, PlusIcon, Users } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const ClientesContactosCard = ({ client }: { client: Cliente }) => {
   return (
@@ -13,10 +25,82 @@ export const ClientesContactosCard = ({ client }: { client: Cliente }) => {
           <Users size={16} />
           Contactos
         </CardTitle>
-        <Button size="sm" variant="outline">
-          <PlusCircle size={16} />
-          <span className="hidden md:block">Agregar contacto</span>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1" variant="outline">
+              <PlusIcon size={16} />
+              <span>Agregar</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+            <DialogHeader className="contents space-y-0 text-left">
+              <DialogTitle className="border-b px-6 py-4 text-base">
+                Agregar Contacto
+              </DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="sr-only">
+              Completar la información del nuevo candidato.
+            </DialogDescription>
+            <div className="overflow-y-auto">
+              <div className="px-6 pt-4 pb-6">
+                <form className="space-y-4">
+                  <div className="flex flex-col gap-4 sm:flex-row">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`j-nombre`}>Nombre completo</Label>
+                      <Input
+                        id={`kkk-nombre`}
+                        placeholder="Juan Pérez"
+                        type="text"
+                        required
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`jsakdjfk-telefono`}>Teléfono</Label>
+                      <Input
+                        id={`jj-telefono`}
+                        placeholder="555-123-4567"
+                        type="tel"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-4 sm:flex-row">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`j-correo`}>Correo electrónico</Label>
+                      <Input
+                        id={`kk-correo`}
+                        placeholder="candidato@ejemplo.com"
+                        type="email"
+                        required
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`jsakdjfk-telefono`}>Puesto</Label>
+                      <Input
+                        id={`jj-telefono`}
+                        placeholder="Dr General"
+                        type="text"
+                        required
+                      />
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <DialogFooter className="border-t px-6 py-4">
+              <DialogClose asChild>
+                <Button type="button" size="sm" variant="outline">
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button type="button" size="sm">
+                  Guardar contacto
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent className="pt-4">
         <ScrollArea className="h-[400px] pr-4">

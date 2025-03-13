@@ -1,21 +1,33 @@
 import { DataTable } from "@/components/Table";
 import { type ReactElement } from "react";
-import { leadsData, usuario_logeado } from "@/lib/data";
-import { vistaLeadsColumns } from "./vistaLeadsColumns";
+import { Lead, leadsData } from "@/lib/data";
+import { ColumnDef } from "@tanstack/react-table";
+import { leadsColumns } from "../list/leads/leadsColumns";
+import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 
 export interface pageProps {}
 
-export default function page({}: pageProps): ReactElement {
-  const leadsFiltradas = leadsData.filter(
-    (lead) => lead.generadorLeads.id === usuario_logeado.id
+const fetchLeads = async () => {
+  return new Promise<{ columns: ColumnDef<Lead>[]; data: Lead[] }>(
+    (resolve) => {
+      setTimeout(() => {
+        resolve({
+          columns: leadsColumns,
+          data: leadsData,
+        });
+      }, 2000); // Retraso de 2 segundos
+    },
   );
+};
+
+export default async function page({}: pageProps): Promise<ReactElement> {
+  const { columns, data } = await fetchLeads();
 
   return (
     <>
       {/* LIST */}
-      <div className="mt-4">
-        <DataTable columns={vistaLeadsColumns} data={leadsFiltradas} />
-      </div>
+      <CreateLeadForm />
+      <DataTable columns={columns} data={data} />
     </>
   );
 }

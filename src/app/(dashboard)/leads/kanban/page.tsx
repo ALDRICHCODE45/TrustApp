@@ -1,10 +1,11 @@
 import KanbanLeadsBoard from "./components/KanbanLeadsBoard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Search } from "lucide-react";
+import { Users, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { CreateLeadForm } from "../../list/leads/components/CreateLeadForm";
 
 function App() {
   return (
@@ -22,16 +23,13 @@ function App() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-sm px-3 py-1">
-                  Total: <span className="font-semibold">8 leads</span>
+                  Total: <span className="font-semibold"> 8 leads</span>
                 </Badge>
                 <Button size="sm" variant="outline">
                   <Search className="h-4 w-4 mr-2" />
                   Buscar
                 </Button>
-                <Button size="sm">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Nuevo Lead
-                </Button>
+                <CreateLeadForm />
               </div>
             </div>
 

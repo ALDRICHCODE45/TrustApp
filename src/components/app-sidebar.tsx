@@ -73,7 +73,7 @@ const data = {
       roles: ["gl"],
       items: [
         {
-          title: "Tus Prospecciones",
+          title: "Prospecciones",
           url: "/leads",
           roles: ["gl"],
         },
@@ -168,7 +168,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     .map((item) => ({
       ...item,
       items: item.items?.filter((subItem) =>
-        subItem.roles?.includes(usuario_logeado.role)
+        subItem.roles?.includes(usuario_logeado.role),
       ),
     }));
 

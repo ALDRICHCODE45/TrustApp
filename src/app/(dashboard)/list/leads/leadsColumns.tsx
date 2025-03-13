@@ -2,17 +2,13 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Lead } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
-import { Building, Calendar, Globe } from "lucide-react";
+import { Building, Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
 import { GeneratorDropDown } from "./components/SelectGLDropDown";
 import { LeadContactosSheet } from "./components/LeadContactosSheet";
 import { LeadChangeStatus } from "./components/LeadChangeStatus";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { GeneradorDropdownSelect } from "./components/GeneradorDropdownSelect";
+import { ChangeDateComponent } from "../reclutamiento/components/AsignacionDatePickerComponent";
 
 export const leadsColumns: ColumnDef<Lead>[] = [
   {
@@ -67,7 +63,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     accessorKey: "generadorLeads",
     header: "Generador",
     cell: ({ row }) => {
-      return <GeneratorDropDown row={row} />;
+      return <GeneradorDropdownSelect row={row} />;
     },
   },
   {
@@ -88,31 +84,14 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     accessorKey: "fechaProspeccion",
     header: "Fecha Prospección",
     cell: ({ row }) => {
-      const fecha = row.getValue("fechaProspeccion") as string;
-
       return (
-        <div className="flex flex-row gap-2 items-center">
-          {/* Icono del calendario */}
-          <Calendar size={17} className="hidden md:block" />
-
-          {/* Fecha visible en desktop */}
-          <span className="hidden md:block">{fecha}</span>
-
-          {/* Popover para mobile */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
-                <Calendar size={17} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-4">
-              <p className="text-sm font-medium">Fecha de Prospección:</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Lun {fecha}
-              </p>
-            </PopoverContent>
-          </Popover>
-        </div>
+        <ChangeDateComponent
+          fecha={new Date()}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
     },
   },
@@ -127,32 +106,14 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     accessorKey: "fechaAConectar",
     header: "Fecha de Coneccion",
     cell: ({ row }) => {
-      const fecha = row.original.fechaAConectar;
       return (
-        <>
-          <div className="flex flex-row gap-2 items-center">
-            {/* Icono del calendario */}
-            <Calendar size={17} className="hidden md:block" />
-
-            {/* Fecha visible en desktop */}
-            <span className="hidden md:block">{fecha}</span>
-
-            {/* Popover para mobile */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden">
-                  <Calendar size={17} />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-4">
-                <p className="text-sm font-medium">Fecha a conectar:</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Lun {fecha}
-                </p>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </>
+        <ChangeDateComponent
+          fecha={new Date()}
+          onFechaChange={(nuevaFecha) => {
+            // Aquí implementarías la lógica para actualizar de tu fuente de datos
+            console.log("Fecha actualizada:", nuevaFecha);
+          }}
+        />
       );
     },
   },

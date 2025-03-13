@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { UserIcon } from "lucide-react";
+import { GitCommitVertical, Info, UserIcon } from "lucide-react";
 
 export const UserInfoCard = ({
   value,
@@ -13,7 +13,7 @@ export const UserInfoCard = ({
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start md:items-center  space-x-3">
           <div className="p-2 rounded-full bg-primary/10 hidden md:block">
-            <UserIcon className="w-5 h-5 text-primary" />
+            <Info className="h-5 w-5 text-primary" />
           </div>
           <p className="text-xs text-muted-foreground uppercase font-medium">
             {title}

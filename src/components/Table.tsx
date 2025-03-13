@@ -10,6 +10,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   VisibilityState,
+  FilterFn,
 } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -35,9 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
-import { Download } from "lucide-react";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -75,69 +73,14 @@ export function DataTable<TData, TValue>({
   const handlePageSizeChange = (value: string) => {
     const newSize = parseInt(value, 10);
     setPageSize(newSize);
-    table.setPageSize(newSize); // Actualiza el tamaño de página en la tabla
-  };
-
-  // Función para descargar la tabla como PDF
-  const downloadTableAsPDF = () => {
-    const tableElement = document.querySelector(
-      ".downloadable-table"
-    ) as HTMLElement;
-    if (!tableElement) return;
-
-    html2canvas(tableElement).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-
-      // Crear un nuevo documento PDF
-      const pdf = new jsPDF("p", "mm", "a4"); // Orientación vertical (portrait), tamaño A4
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      // Agregar el encabezado
-      const companyName = "Trust People Company";
-      pdf.setFontSize(18);
-      pdf.setTextColor("#333333");
-      pdf.text(companyName, pageWidth / 2, 20, { align: "center" }); // Centrar el texto
-
-      // Agregar una línea divisoria
-      pdf.setLineWidth(0.5);
-      pdf.line(10, 25, pageWidth - 10, 25); // Línea horizontal
-
-      // Calcular las dimensiones de la imagen para centrarla
-      const imgWidth = 180; // Ancho de la tabla en el PDF
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgX = (pageWidth - imgWidth) / 2; // Centrar horizontalmente
-      const imgY = 35; // Espacio desde la parte superior
-
-      // Agregar la imagen de la tabla al PDF
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth, imgHeight);
-
-      // Agregar un pie de página
-      const footerText = "Generado automáticamente por Trust People Company";
-      pdf.setFontSize(10);
-      pdf.setTextColor("#666666");
-      pdf.text(footerText, pageWidth / 2, pageHeight - 10, { align: "center" });
-
-      // Guardar el archivo PDF
-      pdf.save("tabla.pdf");
-    });
+    table.setPageSize(newSize);
   };
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       {/* FILTRO POR EMAIL */}
       <div className="flex items-center py-4 dark:bg-[#0e0e0e]">
-        <Input
-          placeholder="Filtrar..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <Button variant="outline" onClick={downloadTableAsPDF} className="ml-2">
-          <Download />
-        </Button>
+        <Input placeholder="Filtrar..." className="max-w-sm" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -180,7 +123,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -199,7 +142,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

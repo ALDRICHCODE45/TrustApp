@@ -39,8 +39,8 @@ export const CreateVacanteForm = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Plus className="mr-2" />
+        <Button variant="outline" size="sm" className="mb-5">
+          <Plus />
           Crear Vacante
         </Button>
       </DialogTrigger>

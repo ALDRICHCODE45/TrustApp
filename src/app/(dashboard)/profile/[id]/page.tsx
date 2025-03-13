@@ -12,6 +12,8 @@ import { notFound, useParams } from "next/navigation";
 import "yet-another-react-lightbox-lite/styles.css";
 import { UserProfileHeader } from "./components/UserProfileHeader";
 import { EventCalendar } from "@/components/EventCalendar";
+import { useEffect, useState } from "react";
+import Loading from "./loading";
 
 const fetchUser = async (userId: number): Promise<User | undefined> => {
   return new Promise((resolve) => {
@@ -24,9 +26,33 @@ const fetchUser = async (userId: number): Promise<User | undefined> => {
 
 // Interfaz para las actividades
 
-export default async function UserProfile() {
+export default function UserProfile() {
   const { id } = useParams();
-  const user = await fetchUser(Number(id));
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCliente = async () => {
+      try {
+        setIsLoading(true);
+        const usuario = await fetchUser(Number(id));
+        if (!usuario) {
+          notFound();
+        }
+        setUser(usuario);
+      } catch {
+        notFound();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCliente();
+  }, [id]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   if (!user) {
     notFound();

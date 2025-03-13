@@ -3,11 +3,12 @@ import { Cliente } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import { RazonSocialPopOver } from "./components/RazonSocialPopOver";
 import { ContactosSheet } from "./components/ContactosSheet";
-import { ArrowRightToLine, Ban, Trash, UserPlus } from "lucide-react";
+import { ArrowRightToLine } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ComentariosSheet } from "../../cliente/[id]/components/ComentariosSheet";
 import { FacturacionSheet } from "./components/Facturacion_instrucciones";
 import { ClientesActions } from "./components/ClientesActions";
+import { UserClientDropDown } from "./components/UserClientDropDown";
 
 export const clientesColumns: ColumnDef<Cliente>[] = [
   {
@@ -43,21 +44,15 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     },
   },
   {
-    accessorKey: "nombre",
-    header: "Nombre",
+    accessorKey: "usuario",
+    header: "Usuario",
+    cell: ({ row }) => {
+      return <UserClientDropDown row={row} />;
+    },
   },
   {
     accessorKey: "cuenta",
     header: "Cuenta",
-  },
-  {
-    accessorKey: "cliente",
-    header: "Cliente",
-    cell: ({ row }) => {
-      const cliente_completo = row.original.cliente;
-      const firstWord = cliente_completo.split(" ").at(0);
-      return <span>{firstWord}</span>;
-    },
   },
   {
     accessorKey: "asignadas",
@@ -77,12 +72,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     header: "Perdidas",
     cell: ({ row }) => {
       const perdidas = row.original.perdidas;
-      return (
-        <div className="flex gap-1 items-center">
-          <Trash size={14} className="text-red-500" />
-          <span>{perdidas}</span>
-        </div>
-      );
+      return <span className="font-bold">{perdidas}</span>;
     },
   },
   {
@@ -90,12 +80,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     header: "Canceladas",
     cell: ({ row }) => {
       const canceladas = row.original.canceladas;
-      return (
-        <div className="flex gap-1 items-center">
-          <Ban size={14} className="text-red-500" />
-          <span>{canceladas}</span>
-        </div>
-      );
+      return <span className="font-bold">{canceladas}</span>;
     },
   },
   {
@@ -103,12 +88,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     header: "Placements",
     cell: ({ row }) => {
       const placements = row.original.placements;
-      return (
-        <div className="flex gap-1 items-center">
-          <UserPlus size={16} className="text-green-500" />
-          <span>{placements}</span>
-        </div>
-      );
+      return <span className="font-bold">{placements}</span>;
     },
   },
   {

@@ -1,25 +1,11 @@
 import KanbanBoardPage from "../components/kanbanReclutadorBoard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  PlusCircle,
-  Briefcase,
-  Search,
-  Filter,
-  Download,
-  Menu,
-} from "lucide-react";
+import { PlusCircle, Filter, Download, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -58,11 +58,14 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
             <div className="flex-1 mt-4  lg:-mt-10">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between bg-background/80 backdrop-blur-sm p-4 rounded-lg">
                 <div>
-                  <h2 className="text-2xl font-bold">{user?.name}</h2>
+                  <div className="flex gap-2 items-center">
+                    <h2 className="text-2xl font-bold">{user?.name}</h2>
+
+                    <Badge variant="outline" className="mt-1">
+                      <p className="">{user?.oficina}</p>
+                    </Badge>
+                  </div>
                   <p className="text-muted-foreground">{user?.email}</p>
-                  <Badge variant="outline" className="mt-1">
-                    <p className="">{user?.oficina}</p>
-                  </Badge>
                 </div>
                 {/* Actividades del usuario */}
                 <ActivityProfileSheet user={user} />

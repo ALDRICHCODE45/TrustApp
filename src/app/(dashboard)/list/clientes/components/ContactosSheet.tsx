@@ -111,7 +111,7 @@ export function ContactosSheet({
                 </DialogClose>
                 <DialogClose asChild>
                   <Button type="button" size="sm">
-                    Guardar candidato
+                    Guardar contacto
                   </Button>
                 </DialogClose>
               </DialogFooter>

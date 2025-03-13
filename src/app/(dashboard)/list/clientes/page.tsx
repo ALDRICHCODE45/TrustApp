@@ -15,10 +15,9 @@ const fetchUsers = async () => {
           data: clientesData,
         });
       }, 2000);
-    }
+    },
   );
 };
-
 
 export default async function ClientesList({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchUsers();
