@@ -14,7 +14,7 @@ const myCustomFilterFn: FilterFn<User> = (
   row: Row<User>,
   _columnId: string,
   filterValue: string,
-  _addMeta: (meta: any) => void
+  _addMeta: (meta: any) => void,
 ) => {
   filterValue = filterValue.toLowerCase();
   const filterParts = filterValue.split(" ");
@@ -52,6 +52,7 @@ export const UserColumns: ColumnDef<User>[] = [
     accessorKey: "info",
     header: "Info",
     cell: ({ row }) => <UserInfoCell row={row} />,
+    enableGlobalFilter: true,
   },
 
   {
@@ -69,17 +70,19 @@ export const UserColumns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       return <OficinaDropDown row={row} />;
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "email",
     header: "",
     enableHiding: false,
     cell: () => null,
-    filterFn: myCustomFilterFn,
+    enableGlobalFilter: true,
   },
   {
     id: "phone",
     accessorKey: "phone",
+    enableGlobalFilter: true,
     header: "Celular",
   },
   {
@@ -89,6 +92,7 @@ export const UserColumns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       return <RoleDropDown row={row} />;
     },
+    enableGlobalFilter: true,
   },
   {
     id: "status",
@@ -98,6 +102,7 @@ export const UserColumns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       return <StateDropdown row={row} />;
     },
+    enableGlobalFilter: true,
   },
   {
     id: "address",
@@ -106,6 +111,7 @@ export const UserColumns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       return <AddressPopover row={row} />;
     },
+    enableGlobalFilter: true,
   },
   {
     id: "actions",

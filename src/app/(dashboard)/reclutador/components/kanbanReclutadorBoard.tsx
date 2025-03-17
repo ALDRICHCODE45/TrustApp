@@ -51,6 +51,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { KanbanFilters } from "./KanbanFilters";
 
 // Types
 interface ColumnProps {
@@ -196,7 +197,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
           <Badge variant="outline">{vacante.cliente.cuenta}</Badge>
         </div>
       </div>
-
       {/* Información de cliente y tiempos */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-3">
@@ -260,7 +260,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
         </div>
       </div>
     </div>
-
     {/* Información financiera */}
     <div>
       <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
@@ -295,7 +294,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
         </Card>
       </div>
     </div>
-
     {/* Candidato contratado (condicional) */}
     {vacante.candidatoContratado && (
       <Card className="overflow-hidden border-green-200 dark:border-green-800">
@@ -321,12 +319,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
         </CardContent>
       </Card>
     )}
-
-    {/* Acciones (botones) */}
-    <div className="flex justify-end gap-2 pt-2">
-      <Button variant="outline">Historial de cambios</Button>
-      <Button>Editar vacante</Button>
-    </div>
   </div>
 );
 
@@ -345,7 +337,6 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => (
             {vacante.ternaFinal.length} candidato(s)
           </Badge>
         </div>
-
         {/* Lista de candidatos */}
         <div className="space-y-4">
           {vacante.ternaFinal.map((candidato, index) => (
@@ -425,21 +416,18 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => (
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
   <div className="space-y-6 mt-4">
-    {/* Existing comments section content */}
+    {/* Existing comments section content */}{" "}
     {/* ... (Keep the existing comments section content) ... */}
     <div className="space-y-6 mt-4 h-[300px] overflow-auto p-3">
-      {/* Encabezado con título y botón de añadir */}
+      {/* Encabezado con título y botón de añadir */}{" "}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium uppercase text-muted-foreground flex items-center">
-          <MessageSquare className="h-4 w-4 mr-2" />
-          Historial de comentarios
+          <MessageSquare className="h-4 w-4 mr-2" /> Historial de comentarios
         </h4>
         <Button size="sm" variant="outline" className="h-8">
-          <Plus className="h-4 w-4 mr-2" />
-          Añadir comentario
+          <Plus className="h-4 w-4 mr-2" /> Añadir comentario
         </Button>
       </div>
-
       {/* Contenido de los comentarios */}
       {vacante.comentarios && vacante.comentarios.length > 0 ? (
         <div className="space-y-4">
@@ -511,17 +499,19 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
 
 const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => (
   <div className="space-y-6 mt-4">
-    {/* Existing documents section content */}
-    {/* ... (Keep the existing documents section content) ... */}
+    {" "}
+    {/* Existing documents section content */}{" "}
+    {/* ... (Keep the existing documents section content) ... */}{" "}
     <div className="space-y-6 mt-6">
+      {" "}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Documentos</h3>
+        {" "}
+        <h3 className="text-xl font-semibold">Documentos</h3>{" "}
         <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          <span>Añadir documento</span>
-        </Button>
+          {" "}
+          <Plus className="h-4 w-4" /> <span>Añadir documento</span>{" "}
+        </Button>{" "}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Documento 1 */}
         <Card className="group hover:shadow-md transition-all duration-200">
@@ -654,7 +644,6 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => (
           </CardContent>
         </Card>
       </div>
-
       {/* Documentos recientes (sección opcional) */}
     </div>
   </div>
@@ -683,48 +672,8 @@ const VacanteTabs: React.FC<{ vacante: Vacante }> = ({ vacante }) => (
   </Tabs>
 );
 
-const MobileViewSelector: React.FC<{
-  columns: { id: string; title: string }[];
-  mobileView: string | null;
-  setMobileView: (view: string | null) => void;
-}> = ({ columns, mobileView, setMobileView }) => (
-  <div className="lg:hidden mb-4">
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="w-full">
-          Cambiar vista de columnas
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="h-[80vh]">
-        <SheetHeader className="mb-4">
-          <SheetTitle>Seleccionar columna</SheetTitle>
-        </SheetHeader>
-        <div className="grid grid-cols-2 gap-4">
-          {columns.map((column) => (
-            <Button
-              key={column.id}
-              variant={mobileView === column.id ? "default" : "outline"}
-              onClick={() => setMobileView(column.id)}
-              className="w-full"
-            >
-              {column.title}
-            </Button>
-          ))}
-          <Button
-            variant="outline"
-            onClick={() => setMobileView(null)}
-            className="col-span-2"
-          >
-            Mostrar todas las columnas
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  </div>
-);
-
 // Main Component
-export default function KanbanBoardPage() {
+export const KanbanBoardPage = () => {
   const [vacantes] = useState<Vacante[]>(mockVacantes);
   const [selectedVacante, setSelectedVacante] = useState<Vacante | null>(null);
   const [mobileView, setMobileView] = useState<string | null>(null);
@@ -739,11 +688,7 @@ export default function KanbanBoardPage() {
 
   return (
     <div className="p-4 md:p-10">
-      <MobileViewSelector
-        columns={columns}
-        mobileView={mobileView}
-        setMobileView={setMobileView}
-      />
+      <KanbanFilters />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 w-full">
         {columns.map(
           (column) =>
@@ -760,4 +705,4 @@ export default function KanbanBoardPage() {
       </div>
     </div>
   );
-}
+};

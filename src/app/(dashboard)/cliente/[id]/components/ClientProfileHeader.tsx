@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Cliente, usuario_logeado } from "@/lib/data";
-import { EditClientProfile } from "./EditCliente";
+import { ClientEditForm } from "./EditCliente";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
         <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5 relative">
           {usuario_logeado?.role === "admin" && (
             <div className="absolute top-4 right-4">
-              <EditClientProfile />
+              <ClientEditForm />
             </div>
           )}
         </div>

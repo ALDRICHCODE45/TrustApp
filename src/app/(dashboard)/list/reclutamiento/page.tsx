@@ -1,7 +1,6 @@
 import { type ReactElement } from "react";
 import { vacantesColumns } from "./columns";
 import { Vacante, vacantes } from "@/lib/data";
-import { CreateVacanteForm } from "./components/CreateVacanteForm";
 import { RecruiterTable } from "./table/RecruiterTable";
 import { ColumnDef } from "@tanstack/react-table";
 
@@ -24,8 +23,6 @@ export default async function ReclutamientoPage({}: pageProps): Promise<ReactEle
   const { columns, data } = await fetchVacantes();
   return (
     <>
-      {/* Reclutamiento Form */}
-      <CreateVacanteForm />
       {/* LIST */}
       <RecruiterTable columns={columns} data={data} />
     </>

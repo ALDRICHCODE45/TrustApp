@@ -325,7 +325,12 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       return <span>{total} días</span>;
     },
   },
-
+  {
+    id: "oficina",
+    cell: () => null,
+    header: () => null,
+    accessorFn: (row) => row.reclutador.oficina,
+  },
   {
     id: "actions",
     header: "Acciones",

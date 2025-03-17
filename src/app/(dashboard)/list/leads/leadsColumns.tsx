@@ -1,7 +1,7 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Lead } from "@/lib/data";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import { Building, Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
 import { GeneratorDropDown } from "./components/SelectGLDropDown";
@@ -65,6 +65,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     cell: ({ row }) => {
       return <GeneradorDropdownSelect row={row} />;
     },
+    accessorFn: (row) => row.generadorLeads.name,
   },
   {
     accessorKey: "link",
@@ -124,6 +125,20 @@ export const leadsColumns: ColumnDef<Lead>[] = [
       return <LeadChangeStatus row={row} />;
     },
   },
+  {
+    accessorKey: "oficina",
+    header: () => null,
+    cell: () => null,
+    accessorFn: (row) => {
+      return row.generadorLeads?.oficina || null;
+    },
+    filterFn: (row, id, filterValue) => {
+      const oficina = row.getValue(id);
+      if (filterValue === "all" || !filterValue) return true;
+      return oficina === filterValue;
+    },
+  },
+
   {
     id: "actions",
     cell: ({ row }) => {

@@ -1,73 +1,117 @@
-import KanbanLeadsBoard from "./components/KanbanLeadsBoard";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { CreateLeadForm } from "../../list/leads/components/CreateLeadForm";
+"use client";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensors,
+  useSensor,
+  closestCorners,
+} from "@dnd-kit/core";
+import { Card } from "@/components/ui/card";
+import { TagIcon } from "lucide-react";
+import { toast } from "sonner";
+import { leadsData, LeadStatus, Lead } from "@/lib/data";
+import { KanbanFilters } from "./components/KanbanFilters";
+import { DroppableKanbanColumn } from "./components/KanbanColumn";
+import { useState } from "react";
 
-function App() {
+export default function KanbanLeadsBoard() {
+  const [selectedTask, setSelectedTask] = useState<Lead | null>(null);
+  const [leads, setLeads] = useState<Lead[]>(leadsData);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 10 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
+  );
+
+  const groupedLeads = Object.values(LeadStatus).reduce(
+    (acc, status) => {
+      acc[status] = leads.filter((lead) => lead.status === status);
+      return acc;
+    },
+    {} as Record<LeadStatus, Lead[]>,
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const lead = leads.find((lead) => lead.empresa === active.id);
+    if (lead) {
+      setActiveLead(lead);
+      setActiveId(active.id as string);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    setActiveId(null);
+    setActiveLead(null);
+
+    if (!over) return;
+
+    const leadId = active.id as string;
+    const newStatus = over.id as LeadStatus;
+
+    const leadToUpdate = leads.find((lead) => lead.empresa === leadId);
+    if (leadToUpdate && leadToUpdate.status !== newStatus) {
+      setLeads((prevLeads) =>
+        prevLeads.map((lead) =>
+          lead.empresa === leadId ? { ...lead, status: newStatus } : lead,
+        ),
+      );
+      toast.success(`Lead movido a ${newStatus}`);
+    }
+  };
+
   return (
-    <div className="min-h-screen">
-      <header className=" border-b">
-        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col space-y-4">
-            {/* Top row with logo and actions */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Users className="h-6 w-6 " />
-                <h1 className="text-2xl font-bold tracking-tight">
-                  Gestión de Leads
-                </h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  Total: <span className="font-semibold"> 8 leads</span>
-                </Badge>
-                <Button size="sm" variant="outline">
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </Button>
-                <CreateLeadForm />
-              </div>
-            </div>
+    <div className="flex flex-col h-screen bg-background">
+      <KanbanFilters onFilterChange={() => {}} />
 
-            {/* Separator line */}
-            <Separator />
-
-            {/* Bottom row with filters */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm">
-                  Todos
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Sin asignar
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Mis leads
-                </Button>
-              </div>
-              <div className="w-64">
-                <Input
-                  placeholder="Filtrar por nombre o empresa..."
-                  className="h-8"
-                />
-              </div>
-            </div>
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        collisionDetection={closestCorners}
+      >
+        <div className="flex-1 overflow-x-auto p-4">
+          <div className="flex gap-4">
+            {Object.entries(groupedLeads).map(([status, tasks], index) => (
+              <DroppableKanbanColumn
+                key={status}
+                status={status as LeadStatus}
+                tasks={tasks}
+                setSelectedTask={setSelectedTask}
+                showCreateLeadForm={index === 0}
+              />
+            ))}
           </div>
         </div>
-      </header>
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-0">
-            <KanbanLeadsBoard />
-          </CardContent>
-        </Card>
-      </main>
+
+        <DragOverlay>
+          {activeId && activeLead && (
+            <Card className="w-[280px] p-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg">
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-medium text-sm">{activeLead.empresa}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center">
+                    <TagIcon className="h-3 w-3 mr-1" />
+                    {activeLead.sector}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
-
-export default App;

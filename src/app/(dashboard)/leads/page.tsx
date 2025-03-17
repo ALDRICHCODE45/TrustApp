@@ -1,9 +1,9 @@
-import { DataTable } from "@/components/Table";
 import { type ReactElement } from "react";
 import { Lead, leadsData } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import { leadsColumns } from "../list/leads/leadsColumns";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
+import { CommercialTable } from "./table/CommercialTable";
 
 export interface pageProps {}
 
@@ -27,7 +27,7 @@ export default async function page({}: pageProps): Promise<ReactElement> {
     <>
       {/* LIST */}
       <CreateLeadForm />
-      <DataTable columns={columns} data={data} />
+      <CommercialTable columns={columns} data={data} />
     </>
   );
 }

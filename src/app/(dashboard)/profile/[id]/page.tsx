@@ -101,15 +101,17 @@ export default function UserProfile() {
 
                 <Card className="border">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Promedio</p>
-                    <p className="text-2xl font-medium mt-1">8.5</p>
+                    <p className="text-sm text-gray-500">Tiempo Promedio</p>
+                    <p className="text-2xl font-medium mt-1">
+                      8.5 <span className="text-sm">(dias)</span>
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card className="border">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Crecimiento</p>
-                    <p className="text-2xl font-medium mt-1">+12%</p>
+                    <p className="text-sm text-gray-500">Tareas Completadas</p>
+                    <p className="text-2xl font-medium mt-1">11</p>
                   </CardContent>
                 </Card>
               </div>

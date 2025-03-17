@@ -47,6 +47,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 export const ActionsCell = ({ row }: { row: any }) => {
   const teacherId = row.original.generadorLeads;
   const teacherName = row.original.generadorLeads;
@@ -260,8 +269,24 @@ export const ActionsCell = ({ row }: { row: any }) => {
                     >
                       <span>Status</span>
                     </Label>
-                    <div className="flex rounded-lg shadow-sm shadow-black/5">
-                      <Input id="Estado" placeholder="Contacto" type="text" />
+                    <div className="">
+                      <Select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Status.." />
+                        </SelectTrigger>
+                        <SelectContent className="z-[999]">
+                          <SelectGroup>
+                            <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="apple">S.S</SelectItem>
+                            <SelectItem value="banana">C.C</SelectItem>
+                            <SelectItem value="contacto">Contacto</SelectItem>
+                            <SelectItem value="blueberry">C.A</SelectItem>
+                            <SelectItem value="grapes">C.V</SelectItem>
+                            <SelectItem value="pineapple">Prospecto</SelectItem>
+                            <SelectItem value="cliente">Cliente</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Cliente } from "@/lib/data";
 import { MessageSquare } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export const ClientesComentariosSections = ({
   client,
@@ -25,7 +26,16 @@ export const ClientesComentariosSections = ({
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">Salvador Perea</p>
-                      <p className="text-xs text-muted-foreground">23-1-2025</p>
+                      <div className="flex gap-3 justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          lun 23-1-2025
+                        </p>
+                        {comentario.tipo === "Tarea" ? (
+                          <p className="text-xs text-muted-foreground">
+                            entrega: mie 21/03/25
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                   <Badge variant="outline">{comentario.tipo || "Nota"}</Badge>

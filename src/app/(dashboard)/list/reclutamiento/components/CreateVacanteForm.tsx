@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +14,7 @@ import {
   Edit,
   Trash,
   Briefcase,
+  User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,13 +34,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Role, UsersData } from "../../../../../lib/data";
+import Link from "next/link";
 
 // Componente principal para crear una vacante
 export const CreateVacanteForm = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="mb-5">
+        <Button variant="outline" size="sm">
           <Plus />
           Crear Vacante
         </Button>
@@ -173,112 +176,161 @@ function VacancyForm() {
 }
 
 // Componente para la pestaña de información básica
-const BasicInformationTab = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="flex items-center">
-        <Briefcase className="mr-2 h-5 w-5" />
-        Detalles de la Vacante
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label>Tipo de Vacante</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar Tipo" />
-            </SelectTrigger>
-            <SelectContent className="z-[888]">
-              <SelectItem value="Nueva">Nueva</SelectItem>
-              <SelectItem value="Garantia">Garantía</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>Estado</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar Estado" />
-            </SelectTrigger>
-            <SelectContent className="z-[8888]">
-              <SelectItem value="Hunting">Hunting</SelectItem>
-              <SelectItem value="Cancelada">Cancelada</SelectItem>
-              <SelectItem value="Entrevistas">Entrevistas</SelectItem>
-              <SelectItem value="Perdida">Perdida</SelectItem>
-              <SelectItem value="Placement">Placement</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+const BasicInformationTab = () => {
+  const [reclutador, setNewReclutador] = useState({
+    name: "Seleccionar",
+    id: null,
+  });
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label>Puesto</Label>
-          <Input placeholder="Ej. Desarrollador Senior" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label>Cliente</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar Cliente" />
-            </SelectTrigger>
-            <SelectContent className="z-[8888]">
-              <SelectItem value="Zendesk" className="cursor-pointer">
-                Zendesk
-              </SelectItem>
-              <SelectItem value="CirculoCredito" className="cursor-pointer">
-                Circulo de Credito
-              </SelectItem>
-              <SelectItem value="CiberPower" className="cursor-pointer">
-                CiberPower
-              </SelectItem>
-              <SelectItem value="Takeda" className="cursor-pointer">
-                Takeda
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+  // Filter only recruiters from the UsersData array
+  const recruiters = UsersData.filter((user) => user.rol === Role.reclutador);
 
-      <div className="grid grid-cols-1 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label>Fecha Límite</Label>
-          <div className="relative">
-            <Input type="date" />
+  const handleReclutadorChange = (newReclutador: any) => {
+    setNewReclutador(newReclutador);
+    // Here you could also update your data source or call an API
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          Detalles de la Vacante
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Tipo de Vacante</Label>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar Tipo" />
+              </SelectTrigger>
+              <SelectContent className="z-[888]">
+                <SelectItem value="Nueva">Nueva</SelectItem>
+                <SelectItem value="Garantia">Garantía</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Estado</Label>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar Estado" />
+              </SelectTrigger>
+              <SelectContent className="z-[8888]">
+                <SelectItem value="Hunting">Hunting</SelectItem>
+                <SelectItem value="Cancelada">Cancelada</SelectItem>
+                <SelectItem value="Entrevistas">Entrevistas</SelectItem>
+                <SelectItem value="Perdida">Perdida</SelectItem>
+                <SelectItem value="Placement">Placement</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </div>
 
-      {/* Reclutador */}
-      <Card className="p-4 space-y-3 bg-muted/50">
-        <div className="flex items-center space-x-2">
-          <UsersIcon className="h-5 w-5" />
-          <h3 className="text-sm font-medium">Reclutador</h3>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Avatar>
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="text-sm font-medium">Juan Pérez</p>
-            <p className="text-xs text-muted-foreground">Reclutador Senior</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Puesto</Label>
+            <Input placeholder="Ej. Desarrollador Senior" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Cliente</Label>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar Cliente" />
+              </SelectTrigger>
+              <SelectContent className="z-[8888]">
+                <SelectItem value="Zendesk" className="cursor-pointer">
+                  Zendesk
+                </SelectItem>
+                <SelectItem value="CirculoCredito" className="cursor-pointer">
+                  Circulo de Credito
+                </SelectItem>
+                <SelectItem value="CiberPower" className="cursor-pointer">
+                  CiberPower
+                </SelectItem>
+                <SelectItem value="Takeda" className="cursor-pointer">
+                  Takeda
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </Card>
-    </CardContent>
-  </Card>
-);
+
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Fecha Límite</Label>
+            <div className="relative">
+              <Input type="date" />
+            </div>
+          </div>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild className="w-full">
+            <Button variant="outline" size="sm" className="flex ">
+              <User />
+              <span className="truncate">{reclutador.name}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-full max-h-[250px] overflow-y-auto z-[999]">
+            {recruiters.map((recruiter) => (
+              <DropdownMenuItem
+                key={recruiter.id}
+                className="flex items-center gap-3 p-2 cursor-pointer"
+                onClick={() => {
+                  handleReclutadorChange({
+                    id: recruiter.id,
+                    name: recruiter.name,
+                  });
+                }}
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarImage
+                      src={recruiter.photo}
+                      alt={recruiter.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">
+                      {recruiter.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {recruiter.email}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="link"
+                  className="ml-auto h-8 w-8 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  asChild
+                >
+                  <Link href={`/profile/${recruiter.id}`}>Ver</Link>
+                </Button>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Reclutador */}
+      </CardContent>
+    </Card>
+  );
+};
 
 // Componente para la pestaña de archivos
 const FilesTab = ({ files }: { files: File[] }) => (
   <Card className="w-full">
     <CardHeader>
       <CardTitle className="flex items-center justify-between">
-        <div className="flex items-center">
-          <FileText className="mr-2 h-5 w-5" />
-          Documentos de la Vacante
-        </div>
+        <div className="flex items-center">Documentos de la Vacante</div>
         <label htmlFor="file-upload" className="cursor-pointer">
           <Button variant="outline" size="sm">
             <Upload className="mr-2 h-4 w-4" />
@@ -317,10 +369,7 @@ const FilesTab = ({ files }: { files: File[] }) => (
 const FinancialInformationTab = () => (
   <Card>
     <CardHeader>
-      <CardTitle className="flex items-center">
-        <DollarSignIcon className="mr-2" />
-        Detalles Financieros
-      </CardTitle>
+      <CardTitle className="flex items-center">Detalles Financieros</CardTitle>
     </CardHeader>
     <CardContent className="space-y-4">
       <div className="grid grid-cols-3 gap-4">

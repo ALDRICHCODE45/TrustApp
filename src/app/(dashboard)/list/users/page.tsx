@@ -1,9 +1,8 @@
 import { User, UsersData } from "@/lib/data";
 import { UserColumns } from "./columns";
-import { DataTable } from "@/components/Table";
-
 import { type ReactElement } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { UsersTable } from "./table/UsersTable";
 
 export interface pageProps {}
 
@@ -16,7 +15,7 @@ const fetchUsers = async () => {
           data: UsersData,
         });
       }, 2000); // Retraso de 2 segundos
-    }
+    },
   );
 };
 export default async function TeachersList({}: pageProps): Promise<ReactElement> {
@@ -24,7 +23,7 @@ export default async function TeachersList({}: pageProps): Promise<ReactElement>
   return (
     <>
       {/* LIST */}
-      <DataTable columns={columns} data={data} />
+      <UsersTable columns={columns} data={data} />
     </>
   );
 }

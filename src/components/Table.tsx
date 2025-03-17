@@ -10,7 +10,6 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   VisibilityState,
-  FilterFn,
 } from "@tanstack/react-table";
 import {
   DropdownMenu,

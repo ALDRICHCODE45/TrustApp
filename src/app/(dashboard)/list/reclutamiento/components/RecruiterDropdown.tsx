@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,7 +18,7 @@ export const RecruiterDropDown = ({ row }: { row: any }) => {
     row.original.reclutador || {
       name: "Seleccionar",
       id: null,
-    }
+    },
   );
 
   // Filter only recruiters from the UsersData array
