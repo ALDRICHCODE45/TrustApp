@@ -31,7 +31,12 @@ export function LoginForm({
               Olvidaste tu contraseña?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input
+            id="password"
+            type="password"
+            placeholder="*********"
+            required
+          />
         </div>
         <Button type="submit" className="w-full" asChild>
           <Link href="/admin">Ingresar</Link>
