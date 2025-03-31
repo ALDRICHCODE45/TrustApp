@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Card } from "@/components/ui/card";
-import { usuario_logeado } from "@/lib/data";
+import { Lead, usuario_logeado } from "@/lib/data";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,7 +56,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-export const ActionsCell = ({ row }: { row: any }) => {
+import { Row } from "@tanstack/react-table";
+
+export const ActionsCell = ({ row }: { row: Row<Lead> }) => {
   const teacherId = row.original.generadorLeads;
   const teacherName = row.original.generadorLeads;
 
