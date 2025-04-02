@@ -1,26 +1,39 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth, { CredentialsSignin } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+
+// Your own logic for dealing with plaintext password strings; be careful!
 import bcrypt from "bcrypt";
 import prisma from "./db";
-
+class InvalidLoginError extends CredentialsSignin {
+  code = "Invalid identifier or password";
+}
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
-    CredentialsProvider({
-      async authorize(credentials) {
-        console.log({ credentials });
-        const user = await prisma.user.findUnique({
+    Credentials({
+      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
+      // e.g. domain, username, password, 2FA token, etc.
+      credentials: {
+        email: {},
+        password: {},
+      },
+      authorize: async (credentials) => {
+        let user = null;
+
+        // logic to verify if the user exists
+        user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         });
 
         if (
           !user ||
-          !bcrypt.compare(credentials.password as string, user.password)
+          !bcrypt.compareSync(credentials.password as string, user.password)
         ) {
-          throw new Error("Invalid credentials");
+          // No user found, so this is their first attempt to login
+          // Optionally, this is also the place you could do a user registration
+          throw new InvalidLoginError();
         }
 
+        // return user object with their profile data
         return user;
       },
     }),
@@ -28,8 +41,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  pages: {
-    signIn: "/sign-in",
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.state = user.State;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role;
+        session.user.state = token.state;
+      }
+      return session;
+    },
   },
-  secret: process.env.NEXTAUTH_SECRET,
 });

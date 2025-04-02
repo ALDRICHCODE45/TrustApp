@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Userlogged, usuario_logeado } from "@/lib/data";
+import { signOut } from "next-auth/react";
 
 export function NavUser({ user }: { user: Userlogged }) {
   const { isMobile } = useSidebar();
@@ -83,11 +84,12 @@ export function NavUser({ user }: { user: Userlogged }) {
                   Perfil
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/sign-in" className="cursor-pointer">
-                  <LogOut />
-                  Sign out
-                </Link>
+              <DropdownMenuItem
+                onClick={() => signOut()}
+                className="cursor-pointer"
+              >
+                <LogOut />
+                Sign out
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

@@ -1,6 +1,6 @@
 "use client";
 import React, { ReactNode } from "react";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import {
   Breadcrumb,
@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/themeToggle";
-import { useSession } from "next-auth/react";
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -20,13 +19,8 @@ interface ClientLayoutProps {
 
 export function ClientLayout({ children }: ClientLayoutProps) {
   const router = useRouter();
-  const { data: session } = useSession();
   const pathName = usePathname();
   const currentUrl = pathName.split("/").at(-1);
-
-  if (!session?.user) {
-    redirect("/sign-in");
-  }
 
   return (
     <>
@@ -48,7 +42,6 @@ export function ClientLayout({ children }: ClientLayoutProps) {
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span className="text-sm font-medium">Back</span>
-                  <span>{session.user.email}</span>
                 </button>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
