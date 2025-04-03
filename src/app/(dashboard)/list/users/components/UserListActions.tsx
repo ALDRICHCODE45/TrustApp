@@ -6,7 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@/lib/data";
+import { User } from "@prisma/client";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { Row } from "@tanstack/react-table";
 import { Clipboard, Eye, MoreHorizontal } from "lucide-react";
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const UserListActions = ({ row }: Props) => {
-  const teacherId = row.original.id.toString();
+  const teacherId = row.original.id;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -1,6 +1,6 @@
-import { User } from "@/lib/data";
 import { Row } from "@tanstack/react-table";
-import Image from "next/image";
+import { User } from "@prisma/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Props {
   row: Row<User>;
@@ -9,21 +9,23 @@ interface Props {
 export const UserInfoCell = ({ row }: Props) => {
   const name = row.original.name;
   const email = row.original.email;
-  const photo = row.original.photo;
+  const photo = row.original.image;
+
   return (
     <div className="flex items-center gap-4">
-      {/* Foto en un círculo */}
-      <div className="relative w-12 h-12 rounded-full overflow-hidden">
-        <Image
-          placeholder="blur" // Muestra una versión desenfocada mientras carga
-          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg=="
-          src={photo}
-          alt={`${name}'s profile`}
-          fill
-          style={{ objectFit: "cover" }} // Mantiene la proporción y cubre el contenedor
+      {/* Avatar con mejor efecto de fondo */}
+      <Avatar className="">
+        <AvatarImage
+          src={photo || undefined}
+          alt={name}
+          className="object-cover w-full h-full"
         />
-      </div>
-      {/* Nombre y email uno debajo del otro */}
+        <AvatarFallback className="bg-gray-300 text-gray-700 font-semibold">
+          {name ? name.slice(0, 2).toUpperCase() : "??"}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Nombre y email */}
       <div className="flex flex-col">
         <span className="font-medium">{name}</span>
         <span className="text-sm text-gray-500">{email}</span>

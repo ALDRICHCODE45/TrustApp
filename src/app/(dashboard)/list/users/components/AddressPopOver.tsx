@@ -4,12 +4,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { User } from "@/lib/data";
+import { User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 import { Info, MapPin } from "lucide-react";
 
 export function AddressPopover({ row }: { row: Row<User> }) {
-  const address = row.original.address;
+  const address = row.original.direccion;
 
   return (
     <div className="flex items-center gap-2">
@@ -23,7 +23,6 @@ export function AddressPopover({ row }: { row: Row<User> }) {
         </PopoverTrigger>
         <PopoverContent className="w-52">
           <div className="grid gap-1">
-            <h4 className="font-medium">Dirección</h4>
             <p className="text-sm">{address}</p>
           </div>
         </PopoverContent>

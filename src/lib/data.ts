@@ -33,9 +33,9 @@ export enum Role {
 }
 
 export enum Oficina {
-  "uno" = "Oficina 1",
-  "dos" = "Oficina 2",
-  "tres" = "Oficina 3",
+  "uno" = "Oficina1",
+  "dos" = "Oficina2",
+  "tres" = "Oficina3",
 }
 
 export const UsersData: User[] = [

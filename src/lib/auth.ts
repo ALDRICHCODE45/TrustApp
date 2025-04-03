@@ -29,7 +29,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           !bcrypt.compareSync(credentials.password as string, user.password)
         ) {
           // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
           throw new InvalidLoginError();
         }
 
@@ -46,14 +45,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.state = user.State;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.role = token.role;
-        session.user.state = token.state;
       }
       return session;
     },

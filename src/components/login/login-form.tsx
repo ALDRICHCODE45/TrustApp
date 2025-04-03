@@ -4,19 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const credentialsAction = async (formData: FormData) => {
-    setLoading(true);
-    setError(null);
-    console.log(loading);
-
+  const credentialsAction = async (prevState: any, formData: FormData) => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
@@ -27,22 +21,24 @@ export function LoginForm() {
         redirect: false,
       });
 
-      console.log("loading", loading);
       if (result?.error) {
-        setError("Credenciales incorrectas");
+        return { error: "Error al iniciar sesión" };
       } else if (result?.ok) {
         router.push("/admin");
         return;
       }
     } catch (err) {
-      setError("Error al iniciar sesión");
-    } finally {
-      setLoading(false);
+      return { error: "Error al iniciar sesión" };
     }
   };
 
+  const [state, formAction, isPending] = useActionState(
+    credentialsAction,
+    undefined,
+  );
+
   return (
-    <form className="flex flex-col gap-6" action={credentialsAction}>
+    <form className="flex flex-col gap-6" action={formAction}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Ingresa a tu cuenta</h1>
         <p className="text-balance text-sm text-muted-foreground">
@@ -50,7 +46,9 @@ export function LoginForm() {
         </p>
       </div>
       <div className="grid gap-6">
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {state?.error && (
+          <p className="text-red-500 text-sm text-center">{state.error}</p>
+        )}
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -79,8 +77,8 @@ export function LoginForm() {
             required
           />
         </div>
-        <Button className="w-full" disabled={loading} type="submit">
-          {loading ? (
+        <Button className="w-full" disabled={isPending} type="submit">
+          {isPending ? (
             <>
               <Loader2 className="mr-2 w-4 h-4 animate-spin" />
               Cargando...

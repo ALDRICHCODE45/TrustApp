@@ -1,17 +1,16 @@
 "use client";
-import { User } from "@/lib/data";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RoleDropDown } from "./components/RoleDropdown";
 import { StateDropdown } from "./components/UserStateDropdown";
 import { AddressPopover } from "./components/AddressPopOver";
-import { UserPasswordCell } from "./components/UserPasswordCell";
 import { UserInfoCell } from "./components/UserInfoCell";
 import { UserListActions } from "./components/UserListActions";
 import { OficinaDropDown } from "./components/OficinaDropDown";
+import { User } from "@prisma/client";
 
 const myCustomFilterFn: FilterFn<User> = (
-  row: Row<User>,
+  row: Row<any>,
   _columnId: string,
   filterValue: string,
   _addMeta: (meta: any) => void,
@@ -55,13 +54,13 @@ export const UserColumns: ColumnDef<User>[] = [
     enableGlobalFilter: true,
   },
 
-  {
-    id: "password",
-    header: "Contraseñas",
-    cell: ({ row }) => {
-      return <UserPasswordCell row={row} />;
-    },
-  },
+  // {
+  //id: "password",
+  //header: "Contraseñas",
+  //cell: ({ row }) => {
+  // return <UserPasswordCell row={row} />;
+  //},
+  //},
 
   {
     accessorKey: "oficina",
@@ -71,6 +70,9 @@ export const UserColumns: ColumnDef<User>[] = [
       return <OficinaDropDown row={row} />;
     },
     enableGlobalFilter: true,
+    filterFn: (row, _id, filterValue) => {
+      return row.original.Oficina === filterValue;
+    },
   },
   {
     accessorKey: "email",
@@ -81,7 +83,7 @@ export const UserColumns: ColumnDef<User>[] = [
   },
   {
     id: "phone",
-    accessorKey: "phone",
+    accessorKey: "celular",
     enableGlobalFilter: true,
     header: "Celular",
   },

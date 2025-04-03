@@ -46,7 +46,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Oficina } from "../../../../../lib/data";
+import { Oficina } from "@prisma/client";
+import CreateProfile from "../components/CreateProfile";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -152,6 +153,8 @@ export function UsersTable<TData, TValue>({
 
           {/* Acciones */}
           <div className="flex items-center gap-2">
+            <CreateProfile />
+
             {/* Controlador de columnas visibles */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -208,6 +211,7 @@ export function UsersTable<TData, TValue>({
                 {/* Filtro de Oficina */}
                 <div className="p-2">
                   <p className="text-sm font-medium mb-2">Oficina</p>
+
                   <Select
                     value={currentOficina}
                     onValueChange={(value) => {
@@ -226,8 +230,12 @@ export function UsersTable<TData, TValue>({
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="all">Todas las oficinas</SelectItem>
-                        <SelectItem value={Oficina.uno}>Oficina 1</SelectItem>
-                        <SelectItem value={Oficina.dos}>Oficina 2</SelectItem>
+                        <SelectItem value={Oficina.Oficina1}>
+                          Oficina 1
+                        </SelectItem>
+                        <SelectItem value={Oficina.Oficina2}>
+                          Oficina 2
+                        </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
