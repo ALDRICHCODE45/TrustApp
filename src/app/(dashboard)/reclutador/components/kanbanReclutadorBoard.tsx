@@ -44,13 +44,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { KanbanFilters } from "./KanbanFilters";
 
 // Types
@@ -152,8 +145,8 @@ const KanbanColumn: React.FC<ColumnProps> = ({
       <Badge variant="outline">{vacantes.length}</Badge>
     </div>
     <div className="bg-muted/40 rounded-lg p-3 h-screen overflow-auto">
-      {vacantes.map((vacante) => (
-        <Dialog key={vacante.id}>
+      {vacantes.map((vacante, idx) => (
+        <Dialog key={idx}>
           <DialogTrigger asChild>
             <div>
               <VacanteCard

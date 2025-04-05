@@ -3,7 +3,8 @@ import { type ReactElement } from "react";
 import { UsersTable } from "./table/UsersTable";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
-import { notFound } from "next/navigation";
+import { Role } from "@prisma/client";
+import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 
 export interface pageProps {}
 
@@ -17,13 +18,14 @@ const fetchUsers = async () => {
 
 export default async function UserList({}: pageProps): Promise<ReactElement> {
   const session = await auth();
-  if (!session) return notFound();
+
+  checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
+
   const { columns, data } = await fetchUsers();
 
   return (
     <>
       {/* LIST */}
-      {JSON.stringify(session.user, null, 4)}
       <UsersTable columns={columns} data={data} />
     </>
   );

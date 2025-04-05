@@ -20,10 +20,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { usuario_logeado } from "@/lib/data";
-import { Role } from "@prisma/client";
-
-// This is sample data.
+import { Role, User } from "@prisma/client";
 
 const data = {
   user: {
@@ -53,7 +50,7 @@ const data = {
       title: "Reclutamiento",
       url: "#",
       icon: UserSearch,
-      roles: ["reclutador"],
+      roles: [Role.reclutador],
       items: [
         {
           title: "Vacantes",
@@ -71,7 +68,7 @@ const data = {
       title: "Generacion de Leads",
       url: "#",
       icon: HandCoins,
-      roles: ["gl"],
+      roles: [Role.GL],
       items: [
         {
           title: "Prospecciones",
@@ -90,7 +87,7 @@ const data = {
       url: "#",
       icon: ShieldBan,
       isActive: true,
-      roles: ["admin"], // Solo visible para administradores
+      roles: [Role.Admin], // Solo visible para administradores
       items: [
         {
           title: "Usuarios",
@@ -100,7 +97,7 @@ const data = {
         {
           title: "Clientes",
           url: "/list/clientes",
-          roles: [Role.Admin, Role.Admin],
+          roles: [Role.Admin],
         },
         {
           title: "Leads",
@@ -114,17 +111,17 @@ const data = {
       url: "",
       icon: MonitorCog,
       isActive: true,
-      roles: ["admin", "user"], // Visible para administradores y usuarios normales
+      roles: [Role.Admin],
       items: [
         {
           title: "Dashboard Administrativo",
           url: "/admin",
-          roles: [Role.Admin], // Solo visible para administradores
+          roles: [Role.Admin],
         },
         {
           title: "Reclutamiento",
           url: "/list/reclutamiento",
-          roles: [Role.Admin], // Visible para administradores y usuarios normales
+          roles: [Role.Admin],
         },
       ],
     },
@@ -132,12 +129,12 @@ const data = {
       title: "Sistema",
       url: "",
       icon: UserRoundCog,
-      roles: ["admin"],
+      roles: [Role.Admin],
       items: [
         {
           title: "Logs",
           url: "/sistema/logs",
-          roles: ["admin"],
+          roles: [Role.Admin],
         },
       ],
     },
@@ -145,38 +142,38 @@ const data = {
       title: "Finanzas",
       url: "",
       icon: Landmark,
-      roles: ["admin", "user"],
+      roles: [Role.Admin],
       items: [
         {
           title: "CXP",
           url: "/list/cuentas",
-          roles: ["admin", "user"],
+          roles: [Role.Admin],
         },
         {
           title: "CXC",
           url: "/list/facturas",
-          roles: ["admin", "user"],
+          roles: [Role.Admin],
         },
       ],
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ user }: { user: User }) {
   // Filtrar los elementos del menú según el rol del usuario logeado
   const filteredNavMain = data.navMain
-    .filter((item) => item.roles?.includes(usuario_logeado.role))
+    .filter((item) => item.roles?.includes(user.role))
     .map((item) => ({
       ...item,
       items: item.items?.filter((subItem) =>
-        subItem.roles?.includes(usuario_logeado.role),
+        subItem.roles?.includes(user.role),
       ),
     }));
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <NavUser user={usuario_logeado} />
+        <NavUser user={user} />
       </SidebarHeader>
       <SidebarContent>
         {/* Pasar los elementos filtrados */}

@@ -16,21 +16,21 @@ export interface Userlogged {
   avatar: string;
 }
 
-export let usuario_logeado: Userlogged = {
-  role: "admin",
-  name: "John Doe",
-  id: 10,
-  email: "salvador@topsales.expert",
-  avatar:
-    "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
-};
-
 export enum Role {
   reclutador = "reclutador",
   generadorLeads = "GL",
   admin = "Admin",
   marketing = "MK",
 }
+
+export let usuario_logeado: Userlogged = {
+  role: Role.admin,
+  name: "John Doe",
+  id: 10,
+  email: "salvador@topsales.expert",
+  avatar:
+    "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
+};
 
 export enum Oficina {
   "uno" = "Oficina1",

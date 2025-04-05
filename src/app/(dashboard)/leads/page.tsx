@@ -4,6 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { leadsColumns } from "../list/leads/leadsColumns";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { CommercialTable } from "./table/CommercialTable";
+import { auth } from "@/lib/auth";
+import { Role } from "@prisma/client";
+import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";
 
 export interface pageProps {}
 
@@ -22,6 +25,9 @@ const fetchLeads = async () => {
 
 export default async function page({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchLeads();
+  const session = await auth();
+
+  checkRoleRedirect(session?.user.role as Role, [Role.Admin, Role.GL, Role.MK]);
 
   return (
     <>

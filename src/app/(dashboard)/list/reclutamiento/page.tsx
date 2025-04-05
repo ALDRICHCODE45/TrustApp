@@ -3,6 +3,9 @@ import { vacantesColumns } from "./columns";
 import { Vacante, vacantes } from "@/lib/data";
 import { RecruiterTable } from "./table/RecruiterTable";
 import { ColumnDef } from "@tanstack/react-table";
+import { auth } from "@/lib/auth";
+import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
+import { Role } from "@prisma/client";
 
 export interface pageProps {}
 
@@ -21,6 +24,10 @@ const fetchVacantes = async () => {
 
 export default async function ReclutamientoPage({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchVacantes();
+
+  const session = await auth();
+  checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
+
   return (
     <>
       {/* LIST */}

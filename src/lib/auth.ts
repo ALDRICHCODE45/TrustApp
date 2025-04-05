@@ -6,11 +6,10 @@ import prisma from "./db";
 class InvalidLoginError extends CredentialsSignin {
   code = "Invalid identifier or password";
 }
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
         email: {},
         password: {},
@@ -30,7 +29,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // No user found, so this is their first attempt to login
           throw new InvalidLoginError();
         }
-
         // return user object with their profile data
         return user;
       },
@@ -48,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.user.role = token.role;
+      session.user.role = token.role as string;
       return session;
     },
   },

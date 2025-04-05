@@ -24,7 +24,7 @@ export function LoginForm() {
       if (result?.error) {
         return { error: "Error al iniciar sesión" };
       } else if (result?.ok) {
-        router.push("/admin");
+        router.push("/");
         return;
       }
     } catch (err) {

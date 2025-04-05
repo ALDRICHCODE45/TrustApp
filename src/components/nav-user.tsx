@@ -1,7 +1,5 @@
 "use client";
-
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,11 +17,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { Userlogged, usuario_logeado } from "@/lib/data";
 import { signOut } from "next-auth/react";
+import { User } from "@prisma/client";
 
-export function NavUser({ user }: { user: Userlogged }) {
+export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
+  const name = user.name;
 
   return (
     <SidebarMenu>
@@ -36,16 +35,16 @@ export function NavUser({ user }: { user: Userlogged }) {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
-                  src={user.avatar}
-                  alt={user.name}
+                  src={user.image || undefined}
+                  alt={user.name!!}
                   className="object-cover"
                 />
                 <AvatarFallback className="rounded-lg object-contain">
-                  SP
+                  {name ? name.slice(0, 2).toUpperCase() : "??"}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold ">Salvador</span>
+                <span className="truncate font-semibold ">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -61,8 +60,8 @@ export function NavUser({ user }: { user: Userlogged }) {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={user.avatar}
-                    alt={user.name}
+                    src={user.image || undefined}
+                    alt={user.name!!}
                     className="object-cover"
                   />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
@@ -76,10 +75,7 @@ export function NavUser({ user }: { user: Userlogged }) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link
-                  href={`/profile/${usuario_logeado.id}`}
-                  className="cursor-pointer"
-                >
+                <Link href={`/profile/${user.id}`} className="cursor-pointer">
                   <Settings />
                   Perfil
                 </Link>
