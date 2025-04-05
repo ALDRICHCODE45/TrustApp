@@ -21,6 +21,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { usuario_logeado } from "@/lib/data";
+import { Role } from "@prisma/client";
 
 // This is sample data.
 
@@ -57,12 +58,12 @@ const data = {
         {
           title: "Vacantes",
           url: "/reclutador",
-          roles: ["reclutador"],
+          roles: [Role.reclutador],
         },
         {
           title: "Kanban",
           url: "/reclutador/kanban",
-          roles: ["reclutador"],
+          roles: [Role.reclutador],
         },
       ],
     },
@@ -75,12 +76,12 @@ const data = {
         {
           title: "Prospecciones",
           url: "/leads",
-          roles: ["gl"],
+          roles: [Role.GL],
         },
         {
           title: "Kanban Board",
           url: "/leads/kanban",
-          roles: ["gl"],
+          roles: [Role.GL],
         },
       ],
     },
@@ -94,17 +95,17 @@ const data = {
         {
           title: "Usuarios",
           url: "/list/users",
-          roles: ["admin"], // Solo visible para administradores
+          roles: [Role.Admin], // Solo visible para administradores
         },
         {
           title: "Clientes",
           url: "/list/clientes",
-          roles: ["admin", "user"],
+          roles: [Role.Admin, Role.Admin],
         },
         {
           title: "Leads",
           url: "/list/leads",
-          roles: ["admin", "user"],
+          roles: [Role.Admin],
         },
       ],
     },
@@ -118,12 +119,12 @@ const data = {
         {
           title: "Dashboard Administrativo",
           url: "/admin",
-          roles: ["admin"], // Solo visible para administradores
+          roles: [Role.Admin], // Solo visible para administradores
         },
         {
           title: "Reclutamiento",
           url: "/list/reclutamiento",
-          roles: ["admin", "user"], // Visible para administradores y usuarios normales
+          roles: [Role.Admin], // Visible para administradores y usuarios normales
         },
       ],
     },

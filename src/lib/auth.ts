@@ -1,9 +1,8 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-
-// Your own logic for dealing with plaintext password strings; be careful!
 import bcrypt from "bcrypt";
 import prisma from "./db";
+
 class InvalidLoginError extends CredentialsSignin {
   code = "Invalid identifier or password";
 }
@@ -49,9 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.role = token.role;
-      }
+      session.user.role = token.role;
       return session;
     },
   },

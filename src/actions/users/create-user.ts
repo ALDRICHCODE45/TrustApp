@@ -6,11 +6,14 @@ import bcrypt from "bcrypt";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { editUserSchema } from "@/zod/editUserSchema";
+import { Role } from "@prisma/client";
 
 export const editUser = async (userId: string, formData: FormData) => {
-  console.log({ formData, userId });
+  const session = await checkSession("/login");
 
-  await checkSession("/login");
+  if (session.user?.role !== Role.Admin) {
+    throw Error("Unauthorize");
+  }
 
   const submission = parseWithZod(formData, {
     schema: editUserSchema,
@@ -25,7 +28,7 @@ export const editUser = async (userId: string, formData: FormData) => {
   });
 
   if (!existingUser) {
-    return { status: "error", message: "Usuario no encontrado." };
+    throw Error("User does not exists");
   }
 
   await prisma.user.update({
