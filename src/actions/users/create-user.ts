@@ -10,6 +10,7 @@ import { Role } from "@prisma/client";
 
 export const editUser = async (userId: string, formData: FormData) => {
   const session = await checkSession("/login");
+  console.log({ formData });
 
   if (session.user?.role !== Role.Admin) {
     throw Error("Unauthorize");
@@ -49,7 +50,6 @@ export const editUser = async (userId: string, formData: FormData) => {
   });
 
   revalidatePath("/list/users");
-  return { status: "success" };
 };
 
 export const createUser = async (prevState: any, formData: FormData) => {

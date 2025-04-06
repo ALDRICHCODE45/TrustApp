@@ -1,4 +1,3 @@
-"use client";
 import {
   Card,
   CardHeader,
@@ -7,61 +6,53 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { AttendanceChart } from "@/components/AttendanceChart";
-import { User, UsersData } from "@/lib/data";
-import { notFound, useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import "yet-another-react-lightbox-lite/styles.css";
 import { UserProfileHeader } from "./components/UserProfileHeader";
 import { EventCalendar } from "@/components/EventCalendar";
-import { useEffect, useState } from "react";
-import Loading from "./loading";
+import prisma from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { Role } from "@prisma/client";
 
-const fetchUser = async (userId: number): Promise<User | undefined> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const user = UsersData.find((user) => user.id === userId);
-      resolve(user);
-    }, 1000); // Simula una carga de datos con retraso de 1s
+const fetchUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
   });
+
+  return user;
 };
 
-// Interfaz para las actividades
+export default async function UserProfile({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const session = await auth();
+  const { id } = await params;
 
-export default function UserProfile() {
-  const { id } = useParams();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadCliente = async () => {
-      try {
-        setIsLoading(true);
-        const usuario = await fetchUser(Number(id));
-        if (!usuario) {
-          notFound();
-        }
-        setUser(usuario);
-      } catch {
+  const loadProfile = async () => {
+    try {
+      const usuario = await fetchUser(id);
+      if (!usuario) {
         notFound();
-      } finally {
-        setIsLoading(false);
       }
-    };
+      return usuario;
+    } catch {
+      throw new Error("load profile error");
+    }
+  };
 
-    loadCliente();
-  }, [id]);
-
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  if (!user) {
-    notFound();
-  }
+  const user = await loadProfile();
 
   return (
     <div className="container mx-auto p-4 md:p-6">
       {/* Header - User Basic Info */}
-      <UserProfileHeader user={user} />
+      <UserProfileHeader
+        user={user}
+        isAdmin={session?.user.role === Role.Admin}
+      />
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -94,7 +85,8 @@ export default function UserProfile() {
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-500">Este mes</p>
                     <p className="text-2xl font-medium mt-1">
-                      {user?.placements || user?.clientes || "14"}
+                      {/* {user?.placements || user?.clientes || "14"} */}
+                      14
                     </p>
                   </CardContent>
                 </Card>

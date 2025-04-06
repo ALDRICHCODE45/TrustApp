@@ -7,37 +7,81 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Row } from "@tanstack/react-table";
-import { UserState, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { Ban, CircleUser } from "lucide-react";
-import { useState } from "react";
+import { UserState } from "@prisma/client";
+import { editUser } from "@/actions/users/create-user";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface Props {
   row: Row<User>;
 }
 
+const allowStates = [
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar el estado a ACTIVADO?",
+    onConfirmValule: UserState.ACTIVO,
+    state: "ACTIVO",
+    icon: CircleUser,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar el estado a DESACTIVADO?",
+    onConfirmValule: UserState.INACTIVO,
+    state: "INACTIVO",
+    icon: Ban,
+  },
+];
+
 export const StateDropdown = ({ row }: Props) => {
   const actualState = row.original.State;
-  const [status, setStatus] = useState(actualState);
 
-  const handleChangeState = (newState: UserState) => {
-    setStatus(newState);
+  const handleChangeState = async (newState: UserState) => {
+    try {
+      const formData = new FormData();
+      formData.append("status", newState);
+      toast.promise(editUser(row.original.id, formData), {
+        loading: "Loading...",
+        success: "Usuario modificado con éxito",
+        error: "Ha ocurrido un error",
+      });
+    } catch (error) {
+      toast.error("Error al modificar el usuario. Intenta nuevamente.");
+    }
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {status}
+          {actualState}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => handleChangeState(UserState.ACTIVO)}>
-          <CircleUser />
-          Activo
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleChangeState(UserState.INACTIVO)}>
-          <Ban />
-          Inactivo
-        </DropdownMenuItem>
+        {allowStates.map((state) => (
+          <ConfirmDialog
+            key={state.state}
+            title={state.title}
+            description={state.description}
+            onConfirm={() => handleChangeState(state.onConfirmValule)}
+            trigger={
+              <div className="cursor-pointer">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={(e) => {
+                    // Prevenir que el DropdownMenu se cierre automáticamente
+                    e.preventDefault();
+                  }}
+                >
+                  <state.icon className="size-4" />
+                  {state.state}
+                </DropdownMenuItem>
+              </div>
+            }
+          />
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

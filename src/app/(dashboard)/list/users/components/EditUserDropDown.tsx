@@ -12,10 +12,38 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ImagePlus, Pencil } from "lucide-react";
+import { User } from "@prisma/client";
+import { editUser } from "@/actions/users/create-user";
+import { useActionState } from "react";
+import { useParams } from "next/navigation";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { editUserSchema } from "@/zod/editUserSchema";
 
-export function EditUserProfile() {
+export function EditUserProfile({ user }: { user: User }) {
+  const { id } = useParams();
+
+  const wrapEditUser = (userId: string) => {
+    return async (_prevState: any, formData: FormData) => {
+      return await editUser(userId, formData);
+    };
+  };
+
+  const [lastResult, formAction] = useActionState(
+    wrapEditUser(String(id)),
+    undefined,
+  );
+
+  const [form, fields] = useForm({
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: editUserSchema });
+    },
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
+
   return (
     <Dialog>
       {/* TooltipProvider envuelve todo el componente */}
@@ -36,12 +64,23 @@ export function EditUserProfile() {
         </DialogDescription>
         <div className="overflow-y-auto">
           <div className="px-6 pb-6 pt-4">
-            <form className="space-y-4">
+            <form
+              id={form.id}
+              action={formAction}
+              onSubmit={form.onSubmit}
+              noValidate
+              className="space-y-4"
+            >
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Avatar />
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="first-name">Nombre</Label>
-                  <Input id="first-name" placeholder="Jane" type="text" />
+                  <Input
+                    id={fields.name.id}
+                    name={fields.name.name}
+                    placeholder="Jane"
+                    type="text"
+                  />
                 </div>
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="last-name">Apellidos</Label>

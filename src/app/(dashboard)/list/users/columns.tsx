@@ -88,13 +88,16 @@ export const UserColumns: ColumnDef<User>[] = [
     header: "Celular",
   },
   {
-    id: "rol",
+    id: "role",
     accessorKey: "rol",
     header: "Role",
     cell: ({ row }) => {
       return <RoleDropDown row={row} />;
     },
     enableGlobalFilter: true,
+    filterFn: (row, _id, filterValue) => {
+      return row.original.role === filterValue;
+    },
   },
   {
     id: "status",
@@ -105,6 +108,9 @@ export const UserColumns: ColumnDef<User>[] = [
       return <StateDropdown row={row} />;
     },
     enableGlobalFilter: true,
+    filterFn: (row, _id, filterValue) => {
+      return row.original.State === filterValue;
+    },
   },
   {
     id: "address",

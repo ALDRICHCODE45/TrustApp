@@ -24,7 +24,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (
           !user ||
-          !bcrypt.compareSync(credentials.password as string, user.password)
+          !bcrypt.compareSync(credentials.password as string, user.password) ||
+          user.State === "INACTIVO"
         ) {
           // No user found, so this is their first attempt to login
           throw new InvalidLoginError();

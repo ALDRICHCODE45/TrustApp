@@ -43,11 +43,15 @@ import {
   Search,
   SlidersHorizontal,
   Layers,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Oficina } from "@prisma/client";
+import { Oficina, Role, UserState } from "@prisma/client";
 import CreateProfile from "../components/CreateProfile";
+import { desactivateUsers } from "../../../../../actions/users/delete-users";
+import { toast } from "sonner";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -72,6 +76,10 @@ export function UsersTable<TData, TValue>({
   const [pageSize, setPageSize] = useState<number>(10);
   const [globalFilter, setGlobalFilter] = useState("");
   const [currentOficina, setCurrentOficina] = useState("all");
+  const [currentRole, setCurrentRole] = useState("all");
+  const [currentUserState, setCurrentUserState] = useState("all");
+
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const table = useReactTable({
     data,
@@ -114,6 +122,23 @@ export function UsersTable<TData, TValue>({
     table.getFilteredRowModel().rows.length,
   );
 
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const ids = selectedRows.map((row) => row.original.id);
+
+    try {
+      await desactivateUsers(ids);
+      toast.success("Usuarios desactivados correctamente");
+    } catch (error) {
+      toast.error("Error al desactivar usuarios");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
+
   return (
     <Card className="w-full shadow-sm border-0">
       <CardContent className="p-4 md:p-6">
@@ -153,6 +178,26 @@ export function UsersTable<TData, TValue>({
 
           {/* Acciones */}
           <div className="flex items-center gap-2">
+            {hasSelectedRows && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDelete()}
+                className="flex items-center gap-1 cursor-pointer"
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <Loader2 className="animate-spin size-4" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+                Desactivar {table.getFilteredSelectedRowModel().rows.length}{" "}
+                {table.getFilteredSelectedRowModel().rows.length === 1
+                  ? "usuario"
+                  : "usuarios"}
+              </Button>
+            )}
+
             <CreateProfile />
 
             {/* Controlador de columnas visibles */}
@@ -207,7 +252,6 @@ export function UsersTable<TData, TValue>({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
                 <DropdownMenuSeparator />
-
                 {/* Filtro de Oficina */}
                 <div className="p-2">
                   <p className="text-sm font-medium mb-2">Oficina</p>
@@ -240,8 +284,72 @@ export function UsersTable<TData, TValue>({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="p-2">
+                  <Select
+                    value={currentUserState}
+                    onValueChange={(value) => {
+                      if (value === "all") {
+                        table.getColumn("status")?.setFilterValue(undefined);
+                        setCurrentUserState("all");
+                        return;
+                      }
+                      setCurrentUserState(value);
+                      table.getColumn("status")?.setFilterValue(value);
+                    }}
+                  >
+                    <p className="text-sm font-medium mb-2">State</p>
+
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue placeholder="Todos los Roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+
+                        <SelectItem value={UserState.ACTIVO}>Activo</SelectItem>
+                        <SelectItem value={UserState.INACTIVO}>
+                          Inactivo
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Aquí puedes agregar más filtros según sea necesario */}
+                <div className="p-2">
+                  <Select
+                    value={currentRole}
+                    onValueChange={(value) => {
+                      if (value === "all") {
+                        table.getColumn("role")?.setFilterValue(undefined);
+                        setCurrentOficina("all");
+                        return;
+                      }
+                      setCurrentRole(value);
+                      table.getColumn("role")?.setFilterValue(value);
+                    }}
+                  >
+                    <p className="text-sm font-medium mb-2">Role</p>
+
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue placeholder="Todos los Roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">Todos los Roles</SelectItem>
+
+                        <SelectItem value={Role.Admin}>Admin</SelectItem>
+                        <SelectItem value={Role.GL}>
+                          Generador de Leads
+                        </SelectItem>
+                        <SelectItem value={Role.MK}>Marketing</SelectItem>
+                        <SelectItem value={Role.reclutador}>
+                          Reclutador
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {/* Por ejemplo, filtro de estado, fecha, etc. */}
                 <DropdownMenuSeparator />
 

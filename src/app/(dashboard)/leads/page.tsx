@@ -7,6 +7,7 @@ import { CommercialTable } from "./table/CommercialTable";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";
+import { ToastAlerts } from "@/components/ToastAlerts";
 
 export interface pageProps {}
 
@@ -32,6 +33,7 @@ export default async function page({}: pageProps): Promise<ReactElement> {
   return (
     <>
       {/* LIST */}
+      <ToastAlerts />
       <CreateLeadForm />
       <CommercialTable columns={columns} data={data} />
     </>

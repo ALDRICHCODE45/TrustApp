@@ -1,6 +1,7 @@
+"use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, usuario_logeado } from "@/lib/data";
+import { User } from "@prisma/client";
 import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox-lite";
 import "yet-another-react-lightbox-lite/styles.css";
@@ -9,19 +10,27 @@ import { EditUserProfile } from "@/app/(dashboard)/list/users/components/EditUse
 import { ActivityProfileSheet } from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
 
-export const UserProfileHeader = ({ user }: { user: User }) => {
+export const UserProfileHeader = ({
+  user,
+  isAdmin,
+}: {
+  user: User;
+  isAdmin: boolean;
+}) => {
   const [index, setIndex] = useState<number>();
-  const isAdmin = usuario_logeado?.role === "admin";
-  const value = user?.placements || user?.clientes || 32;
+
+  //const value = user?.placements || user?.clientes || 32;
+  const value = 32;
 
   return (
     <Card className="mb-6 shadow-sm overflow-hidden">
       {/* Banner superior con diseño mejorado */}
       <div className="h-40 bg-gradient-to-r from-primary/20 to-primary/5 relative">
         {/* Opciones de edición para admin posicionadas en el banner */}
+
         {isAdmin && (
           <div className="absolute top-4 right-4">
-            <EditUserProfile />
+            <EditUserProfile user={user} />
           </div>
         )}
       </div>
@@ -37,7 +46,7 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
                   onClick={() => setIndex(0)}
                 >
                   <AvatarImage
-                    src={user?.photo}
+                    src={user?.image ? user.image : undefined}
                     alt={user?.name}
                     className="object-cover"
                   />
@@ -46,11 +55,15 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
                   </AvatarFallback>
                 </Avatar>
                 <Badge className="absolute bottom-1 right-1 bg-primary">
-                  {user?.rol}
+                  {user?.role}
                 </Badge>
               </div>
               <Lightbox
-                slides={[{ src: `${user?.photo}` }]}
+                slides={[
+                  {
+                    src: `${user?.image ? user.image : "https://gremcorpsarpg.com/images/avatars/default.jpg"}`,
+                  },
+                ]}
                 index={index}
                 setIndex={setIndex}
               />
@@ -62,7 +75,7 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
                     <h2 className="text-2xl font-bold">{user?.name}</h2>
 
                     <Badge variant="outline" className="mt-1">
-                      <p className="">{user?.oficina}</p>
+                      <p className="">{user?.Oficina}</p>
                     </Badge>
                   </div>
                   <p className="text-muted-foreground">{user?.email}</p>
@@ -75,11 +88,12 @@ export const UserProfileHeader = ({ user }: { user: User }) => {
 
           {/* Tarjetas de información mejoradas */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-            <UserInfoCard title="Edad" value={user?.age} />
-            <UserInfoCard title="Ubicación" value={user?.address} />
-            <UserInfoCard title="Contacto" value={user?.phone} />
+            <UserInfoCard title="Edad" value={29} />
+            <UserInfoCard title="Ubicación" value={user?.direccion} />
+            <UserInfoCard title="Contacto" value={user?.celular} />
             <UserInfoCard
-              title={user?.placements ? "Placements" : "Clientes"}
+              //title={user?.placements ? "Placements" : "Clientes"}
+              title="placements"
               value={value}
             />
           </div>
