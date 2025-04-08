@@ -29,12 +29,13 @@ import {
   Clipboard,
   SquarePen,
   Trash2,
-  User,
+  UserIcon,
   ChevronDown,
 } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Card } from "@/components/ui/card";
-import { Lead, usuario_logeado } from "@/lib/data";
+import { usuario_logeado } from "@/lib/data";
+import { Lead, Person, User } from "@prisma/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,10 +59,11 @@ import {
 } from "@/components/ui/select";
 import { Row } from "@tanstack/react-table";
 
-export const ActionsCell = ({ row }: { row: Row<Lead> }) => {
-  const teacherId = row.original.generadorLeads;
-  const teacherName = row.original.generadorLeads;
-
+export const ActionsCell = ({
+  row,
+}: {
+  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
+}) => {
   // Estado para controlar la visibilidad del diálogo y del dropdown
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -173,7 +175,7 @@ export const ActionsCell = ({ row }: { row: Row<Lead> }) => {
                         htmlFor="generador"
                         className="text-sm font-medium flex items-center gap-2"
                       >
-                        <User size={17} />
+                        <UserIcon size={17} />
                         Generador
                       </Label>
 
@@ -201,7 +203,7 @@ export const ActionsCell = ({ row }: { row: Row<Lead> }) => {
                                 onClick={() => setSelectedOption(user.name)} // Cambiar opción seleccionada
                                 type="button"
                               >
-                                <User className="mr-2 h-4 w-4" />
+                                <UserIcon className="mr-2 h-4 w-4" />
                                 <span>{user.name}</span>
                               </Button>
                             ))}

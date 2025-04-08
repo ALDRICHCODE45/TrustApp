@@ -1207,9 +1207,11 @@ export enum LeadStatus {
 interface ContactoLead {
   name: string;
   posicion: string;
+  // email:string -> este tambien debe estar
 }
 
 // Actualizamos la interfaz para usar el enum en el campo status
+
 export interface Lead {
   empresa: string;
   sector: string;

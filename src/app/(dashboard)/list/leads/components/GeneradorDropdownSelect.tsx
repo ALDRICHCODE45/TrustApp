@@ -10,11 +10,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Cliente, Lead, Role, UsersData } from "@/lib/data";
-import { User } from "lucide-react";
+import { UsersData } from "@/lib/data";
+import { Lead, Person, Role, User } from "@prisma/client";
+import { UserIcon } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 
-export const GeneradorDropdownSelect = ({ row }: { row: Row<Lead> }) => {
+export const GeneradorDropdownSelect = ({
+  row,
+}: {
+  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
+}) => {
   const router = useRouter();
   const [generador, setNewGenerador] = useState(
     row.original.generadorLeads || {
@@ -24,9 +29,7 @@ export const GeneradorDropdownSelect = ({ row }: { row: Row<Lead> }) => {
   );
 
   // Filter only recruiters from the UsersData array
-  const newUsuarios = UsersData.filter(
-    (user) => user.rol === Role.generadorLeads,
-  );
+  const newUsuarios = UsersData.filter((user) => user.rol === Role.GL);
 
   const handleUserChange = (newUser: any) => {
     setNewGenerador(newUser);
@@ -41,7 +44,7 @@ export const GeneradorDropdownSelect = ({ row }: { row: Row<Lead> }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="flex ">
-          <User />
+          <UserIcon />
           <span className="truncate">{generador.name}</span>
         </Button>
       </DropdownMenuTrigger>

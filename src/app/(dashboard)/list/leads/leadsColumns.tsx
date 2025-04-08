@@ -1,16 +1,17 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Lead } from "@/lib/data";
-import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Building, Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
-import { GeneratorDropDown } from "./components/SelectGLDropDown";
 import { LeadContactosSheet } from "./components/LeadContactosSheet";
 import { LeadChangeStatus } from "./components/LeadChangeStatus";
 import { GeneradorDropdownSelect } from "./components/GeneradorDropdownSelect";
 import { ChangeDateComponent } from "../reclutamiento/components/AsignacionDatePickerComponent";
+import { Lead, User, Person } from "@prisma/client";
 
-export const leadsColumns: ColumnDef<Lead>[] = [
+export const leadsColumns: ColumnDef<
+  Lead & { generadorLeads: User; contactos: Person[] }
+>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -109,7 +110,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     cell: ({ row }) => {
       return (
         <ChangeDateComponent
-          fecha={new Date()}
+          fecha={row.original.fechaAConectar}
           onFechaChange={(nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar de tu fuente de datos
             console.log("Fecha actualizada:", nuevaFecha);
@@ -130,7 +131,7 @@ export const leadsColumns: ColumnDef<Lead>[] = [
     header: () => null,
     cell: () => null,
     accessorFn: (row) => {
-      return row.generadorLeads?.oficina || null;
+      return row.generadorLeads.Oficina || null;
     },
     filterFn: (row, id, filterValue) => {
       const oficina = row.getValue(id);

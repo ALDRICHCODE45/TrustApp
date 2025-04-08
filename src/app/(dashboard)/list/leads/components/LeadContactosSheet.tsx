@@ -37,14 +37,10 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Lead } from "@/lib/data";
 import { Mail, PlusIcon, Users } from "lucide-react";
+import { Person } from "@prisma/client";
 
-export function LeadContactosSheet({
-  contactos,
-}: {
-  contactos: Lead["contactos"];
-}) {
+export function LeadContactosSheet({ contactos }: { contactos: Person[] }) {
   const [isMobile, setIsMobile] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -185,7 +181,7 @@ export function LeadContactosSheet({
                     {contacto.name}
                   </CardTitle>
                   <CardDescription className="text-xs text-gray-400">
-                    {contacto.posicion}
+                    {contacto.position}
                   </CardDescription>
                 </div>
               </CardHeader>

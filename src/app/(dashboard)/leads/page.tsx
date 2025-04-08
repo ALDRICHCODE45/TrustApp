@@ -1,6 +1,4 @@
 import { type ReactElement } from "react";
-import { Lead, leadsData } from "@/lib/data";
-import { ColumnDef } from "@tanstack/react-table";
 import { leadsColumns } from "../list/leads/leadsColumns";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { CommercialTable } from "./table/CommercialTable";
@@ -8,25 +6,39 @@ import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";
 import { ToastAlerts } from "@/components/ToastAlerts";
+import prisma from "@/lib/db";
 
 export interface pageProps {}
 
-const fetchLeads = async () => {
-  return new Promise<{ columns: ColumnDef<Lead>[]; data: Lead[] }>(
-    (resolve) => {
-      setTimeout(() => {
-        resolve({
-          columns: leadsColumns,
-          data: leadsData,
-        });
-      }, 2000); // Retraso de 2 segundos
+const fetchData = async () => {
+  const leads = await prisma.lead.findMany({
+    include: {
+      generadorLeads: true,
+      contactos: true,
     },
-  );
+  });
+  return {
+    columns: leadsColumns,
+    data: leads,
+  };
+};
+
+const fetchGeneradores = async () => {
+  const users = await prisma.user.findMany({
+    where: {
+      role: {
+        in: ["GL", "Admin", "MK"],
+      },
+    },
+  });
+
+  return users;
 };
 
 export default async function page({}: pageProps): Promise<ReactElement> {
-  const { columns, data } = await fetchLeads();
+  const { columns, data } = await fetchData();
   const session = await auth();
+  const generadores = await fetchGeneradores();
 
   checkRoleRedirect(session?.user.role as Role, [Role.Admin, Role.GL, Role.MK]);
 
@@ -34,8 +46,12 @@ export default async function page({}: pageProps): Promise<ReactElement> {
     <>
       {/* LIST */}
       <ToastAlerts />
-      <CreateLeadForm />
-      <CommercialTable columns={columns} data={data} />
+      <CreateLeadForm generadores={generadores} />
+      <CommercialTable
+        columns={columns}
+        data={data}
+        generadores={generadores}
+      />
     </>
   );
 }

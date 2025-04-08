@@ -9,17 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
-  BriefcaseIcon,
-  CreditCardIcon,
-  LinkIcon,
+  CalendarIcon,
+  Loader2,
   PlusCircle,
   User as UserIcon,
 } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { AvatarFallback } from "@/components/ui/avatar";
@@ -29,11 +24,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Role, User, UsersData } from "@/lib/data";
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
+import { createLead } from "@/actions/leads/actions";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { createLeadSchema } from "@/zod/createLeadSchema";
+import { User } from "@prisma/client";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { es } from "date-fns/locale";
+import { format } from "date-fns";
 
-export const CreateLeadForm = () => {
+export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
   return (
     <>
       <Dialog>
@@ -49,45 +56,38 @@ export const CreateLeadForm = () => {
             <Separator />
           </DialogHeader>
           {/* Envolver el formulario con FormProvider */}
-          <NuevoLeadForm />
+          <NuevoLeadForm generadores={generadores} />
         </DialogContent>
       </Dialog>
     </>
   );
 };
 
-function NuevoLeadForm() {
-  // Definir el esquema de validación con Zod
-  const FormSchema = z.object({
-    username: z.string().min(2, {
-      message: "Username must be at least 2 characters.",
-    }),
-  });
-
-  // Inicializar el formulario con react-hook-form
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      username: "",
-    },
-  });
-
-  // Función para manejar el envío del formulario
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data); // Muestra los datos en la consola
-    toast("Form submitted successfully!");
-  }
-  const generadores = UsersData.filter(
-    (user) => user.rol === Role.generadorLeads,
-  );
-  const [isOpen, setIsOpen] = useState(false);
-  const [glUsers] = useState<User[]>(generadores);
+function NuevoLeadForm({ generadores }: { generadores: User[] }) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const [fechaConectar, setFechaConectar] = useState<Date>();
+  const [fechaProspectar, setFechaProspectar] = useState<Date>();
+
+  const [lastResult, formAction, isPending] = useActionState(
+    createLead,
+    undefined,
+  );
+
+  const [form, fields] = useForm({
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: createLeadSchema,
+      });
+    },
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
 
   // Seleccionar un usuario
   const handleSelectGl = (user: User) => {
     setSelectedUser(user);
-    setIsOpen(false);
   };
 
   // Obtener iniciales para Avatar fallback
@@ -103,117 +103,246 @@ function NuevoLeadForm() {
 
   return (
     <>
-      <form className="space-y-4">
+      <form
+        className="space-y-4"
+        id={form.id}
+        action={formAction}
+        onSubmit={form.onSubmit}
+        noValidate
+      >
+        {fechaConectar && (
+          <input
+            type="hidden"
+            name={fields.fechaAConectar.name}
+            key={fields.fechaAConectar.key}
+            value={fechaConectar.toISOString()}
+          />
+        )}
+
+        {fechaProspectar && (
+          <input
+            type="hidden"
+            name={fields.fechaProspeccion.name}
+            key={fields.fechaProspeccion.key}
+            value={fechaProspectar.toISOString()}
+          />
+        )}
+
+        {selectedUser?.id && (
+          <input
+            type="hidden"
+            name={fields.generadorId.name}
+            key={fields.generadorId.key}
+            value={selectedUser.id}
+          />
+        )}
+
         {/* Grupo 1: Empresa y Sector */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="empresa" className="">
-              Empresa
-            </Label>
-            <div className="relative">
-              <Input id="empresa" placeholder="Zendesk" readOnly />
-              <BriefcaseIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+            <Label className="">Empresa</Label>
+            <div className="">
+              <Input
+                id={fields.empresa.id}
+                name={fields.empresa.name}
+                key={fields.empresa.key}
+                defaultValue={fields.empresa.initialValue}
+                placeholder="Zendesk"
+              />
             </div>
+            <p className="text-sm text-red-500">{fields.empresa.errors}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="sector">Sector</Label>
-            <div className="relative">
-              <Input id="sector" placeholder="Tecnología" readOnly />
-              <CreditCardIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+            <Label>Sector</Label>
+            <div className="">
+              <Input
+                id={fields.sector.id}
+                name={fields.sector.name}
+                key={fields.sector.key}
+                placeholder="Tecnología"
+              />
             </div>
+            <p className="text-sm text-red-500">{fields.sector.errors}</p>
           </div>
         </div>
         {/* Generador de Leads */}
 
-        <div className="flex flex-col gap-2">
-          <Label>Generador de Leads</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild className="w-full">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center justify-center gap-2"
-              >
-                <UserIcon />
-                <span className="truncate">
-                  {selectedUser ? selectedUser.name : "Selecciona un Generador"}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 max-h-[250px] overflow-y-auto z-[9999]">
-              {generadores.map((generador) => (
-                <DropdownMenuItem
-                  key={generador.id}
-                  className="flex items-center gap-3 p-2 cursor-pointer"
-                  onClick={() => {
-                    handleSelectGl(generador);
-                  }}
+        <div className="flex gap-4">
+          <div className="w-1/2">
+            <Label>Generador de Leads</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="flex items-center justify-center gap-2"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarImage
-                        src={generador.photo}
-                        alt={generador.name}
-                        className="object-cover rounded-full h-full w-full"
-                      />
-                      <AvatarFallback className="rounded-full">
-                        {getInitials(generador.name)}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {generador.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {generador.email}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    className="ml-auto h-8 w-8 p-0"
-                    asChild
+                  <UserIcon />
+                  <span className="truncate">
+                    {selectedUser
+                      ? selectedUser.name
+                      : "Selecciona un Generador"}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64 max-h-[250px] overflow-y-auto z-[9999]">
+                {generadores.map((generador) => (
+                  <DropdownMenuItem
+                    key={generador.id}
+                    className="flex items-center gap-3 p-2 cursor-pointer"
+                    onClick={() => {
+                      handleSelectGl(generador);
+                    }}
                   >
-                    <Link href={`/profile/${generador.id}`}>Ver</Link>
-                  </Button>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    <div className="flex items-center gap-3 flex-1">
+                      <Avatar className="h-9 w-9 shrink-0">
+                        <AvatarImage
+                          src={generador.image ? generador.image : undefined}
+                          alt={generador.name}
+                          className="object-cover rounded-full h-full w-full"
+                        />
+                        <AvatarFallback className="rounded-full">
+                          {getInitials(generador.name)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {generador.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {generador.email}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="link"
+                      className="ml-auto h-8 w-8 p-0"
+                      type="button"
+                      asChild
+                    >
+                      <Link href={`/profile/${generador.id}`}>Ver</Link>
+                    </Button>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <p className="text-sm text-red-500">{fields.generadorId.errors}</p>
+          </div>
+          <div className="w-1/2">
+            <Label className="mb-2">Fecha para Conectar</Label>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  {fechaConectar ? (
+                    format(fechaConectar, "EEE dd/MM/yy", { locale: es })
+                  ) : (
+                    <span>Selecciona una fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto z-[9999]">
+                <Calendar
+                  onSelect={(date) => {
+                    if (date instanceof Date) {
+                      setFechaConectar(date);
+                    }
+                  }}
+                  mode="single"
+                  selected={fechaConectar}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-sm text-red-500">
+              {fields.fechaAConectar.errors}
+            </p>
+          </div>
         </div>
         {/* Grupo 2: Fecha de Prospección y Enlace */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="fechaProspeccion">Fecha de Prospección</Label>
-            <div className="relative">
+        <div className="flex  gap-4 ">
+          <div className="w-1/2 space-y-2">
+            <Label>Fecha de Prospección</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  {fechaProspectar ? (
+                    format(fechaProspectar, "EEE dd/MM/yy", { locale: es })
+                  ) : (
+                    <span>Selecciona una fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto z-[9999]">
+                <Calendar
+                  onSelect={(date) => {
+                    if (date instanceof Date) {
+                      setFechaProspectar(date);
+                    }
+                  }}
+                  mode="single"
+                  selected={fechaProspectar}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-sm text-red-500">
+              {fields.fechaProspeccion.errors}
+            </p>
+          </div>
+          <div className="w-1/2 space-y-2">
+            <Label>Enlace</Label>
+            <div className="">
               <Input
-                id="fechaProspeccion"
-                placeholder="2023-09-25"
-                type="date"
+                id={fields.link.id}
+                name={fields.link.name}
+                key={fields.link.key}
+                placeholder="https:"
               />
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="link">Enlace</Label>
-            <div className="relative">
-              <Input id="link" placeholder="https:" readOnly />
-              <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
-            </div>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="w-1/2 space-y-2">
+            <Label>Origen</Label>
+            <Input
+              id={fields.origen.id}
+              name={fields.origen.name}
+              key={fields.origen.key}
+              placeholder="https:"
+              defaultValue={fields.origen.initialValue}
+            />
           </div>
         </div>
-        {/* Contactos */}
-        {/* Grupo 3: Fecha para Conectar y Prioridad */}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="fechaAConectar">Fecha para Conectar</Label>
-          <div className="">
-            <Input id="fechaAConectar" type="date" />
-          </div>
-        </div>
+
         {/* Botón */}
-        <Button type="button" className="w-full">
-          Guardar Cambios
+        <Button
+          className="w-full"
+          type="submit"
+          variant={"default"}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Cargando...
+            </>
+          ) : (
+            <span>Crear lead</span>
+          )}
         </Button>
       </form>
     </>

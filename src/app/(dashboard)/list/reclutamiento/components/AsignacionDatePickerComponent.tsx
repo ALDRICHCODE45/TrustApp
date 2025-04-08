@@ -12,16 +12,14 @@ import { es } from "date-fns/locale";
 import { format } from "date-fns";
 
 interface DatePickerCellProps {
-  fecha: Date;
+  fecha: Date | null;
   onFechaChange: (nuevaFecha: Date) => void;
 }
 export const ChangeDateComponent = ({
   fecha,
   onFechaChange,
 }: DatePickerCellProps) => {
-  const [date, setDate] = useState(
-    fecha instanceof Date ? fecha : new Date(fecha),
-  );
+  const [date, setDate] = useState(fecha instanceof Date ? fecha : undefined);
   const [open, setOpen] = useState(false);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
@@ -39,7 +37,11 @@ export const ChangeDateComponent = ({
           variant="outline"
           className="flex items-center justify-center w-full"
         >
-          <span>{format(date, "EEE dd/MM/yy", { locale: es })}</span>
+          {date instanceof Date ? (
+            <span>{format(date, "EEE dd/MM/yy", { locale: es })}</span>
+          ) : (
+            <span>Fecha</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

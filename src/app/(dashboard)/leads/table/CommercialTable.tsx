@@ -47,7 +47,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Lead, LeadStatus, Role, User, UsersData } from "../../../../lib/data";
+import { UsersData } from "@/lib/data";
+import { Lead, LeadStatus, Role, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 
 const filterAnything: FilterFn<Lead> = (
@@ -61,7 +62,7 @@ const filterAnything: FilterFn<Lead> = (
   const searchTerm = filterValue.toLowerCase();
   return (
     row.original.origen.toLowerCase().includes(searchTerm) ||
-    row.original.generadorLeads.name.toLowerCase().includes(searchTerm) ||
+    //row.original.generadorId.toLowerCase().includes(searchTerm) ||
     row.original.sector.toLowerCase().includes(searchTerm) ||
     row.original.empresa.toLowerCase().includes(searchTerm)
   );
@@ -73,6 +74,7 @@ export interface DataTableProps<TData, TValue> {
   data: TData[];
   defaultPageSize?: number;
   filterPlaceholder?: string;
+  generadores: User[];
 }
 
 // Componente de filtro y selector de columnas
@@ -84,6 +86,7 @@ interface TableFiltersProps<TData, TValue> {
   setCurrentStatus: (newStatus: LeadStatus | "all") => void;
   currentGl: string;
   setCurrentGl: (newGl: string) => void;
+  generadores: User[];
 }
 
 function TableFilters<TData, TValue>({
@@ -406,6 +409,7 @@ export function CommercialTable<TData, TValue>({
   data,
   defaultPageSize = 10,
   filterPlaceholder = "Busqueda Global...",
+  generadores,
 }: DataTableProps<TData, TValue>) {
   // Estados
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -464,6 +468,7 @@ export function CommercialTable<TData, TValue>({
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <TableFilters
+        generadores={generadores}
         table={table}
         filterPlaceholder={filterPlaceholder}
         onGlobalFilterChange={handleGlobalFilterChange}

@@ -46,4 +46,47 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Lead      Lead[]
+}
+
+enum LeadStatus {
+  Contacto
+  SocialSelling
+  ContactoCalido
+  Prospecto
+  CitaAgendada
+  CitaValidada
+  Cliente
+}
+
+model Lead {
+  id               String     @id @default(cuid())
+  empresa          String
+  sector           String
+  link             String
+  fechaProspeccion DateTime?
+  fechaAConectar   DateTime?
+  status           LeadStatus @default(Contacto)
+  origen           String
+  contactos        Person[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  //relaciones -> Generador de leads
+  generadorId    String
+  generadorLeads User   @relation(fields: [generadorId], references: [id])
+}
+
+//modelo de contacto para todos los moodulos
+model Person {
+  id       String  @id @default(cuid())
+  name     String
+  email    String
+  phone    String?
+  position String?
+  cv       String? // solo para candidatos
+
+  //relaciones -> contacto de leads
+  Lead   Lead?   @relation(fields: [leadId], references: [id])
+  leadId String?
 }
