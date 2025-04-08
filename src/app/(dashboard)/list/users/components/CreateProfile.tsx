@@ -115,9 +115,9 @@ export default function CreateProfile() {
                   <p className="text-sm text-red-500">{fields.email.errors}</p>
                 </div>
               </div>
-              <div className="*:not-first:mt-2">
-                <Label>Contraseña</Label>
-                <div className="relative">
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex-1  space-y-2">
+                  <Label>Contraseña</Label>
                   <Input
                     id={fields.password.id}
                     name={fields.password.name}
@@ -125,6 +125,23 @@ export default function CreateProfile() {
                     defaultValue={fields.password.initialValue}
                     className="peer pe-9"
                     placeholder="********"
+                    type="text"
+                    required
+                  />
+                  <p className="text-sm text-red-500">
+                    {fields.password.errors}
+                  </p>
+                </div>
+
+                <div className="flex-1  space-y-2">
+                  <Label>Edad</Label>
+                  <Input
+                    id={fields.age.id}
+                    name={fields.age.name}
+                    key={fields.age.key}
+                    defaultValue={fields.age.initialValue}
+                    className="peer pe-9"
+                    placeholder="18"
                     type="text"
                     required
                   />

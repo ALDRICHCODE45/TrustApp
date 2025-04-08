@@ -28,10 +28,6 @@ export const UserListActions = ({ row }: Props) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuItem>
-          <Clipboard />
-          Copiar
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href={`/profile/${teacherId}`} className="cursor-pointer">

@@ -222,6 +222,10 @@ export function UsersTable<TData, TValue>({
                   .map((column) => {
                     return (
                       <DropdownMenuCheckboxItem
+                        onSelect={(e) => {
+                          // Prevenir que el DropdownMenu se cierre automáticamente
+                          e.preventDefault();
+                        }}
                         key={column.id}
                         className="capitalize"
                         checked={column.getIsVisible()}

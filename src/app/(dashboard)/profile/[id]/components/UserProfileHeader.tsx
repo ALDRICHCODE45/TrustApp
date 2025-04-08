@@ -88,8 +88,13 @@ export const UserProfileHeader = ({
 
           {/* Tarjetas de información mejoradas */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-            <UserInfoCard title="Edad" value={29} />
-            <UserInfoCard title="Ubicación" value={user?.direccion} />
+            <UserInfoCard title="Edad" value={user.age} />
+            <UserInfoCard
+              title="Ubicación"
+              value={user?.direccion}
+              truncate={true}
+              maxLength={30}
+            />
             <UserInfoCard title="Contacto" value={user?.celular} />
             <UserInfoCard
               //title={user?.placements ? "Placements" : "Clientes"}

@@ -9,8 +9,7 @@ import { editUserSchema } from "@/zod/editUserSchema";
 import { Role } from "@prisma/client";
 
 export const editUser = async (userId: string, formData: FormData) => {
-  const session = await checkSession("/login");
-  console.log({ formData });
+  const session = await checkSession("/sing-in");
 
   if (session.user?.role !== Role.Admin) {
     throw Error("Unauthorize");
@@ -35,6 +34,7 @@ export const editUser = async (userId: string, formData: FormData) => {
   await prisma.user.update({
     where: { id: userId },
     data: {
+      age: submission.value.age || existingUser.age,
       celular: submission.value.celular || existingUser.celular,
       direccion: submission.value.direccion || existingUser.direccion,
       email: submission.value.email || existingUser.email,
@@ -50,10 +50,11 @@ export const editUser = async (userId: string, formData: FormData) => {
   });
 
   revalidatePath("/list/users");
+  revalidatePath(`/profile/${userId}`);
 };
 
 export const createUser = async (prevState: any, formData: FormData) => {
-  await checkSession("/login");
+  await checkSession("/sign-in");
 
   const submission = parseWithZod(formData, {
     schema: createUserSchema,
@@ -65,6 +66,7 @@ export const createUser = async (prevState: any, formData: FormData) => {
 
   await prisma.user.create({
     data: {
+      age: submission.value.age,
       celular: submission.value.celular,
       direccion: submission.value.direccion,
       email: submission.value.email,

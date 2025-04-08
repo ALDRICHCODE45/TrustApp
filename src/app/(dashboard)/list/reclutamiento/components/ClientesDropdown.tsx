@@ -12,7 +12,7 @@ import { useState } from "react";
 
 export const ClientesDropDown = ({ row }: { row: Row<Vacante> }) => {
   const [cliente, setCliente] = useState(
-    row.original.cliente.cuenta || "Cliente",
+    row.original.cliente?.cuenta ? row.original.cliente.cuenta : "Cliente",
   );
   const handleClienteChange = (newCliente: string) => {
     setCliente(newCliente);

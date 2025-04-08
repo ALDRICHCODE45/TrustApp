@@ -40,7 +40,6 @@ export const OficinaDropDown = ({ row }: Props) => {
       const formData = new FormData();
       formData.append("oficina", newOficina);
 
-      console.log({ formData });
       toast.promise(editUser(row.original.id, formData), {
         loading: "Loading...",
         success: "Usuario modificado con éxito",
