@@ -99,7 +99,7 @@ const VacanteCard: React.FC<VacanteCardProps> = ({ vacante, onClick }) => (
       </div>
       <div className="flex items-center text-sm text-muted-foreground mt-1">
         <Building className="h-3.5 w-3.5 mr-1" />
-        <span>{vacante.cliente.cuenta}</span>
+        <span>Zendesk</span>
       </div>
     </CardHeader>
     <CardContent className="p-4 pt-0 pb-2">
