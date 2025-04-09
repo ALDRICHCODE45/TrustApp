@@ -47,7 +47,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { UsersData } from "@/lib/data";
 import { Lead, LeadStatus, Role, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -97,11 +96,8 @@ function TableFilters<TData, TValue>({
   setCurrentStatus,
   currentGl,
   setCurrentGl,
+  generadores,
 }: TableFiltersProps<TData, TValue>) {
-  const generadores = UsersData.filter(
-    (user) => user.rol === Role.generadorLeads,
-  );
-
   return (
     <Card className="mb-4 mt-4">
       <CardContent className="p-4">
@@ -150,13 +146,23 @@ function TableFilters<TData, TValue>({
                 <SelectGroup>
                   <SelectLabel>Estado</SelectLabel>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="S.S">Social Selling</SelectItem>
-                  <SelectItem value="Contacto">Contacto</SelectItem>
-                  <SelectItem value="C.C">Entrevistas</SelectItem>
-                  <SelectItem value="Prospecto">Prospecto</SelectItem>
-                  <SelectItem value="C.A">Cita Agendada</SelectItem>
-                  <SelectItem value="C.V">Cita Validada</SelectItem>
-                  <SelectItem value="Cliente">Cliente</SelectItem>
+                  <SelectItem value={LeadStatus.SocialSelling}>
+                    Social Selling
+                  </SelectItem>
+                  <SelectItem value={LeadStatus.Contacto}>Contacto</SelectItem>
+                  <SelectItem value={LeadStatus.ContactoCalido}>
+                    Contacto Calido
+                  </SelectItem>
+                  <SelectItem value={LeadStatus.Prospecto}>
+                    Prospecto
+                  </SelectItem>
+                  <SelectItem value={LeadStatus.CitaAgendada}>
+                    Cita Agendada
+                  </SelectItem>
+                  <SelectItem value={LeadStatus.CitaValidada}>
+                    Cita Validada
+                  </SelectItem>
+                  <SelectItem value={LeadStatus.Cliente}>Cliente</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

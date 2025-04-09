@@ -1,29 +1,43 @@
 import { ReactElement } from "react";
-import { Lead, leadsData } from "@/lib/data";
 import { leadsColumns } from "./leadsColumns";
 import { CreateLeadForm } from "./components/CreateLeadForm";
-import { ColumnDef } from "@tanstack/react-table";
-import { CommercialTable } from "../../leads/table/CommercialTable";
+import { CommercialTable } from "@/app/(dashboard)/leads/table/CommercialTable";
 import { auth } from "@/lib/auth";
-import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
+import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
+import prisma from "@/lib/db";
 
 interface pageProps {}
-const fetchLeads = async () => {
-  return new Promise<{ columns: ColumnDef<Lead>[]; data: Lead[] }>(
-    (resolve) => {
-      setTimeout(() => {
-        resolve({
-          columns: leadsColumns,
-          data: leadsData,
-        });
-      }, 2000);
+
+const fetchData = async () => {
+  const leads = await prisma.lead.findMany({
+    include: {
+      generadorLeads: true,
+      contactos: true,
     },
-  );
+  });
+  return {
+    columns: leadsColumns,
+    data: leads,
+  };
+};
+
+const fetchGeneradores = async () => {
+  const users = await prisma.user.findMany({
+    where: {
+      role: {
+        in: ["GL", "Admin", "MK"],
+      },
+    },
+  });
+
+  return users;
 };
 
 export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
-  const { columns, data } = await fetchLeads();
+  const { columns, data } = await fetchData();
+
+  const generadores = await fetchGeneradores();
 
   const session = await auth();
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
@@ -31,8 +45,12 @@ export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
   return (
     <>
       {/* LIST */}
-      <CreateLeadForm />
-      <CommercialTable columns={columns} data={data} />
+      <CreateLeadForm generadores={generadores} />
+      <CommercialTable
+        columns={columns}
+        data={data}
+        generadores={generadores}
+      />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { UsersTable } from "./table/UsersTable";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Role } from "@prisma/client";
-import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
+import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 
 export interface pageProps {}
 

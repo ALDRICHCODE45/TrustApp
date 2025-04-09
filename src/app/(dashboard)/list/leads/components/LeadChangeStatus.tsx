@@ -5,85 +5,129 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LeadStatus } from "@/lib/data";
+import { Lead, LeadStatus, Person, User } from "@prisma/client";
+import { Row } from "@tanstack/react-table";
 import {
   Award,
-  Calendar,
   CalendarCheck,
   CalendarClock,
   Contact,
   UserRound,
   UserSearch,
 } from "lucide-react";
-import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { editLeadById } from "@/actions/leads/actions";
+import { toast } from "sonner";
 
-export const LeadChangeStatus = ({ row }: { row: any }) => {
-  const status = row.getValue("status") as LeadStatus;
-  const [newStatus, setStatus] = useState(status);
+const allowLeadStatus = [
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar el status a Contacto?",
+    onConfirmValule: LeadStatus.Contacto,
+    status: "Contacto",
+    icon: Contact,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar el status a Cita agendada?",
+    onConfirmValule: LeadStatus.CitaAgendada,
+    status: "Cita Agendata",
+    icon: CalendarClock,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar tu oficina el status a Cita Validada?",
+    onConfirmValule: LeadStatus.CitaValidada,
+    oficeNumber: "Cita Validada",
+    status: "Cita Validada",
+    icon: CalendarCheck,
+  },
 
-  const handleStatusChange = (newStatus: LeadStatus) => {
-    setStatus(newStatus);
-    // Aquí se puede realizar cualquier acción adicional, como hacer una llamada a la API para actualizar el estado
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar tu oficina el status a Contacto Calido?",
+    onConfirmValule: LeadStatus.ContactoCalido,
+    oficeNumber: "Contacto Calido",
+
+    status: "Contacto Calido",
+    icon: UserSearch,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar tu oficina el status a Prospecto?",
+    onConfirmValule: LeadStatus.Prospecto,
+    oficeNumber: "Prospecto",
+    status: "Prospecto",
+    icon: CalendarCheck,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar tu oficina el status a Social Selling?",
+    onConfirmValule: LeadStatus.SocialSelling,
+    oficeNumber: "Social Selling",
+    status: "Social Selling",
+    icon: UserRound,
+  },
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar tu oficina el status a Cliente?",
+    onConfirmValule: LeadStatus.Cliente,
+    oficeNumber: "Cliente",
+    status: "Cliente",
+    icon: Award,
+  },
+];
+export const LeadChangeStatus = ({
+  row,
+}: {
+  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
+}) => {
+  const status = row.original.status;
+
+  const handleStatusChange = async (newStatus: LeadStatus) => {
+    const leadId: string = row.original.id;
+    const formData: FormData = new FormData();
+    formData.append("status", newStatus);
+
+    try {
+      await editLeadById(leadId, formData);
+      toast.info("Status del lead modificado con exito");
+    } catch (error) {
+      toast.error("Error al cambiar de status");
+    }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {newStatus}
+          {status}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.Contacto)}
-          className="flex items-center space-x-2"
-        >
-          <Contact className="h-5 w-5 " />
-          <span>Contacto</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.SocialSelling)}
-          className="flex items-center space-x-2"
-        >
-          <UserRound className="h-5 w-5 " />
-          <span>Social Selling</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.ContactoCalido)}
-          className="flex items-center space-x-2"
-        >
-          <UserSearch className="h-5 w-5 " />
-          <span>Contacto Calido</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.Prospecto)}
-          className="flex items-center space-x-2"
-        >
-          <CalendarCheck className="h-5 w-5 " />
-          <span>Prospecto</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.CitaAgendada)}
-          className="flex items-center space-x-2"
-        >
-          <CalendarClock className="h-5 w-5" />
-          <span>Cita Agendada</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.CitaValidada)}
-          className="flex items-center space-x-2"
-        >
-          <Calendar className="h-5 w-5" />
-          <span>Cita Validada</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleStatusChange(LeadStatus.Cliente)}
-          className="flex items-center space-x-2"
-        >
-          <Award size={17} />
-          <span>Cliente</span>
-        </DropdownMenuItem>
+        {allowLeadStatus.map((status) => (
+          <ConfirmDialog
+            key={status.status}
+            title={status.title}
+            description={status.description}
+            onConfirm={() => handleStatusChange(status.onConfirmValule)}
+            trigger={
+              <div className="cursor-pointer">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={(e) => {
+                    // Prevenir que el DropdownMenu se cierre automáticamente
+                    e.preventDefault();
+                  }}
+                >
+                  <status.icon className="mr-2 size-4" />
+                  {status.status}
+                </DropdownMenuItem>
+              </div>
+            }
+          />
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

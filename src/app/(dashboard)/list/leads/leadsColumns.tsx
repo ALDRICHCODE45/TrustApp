@@ -8,6 +8,8 @@ import { LeadChangeStatus } from "./components/LeadChangeStatus";
 import { GeneradorDropdownSelect } from "./components/GeneradorDropdownSelect";
 import { ChangeDateComponent } from "../reclutamiento/components/AsignacionDatePickerComponent";
 import { Lead, User, Person } from "@prisma/client";
+import { editLeadById } from "@/actions/leads/actions";
+import { toast } from "sonner";
 
 export const leadsColumns: ColumnDef<
   Lead & { generadorLeads: User; contactos: Person[] }
@@ -88,10 +90,14 @@ export const leadsColumns: ColumnDef<
     cell: ({ row }) => {
       return (
         <ChangeDateComponent
-          fecha={new Date()}
-          onFechaChange={(nuevaFecha) => {
+          fecha={row.original.fechaProspeccion}
+          onFechaChange={async (nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
-            console.log("Fecha actualizada:", nuevaFecha);
+            const date = nuevaFecha.toISOString();
+            const formData = new FormData();
+            formData.append("fechaProspeccion", date);
+            await editLeadById(row.original.id, formData);
+            toast.info("Fecha cambiada correctamente");
           }}
         />
       );
@@ -111,9 +117,13 @@ export const leadsColumns: ColumnDef<
       return (
         <ChangeDateComponent
           fecha={row.original.fechaAConectar}
-          onFechaChange={(nuevaFecha) => {
+          onFechaChange={async (nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar de tu fuente de datos
-            console.log("Fecha actualizada:", nuevaFecha);
+            const date = nuevaFecha.toISOString();
+            const formData = new FormData();
+            formData.append("fechaAConectar", date);
+            await editLeadById(row.original.id, formData);
+            toast.info("Fecha cambiada correctamente");
           }}
         />
       );
@@ -124,6 +134,11 @@ export const leadsColumns: ColumnDef<
     header: "Status",
     cell: ({ row }) => {
       return <LeadChangeStatus row={row} />;
+    },
+    filterFn: (row, _id, filterValue) => {
+      const status = row.original.status;
+      if (filterValue === "all" || !filterValue) return true;
+      return status === filterValue;
     },
   },
   {
