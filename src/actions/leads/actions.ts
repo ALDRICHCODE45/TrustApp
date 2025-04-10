@@ -4,8 +4,39 @@ import { createLeadSchema } from "@/zod/createLeadSchema";
 import prisma from "@/lib/db";
 import { parseWithZod } from "@conform-to/zod";
 import { checkSession } from "@/hooks/auth/checkSession";
-import { editLeadZodSchema } from "../../zod/editLeadSchema";
+import { editLeadZodSchema } from "@/zod/editLeadSchema";
 import { revalidatePath } from "next/cache";
+import { User, Role } from "@prisma/client";
+
+export const deleteLeadById = async (leadId: string) => {
+  try {
+    await prisma.lead.delete({
+      where: {
+        id: leadId,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    throw Error("Error al eliminar el lead");
+  }
+  revalidatePath("/leads");
+};
+
+export const getRecruiters = async (): Promise<User[]> => {
+  try {
+    const recruiters = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["GL", "Admin", "MK"],
+        },
+      },
+    });
+    return recruiters;
+  } catch (error) {
+    console.log(error);
+    throw Error("error");
+  }
+};
 
 export async function createLead(prevState: any, formData: FormData) {
   await checkSession("/sing-in");
@@ -16,6 +47,23 @@ export async function createLead(prevState: any, formData: FormData) {
 
   if (submission.status !== "success") {
     return submission.reply();
+  }
+
+  const leadExists = await prisma.lead.findFirst({
+    where: {
+      empresa: {
+        // Usamos `contains` y aplicamos una función `lowercase` en ambos valores
+        contains: formData.get("empresa") as string,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  // Return custom error for duplicate lead
+  if (leadExists) {
+    return submission.reply({
+      formErrors: ["Error al crear el Lead"],
+    });
   }
 
   await prisma.lead.create({
@@ -32,10 +80,16 @@ export async function createLead(prevState: any, formData: FormData) {
   });
 
   revalidatePath("/leads");
+  revalidatePath("/list/leads");
+  revalidatePath("/list");
 }
 
 export const editLeadById = async (leadId: string, formData: FormData) => {
-  await checkSession("/sing-in");
+  const sesion = await checkSession("/sing-in");
+
+  if (sesion.user.role != Role.Admin) {
+    throw Error("No tienes los privilegios para editar");
+  }
 
   const submission = parseWithZod(formData, {
     schema: editLeadZodSchema,

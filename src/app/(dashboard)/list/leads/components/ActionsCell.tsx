@@ -58,6 +58,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Row } from "@tanstack/react-table";
+import { toast } from "sonner";
+import { deleteLeadById } from "@/actions/leads/actions";
 
 export const ActionsCell = ({
   row,
@@ -74,6 +76,16 @@ export const ActionsCell = ({
   const handleEditClick = () => {
     setIsMenuOpen(false); // Cierra el menú antes de abrir el diálogo
     setTimeout(() => setIsDialogOpen(true), 100); // Abre el diálogo después de un pequeño delay
+  };
+
+  const handleDeletelead = async () => {
+    try {
+      await deleteLeadById(row.original.id);
+      toast.success("Lead eliminado con éxito");
+    } catch (error) {
+      console.log(error);
+      toast.error("Error al eliminar el lead");
+    }
   };
 
   const users = [
@@ -97,10 +109,6 @@ export const ActionsCell = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="z-40" align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem className="cursor-pointer">
-            <Clipboard className="mr-2 h-4 w-4" />
-            Copiar
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleEditClick}
@@ -131,7 +139,7 @@ export const ActionsCell = ({
                 <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>
                   Cancelar
                 </AlertDialogCancel>
-                <AlertDialogAction onClick={() => console.log("eliminar")}>
+                <AlertDialogAction onClick={() => handleDeletelead()}>
                   Sí, eliminar
                 </AlertDialogAction>
               </AlertDialogFooter>

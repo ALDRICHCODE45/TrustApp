@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useActionState, useState } from "react";
+import { use, useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { createLead } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/popover";
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
   return (
@@ -64,7 +65,7 @@ export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
 };
 
 function NuevoLeadForm({ generadores }: { generadores: User[] }) {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User>();
 
   const [fechaConectar, setFechaConectar] = useState<Date>();
   const [fechaProspectar, setFechaProspectar] = useState<Date>();
@@ -84,6 +85,12 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+
+  useEffect(() => {
+    if (lastResult?.status == "error") {
+      toast.error("Error al crear el Lead");
+    }
+  }, [lastResult]);
 
   // Seleccionar un usuario
   const handleSelectGl = (user: User) => {
@@ -128,14 +135,12 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
           />
         )}
 
-        {selectedUser?.id && (
-          <input
-            type="hidden"
-            name={fields.generadorId.name}
-            key={fields.generadorId.key}
-            value={selectedUser.id}
-          />
-        )}
+        <input
+          type="hidden"
+          name={fields.generadorId.name}
+          key={fields.generadorId.key}
+          value={selectedUser?.id || ""}
+        />
 
         {/* Grupo 1: Empresa y Sector */}
         <div className="grid grid-cols-2 gap-4">
@@ -186,7 +191,7 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 max-h-[250px] overflow-y-auto z-[9999]">
+              <DropdownMenuContent className="w-72 max-h-[250px] overflow-y-auto z-[9999]">
                 {generadores.map((generador) => (
                   <DropdownMenuItem
                     key={generador.id}
@@ -322,7 +327,7 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
               id={fields.origen.id}
               name={fields.origen.name}
               key={fields.origen.key}
-              placeholder="https:"
+              placeholder="Likedin"
               defaultValue={fields.origen.initialValue}
             />
           </div>

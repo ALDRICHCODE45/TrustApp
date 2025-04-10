@@ -1,12 +1,16 @@
 import { z } from "zod";
 
 export const editLeadZodSchema = z.object({
-  empresa: z.string().min(1, "El nombre de la empresa es requerido").optional(),
-  sector: z.string().min(1, "El sector es requerido").optional(),
-  link: z.string().url("Debe ser un enlace válido").optional(),
-  origen: z.string().min(1, "El origen es requerido").optional(),
-  fechaProspeccion: z.date().optional().optional(),
-  fechaAConectar: z.date().optional().optional(),
+  empresa: z
+    .string()
+    .min(1, "El nombre de la empresa es requerido")
+    .nullable()
+    .optional(),
+  sector: z.string().min(1, "El sector es requerido").nullable().optional(),
+  link: z.string().url("Debe ser un enlace válido").nullable().optional(),
+  origen: z.string().min(1, "El origen es requerido").nullable().optional(),
+  fechaProspeccion: z.date().optional().nullable().optional(),
+  fechaAConectar: z.date().optional().nullable().optional(),
 
   status: z
     .enum([
@@ -20,5 +24,5 @@ export const editLeadZodSchema = z.object({
     ])
     .optional(),
 
-  generadorId: z.string().cuid().optional(),
+  generadorId: z.string().cuid().nullable().optional(),
 });

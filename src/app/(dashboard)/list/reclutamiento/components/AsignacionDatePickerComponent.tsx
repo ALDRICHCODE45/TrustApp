@@ -1,5 +1,14 @@
 "use client";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Popover,
   PopoverContent,
@@ -15,44 +24,84 @@ interface DatePickerCellProps {
   fecha: Date | null;
   onFechaChange: (nuevaFecha: Date) => void;
 }
+
 export const ChangeDateComponent = ({
   fecha,
   onFechaChange,
 }: DatePickerCellProps) => {
-  const [date, setDate] = useState(fecha instanceof Date ? fecha : undefined);
-  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(
+    fecha instanceof Date ? fecha : undefined,
+  );
+  const [tempDate, setTempDate] = useState<Date | undefined>(undefined);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleDateSelect = (selectedDate: Date | undefined) => {
+  const handleCalendarSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      setDate(selectedDate);
-      setOpen(false);
-      onFechaChange(selectedDate);
+      setTempDate(selectedDate);
+      setDialogOpen(true); // Mostrar el AlertDialog solo al seleccionar una fecha
     }
   };
 
+  const handleConfirmDate = () => {
+    if (tempDate) {
+      setDate(tempDate);
+      onFechaChange(tempDate);
+      setDialogOpen(false);
+      setTempDate(undefined);
+    }
+  };
+
+  const handleCancel = () => {
+    setDialogOpen(false);
+    setTempDate(undefined);
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex items-center justify-center w-full"
-        >
-          {date instanceof Date ? (
-            <span>{format(date, "EEE dd/MM/yy", { locale: es })}</span>
-          ) : (
-            <span>Fecha</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleDateSelect}
-          locale={es}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex items-center justify-center w-full"
+          >
+            {date instanceof Date ? (
+              <span>{format(date, "EEE dd/MM/yy", { locale: es })}</span>
+            ) : (
+              <span>Fecha</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={tempDate ?? date}
+            onSelect={handleCalendarSelect}
+            locale={es}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+
+      <AlertDialog open={dialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ¿Estás seguro de cambiar la fecha?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción actualizará la fecha seleccionada. ¿Deseas continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancel}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDate}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

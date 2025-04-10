@@ -8,35 +8,56 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UsersData } from "@/lib/data";
-import { Lead, Person, Role, User } from "@prisma/client";
-import { UserIcon } from "lucide-react";
+import { Lead, Person, User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
+import { editLeadById, getRecruiters } from "@/actions/leads/actions";
+import { toast } from "sonner";
 
 export const GeneradorDropdownSelect = ({
   row,
 }: {
   row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
 }) => {
+  const [generador, setNewGenerador] = useState(row.original.generadorLeads);
+  const [recruiters, setRecruiters] = useState<User[] | null>(null);
+
   const router = useRouter();
-  const [generador, setNewGenerador] = useState(
-    row.original.generadorLeads || {
-      name: "Seleccionar",
-      id: null,
-    },
-  );
 
-  // Filter only recruiters from the UsersData array
-  const newUsuarios = UsersData.filter((user) => user.rol === Role.GL);
+  const [loading, setLoading] = useState(true);
 
-  const handleUserChange = (newUser: any) => {
-    setNewGenerador(newUser);
-    // Here you could also update your data source or call an API
+  useEffect(() => {
+    const loadRecruiters = async () => {
+      try {
+        const recruiters = await getRecruiters();
+        setRecruiters(recruiters);
+      } catch (error) {
+        console.error("Error loading recruiters:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRecruiters();
+  }, []);
+
+  const handleUserChange = async (newUser: User) => {
+    try {
+      setNewGenerador(newUser);
+      const formData = new FormData();
+      formData.append("generadorId", newUser.id);
+
+      await editLeadById(row.original.id, formData);
+      toast.success("Lead reasignado con éxito");
+    } catch (error) {
+      toast.error("Error al reasignar lead");
+      setNewGenerador(row.original.generadorLeads);
+      router.refresh();
+      console.log(error);
+    }
   };
 
-  const navigateToProfile = (id: number) => {
+  const navigateToProfile = (id: string) => {
     router.push(`/profile/${id}`);
   };
 
@@ -44,26 +65,24 @@ export const GeneradorDropdownSelect = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="flex ">
-          <UserIcon />
-          <span className="truncate">{generador.name}</span>
+          <span className="truncate">
+            {loading ? "Cargando..." : generador?.name || "Seleccionar"}
+          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 max-h-[250px] overflow-y-auto">
-        {newUsuarios.map((recruiter) => (
+      <DropdownMenuContent className="w-72 max-h-[300px] overflow-y-auto">
+        {recruiters?.map((recruiter) => (
           <DropdownMenuItem
             key={recruiter.id}
             className="flex items-center gap-3 p-2 cursor-pointer"
             onClick={() => {
-              handleUserChange({
-                id: recruiter.id,
-                name: recruiter.name,
-              });
+              handleUserChange(recruiter);
             }}
           >
             <div className="flex items-center gap-3 flex-1">
               <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage
-                  src={recruiter.photo}
+                  src={recruiter.image ?? undefined}
                   alt={recruiter.name}
                   className="object-cover"
                 />
