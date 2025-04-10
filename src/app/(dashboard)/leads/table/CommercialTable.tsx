@@ -233,6 +233,7 @@ function ColumnSelector<TData>({ table }: ColumnSelectorProps<TData>) {
       <DropdownMenuContent
         align="end"
         className="max-h-[400px] overflow-y-scroll"
+        onSelect={(e) => e.preventDefault()}
       >
         {table
           .getAllColumns()

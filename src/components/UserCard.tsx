@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StatCardProps {
   title: string;
-  value: string;
-  trend: "up" | "down";
+  value: number;
   icon: React.ReactNode;
 }
 

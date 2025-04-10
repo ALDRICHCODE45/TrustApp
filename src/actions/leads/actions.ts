@@ -1,5 +1,4 @@
 "use server";
-
 import { createLeadSchema } from "@/zod/createLeadSchema";
 import prisma from "@/lib/db";
 import { parseWithZod } from "@conform-to/zod";
@@ -7,9 +6,22 @@ import { checkSession } from "@/hooks/auth/checkSession";
 import { editLeadZodSchema } from "@/zod/editLeadSchema";
 import { revalidatePath } from "next/cache";
 import { User, Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
 
 export const deleteLeadById = async (leadId: string) => {
+  const session = await auth();
+
   try {
+    const leadIndb = await prisma.lead.findUnique({
+      where: {
+        id: leadId,
+      },
+    });
+
+    if (!leadIndb || leadIndb.generadorId != session?.user.id) {
+      throw new Error("No tienes los permisos para eliminar este lead");
+    }
+
     await prisma.lead.delete({
       where: {
         id: leadId,
@@ -86,8 +98,9 @@ export async function createLead(prevState: any, formData: FormData) {
 
 export const editLeadById = async (leadId: string, formData: FormData) => {
   const sesion = await checkSession("/sing-in");
+  const geneadorId = formData.get("geneadorId");
 
-  if (sesion.user.role != Role.Admin) {
+  if (sesion.user.role != Role.Admin && geneadorId) {
     throw Error("No tienes los privilegios para editar");
   }
 
