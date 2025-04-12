@@ -17,6 +17,5 @@ export async function desactivateUsers(ids: string[]) {
     },
   });
 
-  // Opcional: revalidar página o ruta si es estática
   revalidatePath("/list/users"); // o la ruta que estés usando
 }

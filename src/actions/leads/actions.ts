@@ -51,49 +51,65 @@ export const getRecruiters = async (): Promise<User[]> => {
 };
 
 export async function createLead(prevState: any, formData: FormData) {
-  await checkSession("/sing-in");
+  try {
+    await checkSession("/sing-in");
 
-  const submission = parseWithZod(formData, {
-    schema: createLeadSchema,
-  });
-
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
-
-  const leadExists = await prisma.lead.findFirst({
-    where: {
-      empresa: {
-        // Usamos `contains` y aplicamos una función `lowercase` en ambos valores
-        contains: formData.get("empresa") as string,
-        mode: "insensitive",
-      },
-    },
-  });
-
-  // Return custom error for duplicate lead
-  if (leadExists) {
-    return submission.reply({
-      formErrors: ["Error al crear el Lead"],
+    const submission = parseWithZod(formData, {
+      schema: createLeadSchema,
     });
+
+    if (submission.status !== "success") {
+      return submission.reply();
+    }
+
+    const empresa = submission.value.empresa;
+
+    // Check if lead already exists (case insensitive)
+    const leadExists = await prisma.lead.findFirst({
+      where: {
+        empresa: {
+          contains: empresa,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    // Return custom error for duplicate lead
+    if (leadExists) {
+      return submission.reply({
+        formErrors: [
+          `La empresa "${empresa}" ya existe como lead en el sistema`,
+        ],
+      });
+    }
+
+    // Create the new lead
+    await prisma.lead.create({
+      data: {
+        empresa: submission.value.empresa,
+        fechaAConectar: submission.value.fechaAConectar,
+        fechaProspeccion: submission.value.fechaProspeccion,
+        link: submission.value.link,
+        origen: submission.value.origen,
+        sector: submission.value.sector,
+        status: submission.value.status,
+        generadorId: submission.value.generadorId,
+      },
+      // Optionally include the generador relationship for a more complete response
+      include: {
+        generadorLeads: true,
+      },
+    });
+
+    // Revalidate necessary paths
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+    revalidatePath("/list");
+
+    // Return success with the newly created lead data
+  } catch (error) {
+    console.error("Error creating lead:", error);
   }
-
-  await prisma.lead.create({
-    data: {
-      empresa: submission.value.empresa,
-      fechaAConectar: submission.value.fechaAConectar,
-      fechaProspeccion: submission.value.fechaProspeccion,
-      link: submission.value.link,
-      origen: submission.value.origen,
-      sector: submission.value.sector,
-      status: submission.value.status,
-      generadorId: submission.value.generadorId,
-    },
-  });
-
-  revalidatePath("/leads");
-  revalidatePath("/list/leads");
-  revalidatePath("/list");
 }
 
 export const editLeadById = async (leadId: string, formData: FormData) => {
@@ -137,5 +153,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       status: submission.value.status || existingLead.status,
     },
   });
+
   revalidatePath("/leads");
+  revalidatePath("/list/leads");
 };

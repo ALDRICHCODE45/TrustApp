@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -46,9 +46,13 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { Lead, LeadStatus, Role, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { deleteMayLeads } from "../../../../actions/leads/deleteLeads";
+import { toast, Toaster } from "sonner";
 
 const filterAnything: FilterFn<Lead> = (
   row: Row<Lead>,
@@ -98,21 +102,39 @@ function TableFilters<TData, TValue>({
   setCurrentGl,
   generadores,
 }: TableFiltersProps<TData, TValue>) {
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const ids = selectedRows.map((row) => row.original.id as string);
+
+    try {
+      await deleteMayLeads(ids);
+      toast.success("Leads Eliminados correctamente");
+    } catch (error) {
+      toast.error("Error al desactivar usuarios");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
+
   return (
-    <Card className="mb-4 mt-4">
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <Card className="mb-6 mt-6 shadow-sm">
+      <CardContent className="p-5">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Buscador global */}
           <div className="space-y-2">
-            <Label htmlFor="global-filter" className="text-sm font-medium">
+            <Label htmlFor="global-filter" className="text-sm font-medium ">
               Búsqueda global
             </Label>
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 " />
               <Input
                 id="global-filter"
                 placeholder={filterPlaceholder}
-                className="pl-8"
+                className="pl-9 "
                 onChange={(e) => onGlobalFilterChange?.(e.target.value)}
               />
             </div>
@@ -120,7 +142,7 @@ function TableFilters<TData, TValue>({
 
           {/* Filtro por estado */}
           <div className="space-y-2">
-            <Label htmlFor="status-filter" className="text-sm font-medium">
+            <Label htmlFor="status-filter" className="text-sm font-medium ">
               Estado
             </Label>
             <Select
@@ -133,12 +155,12 @@ function TableFilters<TData, TValue>({
                 }
                 setCurrentStatus(value as LeadStatus);
                 table.getColumn("status")?.setFilterValue(value);
-                table.setPageIndex(0); // Reset a primera página al filtrar
+                table.setPageIndex(0);
               }}
             >
               <SelectTrigger id="status-filter" className="w-full">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Filter className="h-4 w-4" />
                   <SelectValue placeholder="Seleccionar estado" />
                 </div>
               </SelectTrigger>
@@ -183,12 +205,12 @@ function TableFilters<TData, TValue>({
                 }
                 setCurrentGl(value);
                 table.getColumn("generadorLeads")?.setFilterValue(value);
-                table.setPageIndex(0); // Reset a primera página al filtrar
+                table.setPageIndex(0);
               }}
             >
-              <SelectTrigger id="generador-filter" className="w-full">
+              <SelectTrigger id="generador-filter" className="w-full ">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Filter className="h-4 w-4 " />
                   <SelectValue placeholder="Seleccionar generador" />
                 </div>
               </SelectTrigger>
@@ -206,9 +228,28 @@ function TableFilters<TData, TValue>({
             </Select>
           </div>
 
-          {/* Selector de columnas */}
-          <div className="flex items-end">
-            <ColumnSelector table={table} />
+          {/* Selector de columnas y botón de acciones en grupo */}
+          <div className="flex flex-col justify-end space-y-2">
+            {hasSelectedRows ? (
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete()}
+                className="flex items-center justify-center gap-2 h-10 w-full"
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <Loader2 className="animate-spin size-4" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+                Eliminar {table.getFilteredSelectedRowModel().rows.length}{" "}
+                {table.getFilteredSelectedRowModel().rows.length === 1
+                  ? "lead"
+                  : "leads"}
+              </Button>
+            ) : (
+              <ColumnSelector table={table} />
+            )}
           </div>
         </div>
       </CardContent>
@@ -432,6 +473,13 @@ export function CommercialTable<TData, TValue>({
     pageSize: defaultPageSize,
   });
 
+  // Use a mounted ref to prevent state updates before mounting
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Configuración de la tabla
   const table = useReactTable({
     data,
@@ -449,7 +497,6 @@ export function CommercialTable<TData, TValue>({
     filterFns: {
       filterAnything,
     },
-
     state: {
       sorting,
       columnFilters,
@@ -462,15 +509,21 @@ export function CommercialTable<TData, TValue>({
 
   // Manejadores
   const handlePageSizeChange = (value: string) => {
+    if (!isMounted) return; // Prevent updates before mounting
     const newSize = parseInt(value, 10);
     setPageSize(newSize);
     table.setPageSize(newSize);
   };
 
   const handleGlobalFilterChange = (value: string) => {
+    if (!isMounted) return; // Prevent updates before mounting
     setGlobalFilter(value);
     table.setPageIndex(0); // Reset a primera página al filtrar
   };
+
+  if (!isMounted) {
+    return <div className="p-4">Loading table...</div>;
+  }
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">

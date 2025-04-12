@@ -1,33 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,14 +24,42 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Mail, PlusIcon, Users } from "lucide-react";
+import { Loader2, PlusIcon, Users, UserX } from "lucide-react";
 import { Person } from "@prisma/client";
+import { createLeadPerson } from "@/actions/person/actions";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { createLeadPersonSchema } from "@/zod/createLeadPersonSchema";
+import { ContactoCard } from "../../../leads/components/ContactCard";
 
-export function LeadContactosSheet({ contactos }: { contactos: Person[] }) {
+export function LeadContactosSheet({
+  contactos,
+  leadId,
+}: {
+  contactos: Person[];
+  leadId: string;
+}) {
   const [isMobile, setIsMobile] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const [lastResult, formAction, isPending] = useActionState(
+    createLeadPerson,
+    undefined,
+  );
+
+  const [form, fields] = useForm({
+    lastResult,
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: createLeadPersonSchema,
+      });
+    },
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
 
   // Detectar si el dispositivo es móvil
   useEffect(() => {
@@ -59,30 +76,73 @@ export function LeadContactosSheet({ contactos }: { contactos: Person[] }) {
 
   // Formulario de contacto
   const ContactForm = () => (
-    <form className="space-y-4">
+    <form
+      className="space-y-4"
+      id={form.id}
+      action={formAction}
+      onSubmit={form.onSubmit}
+      noValidate
+    >
+      <input
+        type="hidden"
+        value={leadId}
+        name={fields.leadId.name}
+        key={fields.leadId.key}
+      />
+
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
           <Label htmlFor="nombre">Nombre completo</Label>
-          <Input id="nombre" placeholder="Juan Pérez" type="text" required />
+          <Input
+            name={fields.name.name}
+            id={fields.name.id}
+            placeholder="Juan Pérez"
+            type="text"
+            required
+            key={fields.name.key}
+            defaultValue={fields.name.initialValue}
+          />
         </div>
         <div className="flex-1 space-y-2">
           <Label htmlFor="puesto">Puesto</Label>
           <Input
-            id="puesto"
+            id={fields.position.id}
+            name={fields.position.name}
+            key={fields.position.key}
+            defaultValue={fields.position.initialValue}
             placeholder="Gerente de producto"
             type="text"
             required
           />
         </div>
       </div>
-      <div className="*:not-first:mt-2">
+      <div className="*">
         <Label htmlFor="correo">Correo electrónico</Label>
         <Input
-          id="correo"
+          id={fields.email.id}
+          name={fields.email.name}
+          key={fields.email.key}
+          defaultValue={fields.email.initialValue}
           placeholder="candidato@ejemplo.com"
           type="email"
           required
         />
+      </div>
+
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={() => setOpen(false)}>
+          Cancelar
+        </Button>
+        <Button type="submit">
+          {isPending ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Cargando...
+            </>
+          ) : (
+            <span>Crear lead</span>
+          )}
+        </Button>
       </div>
     </form>
   );
@@ -100,107 +160,76 @@ export function LeadContactosSheet({ contactos }: { contactos: Person[] }) {
     </Button>
   );
 
-  // Footer del formulario
-  const ContactFormFooter = () => (
-    <>
-      <Button variant="outline" onClick={() => setOpen(false)}>
-        Cancelar
-      </Button>
-      <Button onClick={() => setOpen(false)}>Guardar Contacto</Button>
-    </>
-  );
-
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">
-          <Users />
-        </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader className="mt-5">
-          {/* Mostrar Drawer en móviles y Dialog en pantallas grandes */}
-          {isMobile ? (
-            <Drawer open={open} onOpenChange={setOpen}>
-              <DrawerTrigger asChild>
-                <AddContactTrigger />
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Agregar contacto</DrawerTitle>
-                  <DrawerDescription>
-                    Completar la información del nuevo candidato.
-                  </DrawerDescription>
-                </DrawerHeader>
-                <div className="px-4 pb-4">
-                  <ContactForm />
-                </div>
-                <DrawerFooter>
-                  <ContactFormFooter />
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <AddContactTrigger />
-              </DialogTrigger>
-              <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
-                <DialogHeader className="contents space-y-0 text-left">
-                  <DialogTitle className="border-b px-6 py-4 text-base">
-                    Agregar contacto
-                  </DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="sr-only">
-                  Completar la información del nuevo candidato.
-                </DialogDescription>
-                <div className="overflow-y-auto">
-                  <div className="px-6 pt-4 pb-6">
-                    <ContactForm />
-                  </div>
-                </div>
-                <DialogFooter className="border-t px-6 py-4">
-                  <ContactFormFooter />
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </SheetHeader>
+    <>
+      {/* Drawer/Dialog fuera del Sheet */}
+      {isMobile ? (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Agregar contacto</DrawerTitle>
+              <DrawerDescription>
+                Completar la información del nuevo candidato.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 pb-4">
+              <ContactForm />
+            </div>
+            <DrawerFooter />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+            <DialogHeader className="contents space-y-0 text-left">
+              <DialogTitle className="border-b px-6 py-4 text-base">
+                Agregar contacto
+              </DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="sr-only">
+              Completar la información del nuevo candidato.
+            </DialogDescription>
+            <div className="overflow-y-auto">
+              <div className="px-6 pt-4 pb-6">
+                <ContactForm />
+              </div>
+            </div>
+            <DialogFooter className="border-t px-6 py-4" />
+          </DialogContent>
+        </Dialog>
+      )}
 
-        {/* Lista de contactos */}
-        <div className="space-y-4 mt-4">
-          {contactos.map((contacto, index) => (
-            <Card
-              key={index}
-              className="shadow-sm hover:shadow-md transition-shadow border-l-2 border-l-primary"
-            >
-              {/* Header */}
-              <CardHeader className="p-3 pb-1">
-                <div className="space-y-1">
-                  <CardTitle className="text-base font-medium">
-                    {contacto.name}
-                  </CardTitle>
-                  <CardDescription className="text-xs text-gray-400">
-                    {contacto.position}
-                  </CardDescription>
-                </div>
-              </CardHeader>
+      {/* Sheet con botón y listado */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline">
+            <Users />
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader className="mt-5">
+            <AddContactTrigger />
 
-              {/* Content */}
-              <CardContent className="p-3 pt-1 space-y-2">
-                <div className="flex items-center gap-2 justify-between">
-                  <div className="flex gap-1 items-center">
-                    <Mail size={14} className="text-gray-400" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      contacto@gmail.com
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
+            <SheetTitle></SheetTitle>
+          </SheetHeader>
+
+          {/* Lista de contactos */}
+          <div className="space-y-4 mt-4">
+            {contactos && contactos.length > 0 ? (
+              contactos.map((contacto) => (
+                <ContactoCard key={contacto.id} contacto={contacto} />
+              ))
+            ) : (
+              <div className="flex flex-col justify-center  items-center gap-2">
+                <UserX size={40} />
+                <p className="text-sm text-gray-400 text-center">
+                  No hay contactos disponibles.
+                </p>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { CommercialTable } from "./table/CommercialTable";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
-import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";
+import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { ToastAlerts } from "@/components/ToastAlerts";
 import prisma from "@/lib/db";
 

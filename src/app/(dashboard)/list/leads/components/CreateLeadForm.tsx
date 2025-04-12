@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { use, useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { createLead } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
@@ -40,6 +40,7 @@ import {
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
   return (
@@ -65,8 +66,8 @@ export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
 };
 
 function NuevoLeadForm({ generadores }: { generadores: User[] }) {
+  const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<User>();
-
   const [fechaConectar, setFechaConectar] = useState<Date>();
   const [fechaProspectar, setFechaProspectar] = useState<Date>();
 
@@ -87,10 +88,19 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
   });
 
   useEffect(() => {
-    if (lastResult?.status == "error") {
+    if (lastResult?.status === "error") {
       toast.error("Error al crear el Lead");
+      return;
     }
-  }, [lastResult]);
+
+    if (lastResult?.status === "success") {
+      toast.success("Lead creado exitosamente");
+      // Reset form (optional)
+      setSelectedUser(undefined);
+      setFechaConectar(undefined);
+      setFechaProspectar(undefined);
+    }
+  }, [lastResult, router]);
 
   // Seleccionar un usuario
   const handleSelectGl = (user: User) => {

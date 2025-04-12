@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
+import { ToastAlerts } from "@/components/ToastAlerts";
 
 interface pageProps {}
 
@@ -36,15 +37,16 @@ const fetchGeneradores = async () => {
 
 export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchData();
-
+  const session = await auth();
   const generadores = await fetchGeneradores();
 
-  const session = await auth();
-  checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
+  checkRoleRedirect(session?.user.role as Role, [Role.Admin, Role.GL, Role.MK]);
 
   return (
     <>
       {/* LIST */}
+
+      <ToastAlerts />
       <CreateLeadForm generadores={generadores} />
       <CommercialTable
         columns={columns}

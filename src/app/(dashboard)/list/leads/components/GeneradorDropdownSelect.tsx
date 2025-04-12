@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,12 +19,16 @@ export const GeneradorDropdownSelect = ({
 }: {
   row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
 }) => {
-  const [generador, setNewGenerador] = useState(row.original.generadorLeads);
+  // Use the generadorLeads from row.original as the source of truth
   const [recruiters, setRecruiters] = useState<User[] | null>(null);
-
   const router = useRouter();
-
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Get the current generator ID directly from row.original each time
+  // This ensures we always show the latest data
+  const currentGeneratorId = row.original.generadorId;
+  const currentGenerator = row.original.generadorLeads;
 
   useEffect(() => {
     const loadRecruiters = async () => {
@@ -42,18 +45,20 @@ export const GeneradorDropdownSelect = ({
   }, []);
 
   const handleUserChange = async (newUser: User) => {
+    if (newUser.id === currentGeneratorId) return;
+
+    setIsUpdating(true);
     try {
-      setNewGenerador(newUser);
       const formData = new FormData();
       formData.append("generadorId", newUser.id);
-
       await editLeadById(row.original.id, formData);
       toast.success("Lead reasignado con éxito");
+      router.refresh(); // Refresh to update all components with new data
     } catch (error) {
       toast.error("Error al reasignar lead");
-      setNewGenerador(row.original.generadorLeads);
-      router.refresh();
-      console.log(error);
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -64,20 +69,33 @@ export const GeneradorDropdownSelect = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex ">
-          <span className="truncate">
-            {loading ? "Cargando..." : generador?.name || "Seleccionar"}
-          </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2 w-full"
+          disabled={isUpdating}
+        >
+          {isUpdating ? (
+            "Actualizando..."
+          ) : loading ? (
+            "Cargando..."
+          ) : (
+            <>
+              <span className="truncate max-w-[120px]">
+                {currentGenerator?.name}
+              </span>
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 max-h-[300px] overflow-y-auto">
         {recruiters?.map((recruiter) => (
           <DropdownMenuItem
             key={recruiter.id}
-            className="flex items-center gap-3 p-2 cursor-pointer"
-            onClick={() => {
-              handleUserChange(recruiter);
-            }}
+            className={`flex items-center gap-3 p-2 cursor-pointer ${
+              recruiter.id === currentGeneratorId ? "bg-muted" : ""
+            }`}
+            onClick={() => handleUserChange(recruiter)}
           >
             <div className="flex items-center gap-3 flex-1">
               <Avatar className="h-9 w-9 shrink-0">

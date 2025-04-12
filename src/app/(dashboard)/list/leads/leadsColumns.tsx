@@ -88,16 +88,23 @@ export const leadsColumns: ColumnDef<
     accessorKey: "fechaProspeccion",
     header: "Fecha Prospección",
     cell: ({ row }) => {
+      const fecha = row.getValue("fechaProspeccion") as Date;
+
       return (
         <ChangeDateComponent
-          fecha={row.original.fechaProspeccion}
+          fecha={fecha}
           onFechaChange={async (nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
             const date = nuevaFecha.toISOString();
             const formData = new FormData();
             formData.append("fechaProspeccion", date);
-            await editLeadById(row.original.id, formData);
-            toast.info("Fecha cambiada correctamente");
+            try {
+              await editLeadById(row.original.id, formData);
+              toast.info("Fecha cambiada correctamente");
+            } catch (error) {
+              console.log(error);
+              toast.error("Error al actualizar el lead");
+            }
           }}
         />
       );
@@ -107,7 +114,10 @@ export const leadsColumns: ColumnDef<
     accessorKey: "contactos",
     header: "Contactos",
     cell: ({ row }) => (
-      <LeadContactosSheet contactos={row.original.contactos} />
+      <LeadContactosSheet
+        contactos={row.original.contactos}
+        leadId={row.original.id}
+      />
     ),
   },
   {

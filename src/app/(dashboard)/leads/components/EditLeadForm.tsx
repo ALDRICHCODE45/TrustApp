@@ -28,7 +28,6 @@ import { editLeadById } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { editLeadZodSchema } from "@/zod/editLeadSchema";
-import { toast } from "sonner";
 
 interface EditLeadFormProps {
   leadData: Lead & { generadorLeads: User; contactos: Person[] };
@@ -48,21 +47,12 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
 
   const [form, fields] = useForm({
     lastResult,
-    onSubmit(event, context) {
-      if (context.submission?.status === "success") {
-        toast.info("Lead actualizado correctamente");
-      }
-    },
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: editLeadZodSchema });
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
-
-  const [selectedOption, setSelectedOption] = useState(
-    leadData.generadorLeads.name,
-  );
 
   const [fechaConectar, setFechaConectar] = useState<Date | undefined>(
     leadData.fechaAConectar ? new Date(leadData.fechaAConectar) : undefined,

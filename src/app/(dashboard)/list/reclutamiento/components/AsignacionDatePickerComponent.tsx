@@ -64,8 +64,8 @@ export const ChangeDateComponent = ({
             variant="outline"
             className="flex items-center justify-center w-full"
           >
-            {date instanceof Date ? (
-              <span>{format(date, "EEE dd/MM/yy", { locale: es })}</span>
+            {fecha instanceof Date ? (
+              <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
             ) : (
               <span>Fecha</span>
             )}
