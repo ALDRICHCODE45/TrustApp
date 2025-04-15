@@ -77,12 +77,24 @@ const allowLeadStatus = [
     icon: Award,
   },
 ];
+
+const objectToDisplay: Record<LeadStatus, string> = {
+  ContactoCalido: "Contacto Calido",
+  SocialSelling: "Social Selling",
+  CitaValidada: "Cita Validada",
+  CitaAgendada: "Cita Agendada",
+  Cliente: "Cliente",
+  Contacto: "Contacto",
+  Prospecto: "Prospecto",
+};
+
 export const LeadChangeStatus = ({
   row,
 }: {
   row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
 }) => {
   const status = row.original.status;
+  const valueToDisplay = objectToDisplay[status];
 
   const handleStatusChange = async (newStatus: LeadStatus) => {
     const leadId: string = row.original.id;
@@ -101,7 +113,7 @@ export const LeadChangeStatus = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {status}
+          {valueToDisplay}
         </Button>
       </DropdownMenuTrigger>
 

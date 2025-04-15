@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
+import { Metadata } from "next";
 
 export interface pageProps {}
 
@@ -14,6 +15,10 @@ const fetchUsers = async () => {
     columns: UserColumns,
     data: users,
   };
+};
+
+export const metadata: Metadata = {
+  title: "Trust | Users",
 };
 
 export default async function UserList({}: pageProps): Promise<ReactElement> {

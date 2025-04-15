@@ -7,8 +7,13 @@ import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
 import { ToastAlerts } from "@/components/ToastAlerts";
+import { Metadata } from "next";
 
 interface pageProps {}
+
+export const metadata: Metadata = {
+  title: "Trust | Leads",
+};
 
 const fetchData = async () => {
   const leads = await prisma.lead.findMany({

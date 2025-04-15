@@ -6,8 +6,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
+import { Metadata } from "next";
 
 interface pageProps {}
+
+export const metadata: Metadata = {
+  title: "Trust | Facturas",
+};
 
 const fetchFacturas = async () => {
   return new Promise<{ columns: ColumnDef<Factura>[]; data: Factura[] }>(

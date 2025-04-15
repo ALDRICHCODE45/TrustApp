@@ -6,8 +6,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
+import { Metadata } from "next";
 
 export interface pageProps {}
+
+export const metadata: Metadata = {
+  title: "Trust | Reclutamiento",
+};
 
 const fetchVacantes = async () => {
   return new Promise<{ columns: ColumnDef<Vacante>[]; data: Vacante[] }>(

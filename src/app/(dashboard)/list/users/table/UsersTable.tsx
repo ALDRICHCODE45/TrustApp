@@ -140,7 +140,7 @@ export function UsersTable<TData, TValue>({
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
 
   return (
-    <Card className="w-full shadow-sm border-0">
+    <Card className="w-full shadow-sm border-0 max-w-[93vw]">
       <CardContent className="p-4 md:p-6">
         {/* Encabezado de la tabla con título y contador */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">

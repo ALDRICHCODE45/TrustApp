@@ -54,6 +54,15 @@ export function ClientLayout({ children }: ClientLayoutProps) {
           </Breadcrumb>
         </div>
         {/* Right side of navbar - add user profile or actions */}
+        <div className="flex items-center">
+          <img
+            src="/trust-logo.webp"
+            alt="Trust Logo"
+            className=" rounded-full object-cover"
+            width={45}
+            height={45}
+          />
+        </div>
       </header>
       {/* Content container with better padding */}
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0e0e0e]">

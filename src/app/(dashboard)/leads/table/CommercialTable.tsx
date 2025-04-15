@@ -49,10 +49,10 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import { Lead, LeadStatus, Role, User } from "@prisma/client";
+import { Lead, LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteMayLeads } from "../../../../actions/leads/deleteLeads";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 const filterAnything: FilterFn<Lead> = (
   row: Row<Lead>,
@@ -92,7 +92,7 @@ interface TableFiltersProps<TData, TValue> {
   generadores: User[];
 }
 
-function TableFilters<TData, TValue>({
+function TableFilters<TData extends { id: string }, TValue>({
   table,
   filterPlaceholder = "Filtrar...",
   onGlobalFilterChange,
@@ -106,7 +106,7 @@ function TableFilters<TData, TValue>({
   const handleDelete = async () => {
     setDeleteLoading(true);
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const ids = selectedRows.map((row) => row.original.id as string);
+    const ids = selectedRows.map((row) => row.original.id);
 
     try {
       await deleteMayLeads(ids);
@@ -452,7 +452,7 @@ function TablePagination<TData>({
 }
 
 // Componente principal
-export function CommercialTable<TData, TValue>({
+export function CommercialTable<TData extends { id: string }, TValue>({
   columns,
   data,
   defaultPageSize = 10,

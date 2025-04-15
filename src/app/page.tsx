@@ -9,13 +9,10 @@ const Homepage = async () => {
   switch (user?.role) {
     case Role.reclutador:
       redirect("/reclutador?ok=true");
-      break;
     case Role.GL:
       redirect("/leads?ok=true");
-      break;
     case Role.MK:
       redirect("/leads?ok=true");
-      break;
     case Role.Admin:
       redirect("/admin?ok=true");
   }
