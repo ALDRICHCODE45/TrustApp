@@ -11,32 +11,20 @@ import { Calendar } from "./ui/calendar";
 import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
 import { es } from "date-fns/locale";
+import { getTaskByDate } from "@/actions/tasks/actions";
+import { Task } from "@prisma/client";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
-interface Event {
-  id: number;
-  title: string;
-  time: string;
-  description: string;
+interface Props {
+  userId: string;
 }
 
-export const EventCalendar: React.FC = () => {
+export const EventCalendar = ({ userId }: Props) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    new Date(),
   );
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: 1,
-      title: "Reunión de equipo",
-      time: "10:00 AM - 11:00 AM",
-      description: "Discutir el progreso del proyecto.",
-    },
-    {
-      id: 2,
-      title: "Entrega de informe",
-      time: "02:00 PM - 03:00 PM",
-      description: "Enviar el informe mensual al cliente.",
-    },
-  ]);
+  const [events, setEvents] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleDateSelect = async (date: Date | undefined) => {
@@ -44,24 +32,15 @@ export const EventCalendar: React.FC = () => {
     setSelectedDate(date);
     setLoading(true);
 
+    const result = await getTaskByDate(userId, date.toISOString());
+    if (!result.ok) {
+      toast.error("Error al traer las tareas");
+      return;
+    }
+
     // Simulate loading
-    setTimeout(() => {
-      setEvents([
-        {
-          id: 1,
-          title: "Reunión de equipo",
-          time: "10:00 AM - 11:00 AM",
-          description: "Discutir el progreso del proyecto.",
-        },
-        {
-          id: 2,
-          title: "Entrega de informe",
-          time: "02:00 PM - 03:00 PM",
-          description: "Enviar el informe mensual al cliente.",
-        },
-      ]);
-      setLoading(false);
-    }, 600);
+    setEvents(result.tasks || []);
+    setLoading(false);
   };
 
   return (
@@ -88,13 +67,20 @@ export const EventCalendar: React.FC = () => {
             <div className="flex items-center justify-center py-6">
               <Loader2 className="animate-spin h-5 w-5 text-blue-500" />
             </div>
-          ) : events.length > 0 ? (
+          ) : events?.length > 0 ? (
             events.map((event) => (
-              <Card key={event.id} className="border shadow-none ">
+              <Card
+                key={event.id}
+                className="border shadow-none border-l-blue-500 "
+              >
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-sm">{event.title}</h3>
-                    <span className="text-xs text-slate-500">{event.time}</span>
+                    <span className="text-xs text-slate-500">
+                      {format(event.dueDate, "d 'de' MMMM, yyyy", {
+                        locale: es,
+                      })}
+                    </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     {event.description}

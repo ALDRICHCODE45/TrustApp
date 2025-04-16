@@ -19,20 +19,38 @@ const getUser = async (userEmail: string) => {
   return user;
 };
 
+const getTasks = async (userId: string) => {
+  try {
+    const result = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+        status: "Pending",
+      },
+    });
+    return result;
+  } catch (error) {
+    throw new Error("Error trayendo las tareas");
+  }
+};
+
 export default async function Layout({ children }: LayoutProps) {
   const session = await auth();
 
   if (!session) redirect("/sign-in");
+
   const user = await getUser(session.user.email);
 
   if (!user) {
     redirect("/sign-in");
   }
 
+  const taskWithPendingState = await getTasks(user.id);
+  const hasPendingTasks = taskWithPendingState.length > 0;
+
   return (
     <>
       <SidebarProvider>
-        <AppSidebar user={user} />
+        <AppSidebar user={user} hasPendingTasks={hasPendingTasks} />
         <SidebarInset>
           <ClientLayout>{children}</ClientLayout>
         </SidebarInset>

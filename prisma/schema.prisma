@@ -44,9 +44,11 @@ model User {
   image         String?
   role          Role      @default(reclutador) // Valor por defecto
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   Lead      Lead[]
+  Comment   Comment[]
+  Task      Task[]
 }
 
 enum LeadStatus {
@@ -89,4 +91,41 @@ model Person {
   //relaciones -> contacto de leads
   Lead   Lead?   @relation(fields: [leadId], references: [id])
   leadId String?
+}
+
+model Vacancy {
+  id String @id @default(uuid())
+
+  Comment Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  isTask    Boolean  @default(false)
+  task      Task?    @relation(fields: [taskId], references: [id])
+  taskId    String?  @unique
+  vacancy   Vacancy  @relation(fields: [vacancyId], references: [id])
+  vacancyId String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime @default(now())
+}
+
+enum TaskStatus {
+  Pending
+  Done
+}
+
+model Task {
+  id           String     @id @default(uuid())
+  title        String
+  description  String
+  assignedTo   User       @relation(fields: [assignedToId], references: [id])
+  assignedToId String
+  comment      Comment?   @relation
+  commentId    String?
+  status       TaskStatus @default(Pending)
+  dueDate      DateTime
+  createdAt    DateTime   @default(now())
 }

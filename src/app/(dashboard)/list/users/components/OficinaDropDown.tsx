@@ -17,6 +17,11 @@ interface Props {
   row: Row<User>;
 }
 
+const officeMap = {
+  Oficina1: "Oficina 1",
+  Oficina2: "Oficina 2",
+};
+
 const allowOfices = [
   {
     title: "¿Estás seguro?",
@@ -39,7 +44,6 @@ export const OficinaDropDown = ({ row }: Props) => {
     try {
       const formData = new FormData();
       formData.append("oficina", newOficina);
-
       toast.promise(editUser(row.original.id, formData), {
         loading: "Loading...",
         success: "Usuario modificado con éxito",
@@ -54,7 +58,7 @@ export const OficinaDropDown = ({ row }: Props) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          {actualOficina}
+          {officeMap[actualOficina]}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

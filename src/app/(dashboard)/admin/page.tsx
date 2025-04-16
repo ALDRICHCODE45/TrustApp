@@ -19,7 +19,7 @@ export default async function Dashboardpage() {
   return (
     <>
       <div>
-        <AdminPage userCount={userCount} />
+        <AdminPage userCount={userCount} userId={session?.user.id as string} />
       </div>
     </>
   );

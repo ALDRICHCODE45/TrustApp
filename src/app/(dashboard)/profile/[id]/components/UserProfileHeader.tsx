@@ -1,7 +1,7 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { User } from "@prisma/client";
+import { Task, User } from "@prisma/client";
 import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox-lite";
 import "yet-another-react-lightbox-lite/styles.css";
@@ -11,11 +11,13 @@ import { ActivityProfileSheet } from "@/app/(dashboard)/list/reclutamiento/compo
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
 
 export const UserProfileHeader = ({
+  tasks,
   user,
   isAdmin,
 }: {
   user: User;
   isAdmin: boolean;
+  tasks: Task[];
 }) => {
   const [index, setIndex] = useState<number>();
 
@@ -81,7 +83,7 @@ export const UserProfileHeader = ({
                   <p className="text-muted-foreground">{user?.email}</p>
                 </div>
                 {/* Actividades del usuario */}
-                <ActivityProfileSheet user={user} />
+                <ActivityProfileSheet user={user} tasks={tasks} />
               </div>
             </div>
           </div>

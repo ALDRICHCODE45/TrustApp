@@ -14,15 +14,17 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User } from "@prisma/client";
+import { Task, TaskStatus, User } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
+  AlertTriangle,
   CalendarIcon,
   CheckCircle,
   CircleCheck,
   ClipboardList,
   Clock,
+  Edit,
   MoreVertical,
   Plus,
   SquarePen,
@@ -69,6 +71,13 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  createTask,
+  deleteTask,
+  editTask,
+  toggleTaskStatus,
+} from "@/actions/tasks/actions";
+import { clearLine } from "readline";
 
 // Interfaces
 export interface Activity {
@@ -77,6 +86,11 @@ export interface Activity {
   dueDate: string;
   description: string;
   completed: boolean;
+}
+interface EditData {
+  title?: string;
+  description?: string;
+  dueDate?: Date;
 }
 
 // Componente para formatear fechas
@@ -95,13 +109,156 @@ const FormattedDate = ({ dateString }: { dateString: string }) => {
   );
 };
 
+const EditActivityDialog = ({
+  activityId,
+  onEdit,
+  activity,
+}: {
+  activityId: string;
+  onEdit: (id: string, EditData: EditData) => void;
+  activity: Task;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(activity.title || "");
+  const [description, setDescription] = useState(activity.description || "");
+  const [date, setDate] = useState<Date | undefined>(
+    new Date(activity.dueDate) || new Date(),
+  );
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error("Por favor, añade un título para la tarea");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Por favor añade una description para la tarea");
+      return;
+    }
+
+    if (!date) {
+      toast.error("Por favor, selecciona una fecha límite");
+      return;
+    }
+
+    // Formatear la fecha a YYYY-MM-DD para consistencia con el formato existente
+    const formattedDate = format(date, "yyyy-MM-dd");
+
+    onEdit(activityId, { description, title, dueDate: date });
+
+    // Limpiar el formulario
+    setTitle("");
+    setDescription("");
+    setDate(new Date());
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger className="hover:bg-gray-300 w-full">
+        <div className="flex items-center pl-2 hover:bg-gray-50">
+          <Edit className="mr-2" size={15} />
+          <span className="text-sm">Editar </span>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md z-[888]">
+        <DialogHeader>
+          <DialogTitle>Nueva actividad</DialogTitle>
+          <DialogDescription>
+            Edita los campos correspondientes
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title" className="text-left">
+                Título
+              </Label>
+              <Input
+                id="title"
+                placeholder="Ej: Terminar proyecto de React"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description" className="text-left">
+                Descripción
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Describe los detalles de la tarea..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="col-span-3 resize-none min-h-[80px]"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="dueDate" className="text-left">
+                Fecha límite
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !date && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon />
+                    {date ? (
+                      format(date, "d 'de' MMMM, yyyy", { locale: es })
+                    ) : (
+                      <span>Selecciona una fecha</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[900]">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateSelect}
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">Editar tarea</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // Componente para el diálogo de eliminación
 const DeleteActivityDialog = ({
   activityId,
   onDelete,
 }: {
-  activityId: number;
-  onDelete: (id: number) => void;
+  activityId: string;
+  onDelete: (id: string) => void;
 }) => {
   return (
     <AlertDialog>
@@ -132,16 +289,25 @@ const DeleteActivityDialog = ({
   );
 };
 
-// Componente para el menú de acciones
 const ActivityActions = ({
   activity,
   onToggleStatus,
   onDelete,
+  onEdit,
 }: {
-  activity: Activity;
-  onToggleStatus: (id: number) => void;
-  onDelete: (id: number) => void;
+  activity: Task;
+  onToggleStatus: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, editData: EditData) => void;
 }) => {
+  const isTaskDone = activity.status === "Done";
+  const [alertOpen, setAlertOpen] = useState(false);
+
+  const handleToggleStatus = () => {
+    setAlertOpen(false);
+    onToggleStatus(activity.id);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -152,64 +318,127 @@ const ActivityActions = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent className="z-[50]" align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() => onToggleStatus(activity.id)}
-          className="cursor-pointer"
-        >
-          {activity.completed ? (
-            <>
-              <XCircle />
-              Marcar como pendiente
-            </>
-          ) : (
-            <>
-              <CircleCheck />
-              Completar
-            </>
-          )}
-        </DropdownMenuItem>
+        <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.preventDefault();
+                setAlertOpen(true);
+              }}
+              className="cursor-pointer"
+            >
+              {isTaskDone ? (
+                <>
+                  <XCircle className="size-4" />
+                  Marcar como pendiente
+                </>
+              ) : (
+                <>
+                  <CircleCheck className="size-4" />
+                  Completar
+                </>
+              )}
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {isTaskDone ? "¿Marcar como pendiente?" : "¿Completar tarea?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {isTaskDone
+                  ? "¿Estás seguro de que quieres marcar esta tarea como pendiente?"
+                  : "¿Estás seguro de que quieres marcar esta tarea como completada?"}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleToggleStatus}>
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          <SquarePen />
-          Editar
-        </DropdownMenuItem>
+        <EditActivityDialog
+          activityId={activity.id}
+          onEdit={onEdit}
+          activity={activity}
+        />
         <DeleteActivityDialog activityId={activity.id} onDelete={onDelete} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-// Componente de Card de Actividad
 const ActivityCard = ({
   activity,
   onToggleStatus,
   onDelete,
+  onEdit,
 }: {
-  activity: Activity;
-  onToggleStatus: (id: number) => void;
-  onDelete: (id: number) => void;
+  activity: Task;
+  onToggleStatus: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, editData: EditData) => void;
 }) => {
-  const borderColor = activity.completed
-    ? "border-l-emerald-400"
-    : "border-l-amber-400";
+  const isTaskDone = activity.status === TaskStatus.Done;
+
+  // Función para calcular días restantes y determinar el estilo
+  const getDueDateStyle = () => {
+    if (isTaskDone) {
+      return {
+        borderColor: "border-l-emerald-400",
+        bgColor: "",
+        textColor: "",
+      };
+    }
+
+    // Calcular días restantes
+    const today = new Date();
+    const dueDate = new Date(activity.dueDate);
+    const timeDiff = dueDate.getTime() - today.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    // Asignar colores según días restantes
+    if (daysLeft > 5) {
+      return {
+        borderColor: "border-l-blue-500",
+        bgColor: "",
+        textColor: "",
+      };
+    } else if (daysLeft >= 3) {
+      return {
+        borderColor: "border-l-amber-400",
+        bgColor: "",
+        textColor: "",
+      };
+    } else {
+      return {
+        borderColor: "border-l-red-500",
+        bgColor: "bg-red-50",
+        textColor: "text-red-700",
+      };
+    }
+  };
+
+  const styles = getDueDateStyle();
 
   return (
-    <Card
-      className={`p-3 border-l-4 ${borderColor} hover:bg-muted/50 transition-colors`}
-    >
+    <Card className={`p-3 border-l-4 ${styles.borderColor} ${styles.bgColor}`}>
       <div className="flex justify-between items-start gap-2">
         <div className="flex-1">
           <h4
-            className={`font-medium ${activity.completed ? "line-through text-muted-foreground" : ""}`}
+            className={`font-medium ${isTaskDone ? "line-through text-muted-foreground" : styles.textColor}`}
           >
             {activity.title}
           </h4>
           <p
-            className={`text-sm ${activity.completed ? "line-through text-muted-foreground/70" : "text-muted-foreground"} mt-1`}
+            className={`text-sm ${isTaskDone ? "line-through text-muted-foreground/70" : "text-muted-foreground"} mt-1`}
           >
             {activity.description}
           </p>
-          {activity.completed ? (
+          {isTaskDone ? (
             <div className="flex items-center gap-2 mt-2">
               <Clock className="w-4 h-4 text-muted-foreground/70" />
               <span className="text-xs text-muted-foreground/70">
@@ -217,13 +446,24 @@ const ActivityCard = ({
               </span>
             </div>
           ) : (
-            <FormattedDate dateString={activity.dueDate} />
+            <div className="flex justify-between items-center">
+              <FormattedDate dateString={activity.dueDate.toISOString()} />
+              {styles.textColor === "text-red-700" && (
+                <div className="flex items-center gap-1 mt-1">
+                  <AlertTriangle className="w-4 h-4 text-red-500" />
+                  <span className="text-xs font-medium text-red-500">
+                    Urgente
+                  </span>
+                </div>
+              )}
+            </div>
           )}
         </div>
         <ActivityActions
           activity={activity}
           onToggleStatus={onToggleStatus}
           onDelete={onDelete}
+          onEdit={onEdit}
         />
       </div>
     </Card>
@@ -231,16 +471,16 @@ const ActivityCard = ({
 };
 
 // Componente de mensaje vacío
-const EmptyState = ({ type }: { type: "pending" | "completed" }) => {
+const EmptyState = ({ type }: { type: TaskStatus }) => {
   return (
     <div className="flex flex-col items-center justify-center h-60 text-center">
-      {type === "pending" ? (
+      {type === "Pending" ? (
         <CheckCircle className="h-10 w-10 text-primary/50 mb-2" />
       ) : (
         <ClipboardList className="h-10 w-10 text-primary/50 mb-2" />
       )}
       <p className="text-muted-foreground">
-        No hay actividades {type === "pending" ? "pendientes" : "completadas"}
+        No hay actividades {type === "Pending" ? "pendientes" : "completadas"}
       </p>
     </div>
   );
@@ -251,10 +491,12 @@ const ActivitiesList = ({
   activities,
   onToggleStatus,
   onDelete,
+  onEdit,
 }: {
-  activities: Activity[];
-  onToggleStatus: (id: number) => void;
-  onDelete: (id: number) => void;
+  activities: Task[];
+  onToggleStatus: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, editData: EditData) => void;
 }) => {
   return (
     <ScrollArea className="max-h-[500px] rounded-md border p-2 overflow-y-auto">
@@ -262,6 +504,7 @@ const ActivitiesList = ({
         {activities.length > 0 ? (
           activities.map((activity) => (
             <ActivityCard
+              onEdit={onEdit}
               key={activity.id}
               activity={activity}
               onToggleStatus={onToggleStatus}
@@ -270,7 +513,7 @@ const ActivitiesList = ({
           ))
         ) : (
           <EmptyState
-            type={activities[0]?.completed ? "completed" : "pending"}
+            type={activities[0]?.status === "Done" ? "completed" : "pending"}
           />
         )}
       </div>
@@ -279,123 +522,97 @@ const ActivitiesList = ({
 };
 
 // Componente principal
-export const ActivityProfileSheet = ({ user }: { user: User }) => {
-  const [activities, setActivities] = useState<Activity[]>([
-    {
-      id: 1,
-      title: "Finalizar proyecto de React",
-      dueDate: "2025-02-15",
-      description:
-        "Completar la implementación del dashboard y los tests finales.",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Estudiar para el examen de matemáticas",
-      dueDate: "2025-02-18",
-      description: "Revisar álgebra, cálculo y geometría analítica.",
-      completed: false,
-    },
-    {
-      id: 3,
-      title: "Entregar app",
-      dueDate: "2025-02-18",
-      description: "Revisar álgebra, cálculo y geometría analítica.",
-      completed: false,
-    },
-    {
-      id: 4,
-      title: "Preparar exposición de historia",
-      dueDate: "2025-02-20",
-      description:
-        "Investigar sobre la Revolución Francesa y elaborar diapositivas.",
-      completed: false,
-    },
-    {
-      id: 5,
-      title: "Redactar ensayo de literatura",
-      dueDate: "2025-02-22",
-      description: "Analizar la obra 'Cien años de soledad' y su impacto.",
-      completed: false,
-    },
-    {
-      id: 6,
-      title: "Estudiar para el examen de química",
-      dueDate: "2025-02-25",
-      description: "Revisar estructura molecular y tabla periódica.",
-      completed: false,
-    },
-    {
-      id: 7,
-      title: "Finalizar proyecto de programación",
-      dueDate: "2025-02-28",
-      description: "Completar la interfaz de usuario y optimizar el backend.",
-      completed: false,
-    },
-    {
-      id: 8,
-      title: "Revisar notas de biología",
-      dueDate: "2025-03-02",
-      description: "Estudiar ecosistemas y cadenas tróficas.",
-      completed: true,
-    },
-    {
-      id: 9,
-      title: "Hacer práctica de estadística",
-      dueDate: "2025-03-05",
-      description:
-        "Resolver problemas de distribución normal y regresión lineal.",
-      completed: false,
-    },
-    {
-      id: 10,
-      title: "Organizar documentos",
-      dueDate: "2025-03-07",
-      description: "Clasificar notas y documentos importantes.",
-      completed: true,
-    },
-  ]);
-
+export const ActivityProfileSheet = ({
+  user,
+  tasks,
+}: {
+  user: User;
+  tasks: Task[];
+}) => {
   // Función para cambiar el estado de una actividad
-  const toggleActivityStatus = (id: number) => {
-    setActivities(
-      activities.map((activity) =>
-        activity.id === id
-          ? { ...activity, completed: !activity.completed }
-          : activity,
-      ),
-    );
-    toast.info("Estado de tarea actualizado correctamente");
+  const toggleActivityStatus = async (taskId: string) => {
+    try {
+      const promise = toggleTaskStatus(user.id, taskId);
+      toast.promise(promise, {
+        loading: "Loading...",
+        success: (data) => {
+          return `Tarea editada correctamente`;
+        },
+        error: "Error al editar la tarea, revisa los logs",
+      });
+    } catch (error) {
+      toast.error("Error al editar la tarea");
+    }
   };
 
   // Función para eliminar una actividad
-  const deleteActivity = (id: number) => {
-    setActivities(activities.filter((activity) => activity.id !== id));
-    toast("Tarea eliminada correctamente");
+  const deleteActivity = async (taskId: string) => {
+    try {
+      const result = await deleteTask(user.id, taskId);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success("Tarea eliminada correctamente");
+    } catch (error) {
+      toast.error("Error al eliminar la tarea");
+    }
   };
 
   // Filtrar actividades
-  const pendingActivities = activities.filter(
-    (activity) => !activity.completed,
+  const pendingActivities = tasks.filter(
+    (activity) => activity.status === "Pending",
   );
-  const completedActivities = activities.filter(
-    (activity) => activity.completed,
+  const completedActivities = tasks.filter(
+    (activity) => activity.status === "Done",
   );
 
-  const addActivity = (activityData: Omit<Activity, "id" | "completed">) => {
-    // Encontrar el ID más alto para crear uno nuevo (incrementado en 1)
-    const maxId =
-      activities.length > 0
-        ? Math.max(...activities.map((activity) => activity.id))
-        : 0;
+  const addActivity = async (activityData: {
+    title: string;
+    description: string;
+    dueDate: Date;
+  }) => {
+    const formData = new FormData();
+    formData.append("title", activityData.title);
+    formData.append("description", activityData.description);
+    formData.append("dueDate", activityData.dueDate.toISOString());
+    formData.append("userId", user.id);
 
-    const newActivity: Activity = {
-      ...activityData,
-      id: maxId + 1,
-      completed: false,
-    };
+    try {
+      const { ok, message } = await createTask(formData);
+      if (!ok) {
+        toast.error(message);
+        console.log(message);
+        return;
+      }
+      toast.success("Tarea creada satisfactoriamente!!");
+    } catch (error) {
+      toast.error("Error al crear la task");
+    }
+  };
 
-    setActivities([newActivity, ...activities]);
+  const onEdit = async (id: string, data: EditData) => {
+    const formData = new FormData();
+
+    formData.append("title", data.title!);
+    formData.append("description", data.description!);
+    formData.append("dueDate", data.dueDate?.toISOString()!);
+    formData.append("userId", user.id);
+
+    try {
+      const promise = editTask(id, formData);
+      toast.promise(promise, {
+        loading: "Loading...",
+        success: () => {
+          return `Tarea editada correctamente`;
+        },
+        error: "Error al editar la tarea",
+      });
+    } catch (error) {
+      console.log(error);
+      toast.error("Error editando la tarea");
+    }
   };
 
   return (
@@ -433,6 +650,7 @@ export const ActivityProfileSheet = ({ user }: { user: User }) => {
                 activities={pendingActivities}
                 onToggleStatus={toggleActivityStatus}
                 onDelete={deleteActivity}
+                onEdit={onEdit}
               />
             </TabsContent>
 
@@ -441,6 +659,7 @@ export const ActivityProfileSheet = ({ user }: { user: User }) => {
                 activities={completedActivities}
                 onToggleStatus={toggleActivityStatus}
                 onDelete={deleteActivity}
+                onEdit={onEdit}
               />
             </TabsContent>
           </Tabs>
@@ -461,7 +680,11 @@ export const ActivityProfileSheet = ({ user }: { user: User }) => {
 
 // Componente AddActivityDialog.tsx
 interface AddActivityDialogProps {
-  onAddActivity: (activity: Omit<Activity, "id" | "completed">) => void;
+  onAddActivity: (activity: {
+    title: string;
+    description: string;
+    dueDate: Date;
+  }) => void;
 }
 
 export const AddActivityDialog = ({
@@ -486,6 +709,11 @@ export const AddActivityDialog = ({
       return;
     }
 
+    if (!description.trim()) {
+      toast.error("Por favor añade una description para la tarea");
+      return;
+    }
+
     if (!date) {
       toast.error("Por favor, selecciona una fecha límite");
       return;
@@ -497,7 +725,7 @@ export const AddActivityDialog = ({
     onAddActivity({
       title,
       description,
-      dueDate: formattedDate,
+      dueDate: date,
     });
 
     // Limpiar el formulario
@@ -505,8 +733,6 @@ export const AddActivityDialog = ({
     setDescription("");
     setDate(new Date());
     setOpen(false);
-
-    toast.success("Tarea creada correctamente");
   };
 
   return (

@@ -31,7 +31,13 @@ export const userStatsMockData = {
   },
 };
 
-export function AdminPage({ userCount }: { userCount: number }) {
+export function AdminPage({
+  userCount,
+  userId,
+}: {
+  userCount: number;
+  userId: string;
+}) {
   const userData = {
     title: "Usuarios",
     value: userCount,
@@ -73,7 +79,7 @@ export function AdminPage({ userCount }: { userCount: number }) {
         </div>
         {/* RIGHT SIDEBAR */}
         <div className="lg:col-span-1 grid grid-cols-1 gap-6">
-          <EventCalendar />
+          <EventCalendar userId={userId} />
           <Announcments />
         </div>
       </div>

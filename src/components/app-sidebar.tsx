@@ -1,4 +1,5 @@
 "use client";
+import { LucideIcon } from "lucide-react";
 import * as React from "react";
 import {
   AudioWaveform,
@@ -22,7 +23,30 @@ import {
 } from "@/components/ui/sidebar";
 import { Role, User } from "@prisma/client";
 
-const data = {
+const data: {
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+  };
+  teams: {
+    name: string;
+    logo: LucideIcon;
+    plan: string;
+  }[];
+  navMain: {
+    title: string;
+    url: string;
+    icon?: LucideIcon;
+    isActive?: boolean;
+    roles?: Role[];
+    items?: {
+      title: string;
+      url: string;
+      roles?: Role[];
+    }[];
+  }[];
+} = {
   user: {
     name: "Salvador Perea",
     email: "m@ejemplo.com",
@@ -159,7 +183,13 @@ const data = {
   ],
 };
 
-export function AppSidebar({ user }: { user: User }) {
+export function AppSidebar({
+  user,
+  hasPendingTasks,
+}: {
+  user: User;
+  hasPendingTasks: boolean;
+}) {
   // Filtrar los elementos del menú según el rol del usuario logeado
   const filteredNavMain = data.navMain
     .filter((item) => item.roles?.includes(user.role))
@@ -173,7 +203,7 @@ export function AppSidebar({ user }: { user: User }) {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <NavUser user={user} />
+        <NavUser user={user} hasPendingTasks={hasPendingTasks} />
       </SidebarHeader>
       <SidebarContent>
         {/* Pasar los elementos filtrados */}

@@ -15,13 +15,30 @@ import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 
 const fetchUser = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
 
-  return user;
+    return user;
+  } catch (error) {
+    throw Error("Error cargando el usuario en profilePage");
+  }
+};
+
+const fetchTasksById = async (userId: string) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+      },
+    });
+    return tasks;
+  } catch (error) {
+    throw new Error("Error en el fetch de tasks");
+  }
 };
 
 export default async function UserProfile({
@@ -31,6 +48,19 @@ export default async function UserProfile({
 }) {
   const session = await auth();
   const { id } = await params;
+
+  const loadTasks = async () => {
+    try {
+      const tasks = await fetchTasksById(id);
+      if (!tasks) {
+        notFound();
+      }
+
+      return tasks;
+    } catch (error) {
+      throw new Error("Error fetcheando las tareas");
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -45,6 +75,7 @@ export default async function UserProfile({
   };
 
   const user = await loadProfile();
+  const tasks = await loadTasks();
 
   return (
     <div className="container mx-auto p-4 md:p-6">
@@ -52,6 +83,7 @@ export default async function UserProfile({
       <UserProfileHeader
         user={user}
         isAdmin={session?.user.role === Role.Admin}
+        tasks={tasks}
       />
 
       {/* Main Grid Layout */}
@@ -64,7 +96,7 @@ export default async function UserProfile({
           </CardHeader>
           <CardContent>
             <div className="h-full w-full container mx-auto">
-              <EventCalendar />
+              <EventCalendar userId={user.id} />
             </div>
           </CardContent>
         </Card>
