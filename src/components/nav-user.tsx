@@ -100,19 +100,6 @@ export function NavUser({
                 <Link href={`/profile/${user.id}`} className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Perfil
-                  {hasPendingTasks && (
-                    <div className="absolute -left-1 -top-1">
-                      <Badge
-                        variant="outline"
-                        className="h-4 w-4 rounded-full bg-white p-0 flex items-center justify-center"
-                      >
-                        <span
-                          className="size-2.5 rounded-full bg-red-500 animate-pulse"
-                          aria-hidden="true"
-                        ></span>
-                      </Badge>
-                    </div>
-                  )}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

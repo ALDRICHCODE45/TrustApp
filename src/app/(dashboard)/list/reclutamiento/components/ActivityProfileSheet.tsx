@@ -77,7 +77,6 @@ import {
   editTask,
   toggleTaskStatus,
 } from "@/actions/tasks/actions";
-import { clearLine } from "readline";
 
 // Interfaces
 export interface Activity {
@@ -163,8 +162,8 @@ const EditActivityDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="hover:bg-gray-300 w-full">
-        <div className="flex items-center pl-2 hover:bg-gray-50">
+      <DialogTrigger className="w-full">
+        <div className="flex items-center pl-2">
           <Edit className="mr-2" size={15} />
           <span className="text-sm">Editar </span>
         </div>
@@ -513,7 +512,7 @@ const ActivitiesList = ({
           ))
         ) : (
           <EmptyState
-            type={activities[0]?.status === "Done" ? "completed" : "pending"}
+            type={activities[0]?.status === "Done" ? "Done" : "Pending"}
           />
         )}
       </div>
