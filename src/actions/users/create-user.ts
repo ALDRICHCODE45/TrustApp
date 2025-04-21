@@ -64,20 +64,25 @@ export const createUser = async (prevState: any, formData: FormData) => {
     return submission.reply();
   }
 
-  await prisma.user.create({
-    data: {
-      age: submission.value.age,
-      celular: submission.value.celular,
-      direccion: submission.value.direccion,
-      email: submission.value.email,
-      name: submission.value.name,
-      password: bcrypt.hashSync(submission.value.password, 10),
-      Oficina: submission.value.oficina,
-      State: submission.value.status,
-      role: submission.value.role,
-      image: submission.value.image,
-    },
-  });
+  try {
+    await prisma.user.create({
+      data: {
+        age: submission.value.age,
+        celular: submission.value.celular,
+        direccion: submission.value.direccion,
+        email: submission.value.email,
+        name: submission.value.name,
+        password: bcrypt.hashSync(submission.value.password, 10),
+        Oficina: submission.value.oficina,
+        State: submission.value.status,
+        role: submission.value.role,
+        image: submission.value.image,
+      },
+    });
 
-  revalidatePath("/list/users");
+    revalidatePath("/list/users");
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error creando el usuario");
+  }
 };
