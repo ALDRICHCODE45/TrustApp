@@ -47,7 +47,6 @@ export function KanbanFilters({
     searchTerm: "",
   });
 
-  // Extract unique offices from generators
   const uniqueOffices = Array.from(
     new Set(generadores.map((gen) => gen.Oficina)),
   );

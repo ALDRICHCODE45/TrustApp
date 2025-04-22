@@ -22,6 +22,7 @@ import { LeadWithRelations } from "./page";
 import { editLeadById } from "@/actions/leads/actions";
 import { useWindowSize } from "@/components/providers/ConfettiProvider";
 import { format, isSameDay } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   initialLeads: LeadWithRelations[];
@@ -41,6 +42,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     generadorId: null,
     fechaProspeccion: null,
     oficina: null,
+    searchTerm: "",
   });
 
   const sensors = useSensors(
@@ -161,7 +163,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }
   };
 
-  // Count total leads and filtered leads
+  // Contar el total de leads y filtrarlos
   const totalLeads = leads.length;
   const totalFilteredLeads = filteredLeads.length;
 
@@ -169,12 +171,12 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     <div className="flex flex-col h-screen bg-background">
       {showConfetti && (
         <Confetti
-          numberOfPieces={500}
-          wind={0.2}
-          initialVelocityY={10}
+          numberOfPieces={350}
+          wind={0.1}
+          initialVelocityY={3}
           width={width}
           height={height}
-          gravity={1}
+          gravity={0.5}
         />
       )}
 
@@ -186,21 +188,24 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
       {/* Filter status indicator */}
       {filters.generadorId || filters.fechaProspeccion || filters.oficina ? (
-        <div className="px-4 py-2 bg-blue-50 text-blue-700 text-sm">
+        <div className="px-4 py-2  text-black text-sm">
           Mostrando {totalFilteredLeads} de {totalLeads} leads
           {filters.generadorId && (
-            <span className="ml-1">
-              • Generador:{" "}
+            <Badge variant="outline" className="ml-1">
+              Generador:{" "}
               {generadores.find((g) => g.id === filters.generadorId)?.name}
-            </span>
+            </Badge>
           )}
           {filters.oficina && (
-            <span className="ml-1">• Oficina: {filters.oficina}</span>
+            <Badge variant="outline" className="ml-1">
+              {" "}
+              Oficina: {filters.oficina}
+            </Badge>
           )}
           {filters.fechaProspeccion && (
-            <span className="ml-1">
-              • Fecha: {format(filters.fechaProspeccion, "dd/MM/yyyy")}
-            </span>
+            <Badge variant="outline" className="ml-1">
+              Fecha: {format(filters.fechaProspeccion, "dd/MM/yyyy")}
+            </Badge>
           )}
         </div>
       ) : null}

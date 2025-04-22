@@ -74,8 +74,6 @@ export default function KanbanLeadsBoard() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <KanbanFilters onFilterChange={() => {}} />
-
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
