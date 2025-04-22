@@ -12,18 +12,9 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
   };
 }>;
 
-const getInitialLeads = async (
-  userId: string,
-): Promise<LeadWithRelations[]> => {
-  if (!userId || userId.length < 2) {
-    throw new Error("UserId is required");
-  }
-
+const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
   try {
     const leads = await prisma.lead.findMany({
-      where: {
-        generadorId: userId,
-      },
       include: {
         generadorLeads: true,
         contactos: true,
@@ -61,7 +52,7 @@ const page = async () => {
     throw new Error("Id is required");
   }
 
-  const leads = await getInitialLeads(session?.user.id);
+  const leads = await getInitialLeads();
   const generadores = await getGeneradores();
 
   return (

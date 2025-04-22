@@ -1,5 +1,4 @@
 "use client";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Task, User } from "@prisma/client";
@@ -10,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { EditUserProfile } from "@/app/(dashboard)/list/users/components/EditUserDropDown";
 import { ActivityProfileSheet } from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
+
+const oficinaMapper = {
+  Oficina1: "Oficina 1",
+  Oficina2: "Oficina 2",
+};
 
 export const UserProfileHeader = ({
   tasks,
@@ -78,7 +82,7 @@ export const UserProfileHeader = ({
                     <h2 className="text-2xl font-bold">{user?.name}</h2>
 
                     <Badge variant="outline" className="mt-1">
-                      <p className="">{user?.Oficina}</p>
+                      <p className="">{oficinaMapper[user.Oficina]}</p>
                     </Badge>
                   </div>
                   <p className="text-muted-foreground">{user?.email}</p>

@@ -24,7 +24,7 @@ type KanbanColumnProps = {
   leads: LeadWithRelations[];
   setSelectedTask: (task: Lead | null) => void;
   showCreateLeadForm: boolean;
-  generadores: User[];
+  generadores?: User[];
 };
 
 const getColumnIcon = (status: string) => {
@@ -52,17 +52,30 @@ const getColumnIcon = (status: string) => {
   );
 };
 
-const getColumnColor = (status: string): string => {
+const getColumnBackground = (status: string): string => {
   const colors = {
-    [LeadStatus.Contacto]: "border-blue-500/50",
-    [LeadStatus.SocialSelling]: "border-purple-500/50",
-    [LeadStatus.ContactoCalido]: "border-orange-500/50",
-    [LeadStatus.Prospecto]: "border-amber-500/50",
-    [LeadStatus.CitaAgendada]: "border-indigo-500/50",
-    [LeadStatus.CitaValidada]: "border-teal-500/50",
-    [LeadStatus.Cliente]: "border-green-500/50",
+    [LeadStatus.Contacto]: "bg-blue-50 border-blue-200",
+    [LeadStatus.SocialSelling]: "bg-purple-50 border-purple-200",
+    [LeadStatus.ContactoCalido]: "bg-orange-50 border-orange-200",
+    [LeadStatus.Prospecto]: "bg-amber-50 border-amber-200",
+    [LeadStatus.CitaAgendada]: "bg-indigo-50 border-indigo-200",
+    [LeadStatus.CitaValidada]: "bg-teal-50 border-teal-200",
+    [LeadStatus.Cliente]: "bg-green-50 border-green-200",
   };
-  return colors[status as LeadStatus] || "border-gray-500/50";
+  return colors[status as LeadStatus] || "bg-gray-50 border-gray-200";
+};
+
+const getHeaderBackground = (status: string): string => {
+  const colors = {
+    [LeadStatus.Contacto]: "bg-blue-100",
+    [LeadStatus.SocialSelling]: "bg-purple-100",
+    [LeadStatus.ContactoCalido]: "bg-orange-100",
+    [LeadStatus.Prospecto]: "bg-amber-100",
+    [LeadStatus.CitaAgendada]: "bg-indigo-100",
+    [LeadStatus.CitaValidada]: "bg-teal-100",
+    [LeadStatus.Cliente]: "bg-green-100",
+  };
+  return colors[status as LeadStatus] || "bg-gray-100";
 };
 
 export const DroppableKanbanColumn = ({
@@ -70,31 +83,35 @@ export const DroppableKanbanColumn = ({
   leads,
   setSelectedTask,
   showCreateLeadForm,
-  generadores,
+  generadores = [],
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <Card
       ref={setNodeRef}
-      className={`w-[280px] flex-shrink-0 bg-muted/30 border ${getColumnColor(
-        status,
-      )} ${isOver ? "ring-2 ring-primary" : ""}`}
+      className={`w-[340px] flex-shrink-0 rounded-xl shadow-sm ${getColumnBackground(status)} 
+      ${isOver ? "ring-2 ring-primary ring-offset-2" : ""}`}
     >
-      <CardHeader className="p-3 space-y-0.5">
+      <CardHeader className={`p-3 ${getHeaderBackground(status)} rounded-t-xl`}>
         <CardTitle className="text-sm font-medium flex items-center justify-between">
           <div className="flex items-center gap-2">
             {getColumnIcon(status)}
-            <span>{leadStatusMap[status]}</span>
+            <span className="font-normal dark:text-black">
+              {leadStatusMap[status]}
+            </span>
           </div>
-          <Badge variant="secondary" className="bg-muted">
+          <Badge
+            variant="secondary"
+            className="bg-white/80 text-slate-800 font-medium"
+          >
             {leads.length}
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-3 pt-4">
         <ScrollArea className="h-[calc(100vh-280px)]">
-          <div className="space-y-3 pr-2">
+          <div className="space-y-4 pr-2">
             {leads.map((lead) => (
               <DraggableLeadCard
                 key={lead.id}
@@ -104,7 +121,7 @@ export const DroppableKanbanColumn = ({
             ))}
           </div>
         </ScrollArea>
-        <div className="w-full flex justify-center items-center">
+        <div className="w-full flex justify-center items-center mt-4">
           {showCreateLeadForm && <CreateLeadForm generadores={generadores} />}
         </div>
       </CardContent>
