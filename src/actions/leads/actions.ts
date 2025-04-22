@@ -40,7 +40,7 @@ export const getRecruiters = async (): Promise<User[]> => {
     const recruiters = await prisma.user.findMany({
       where: {
         role: {
-          in: ["GL", "Admin", "MK"],
+          in: [Role.GL, Role.Admin, Role.MK],
         },
       },
     });
@@ -105,11 +105,12 @@ export async function createLead(prevState: any, formData: FormData) {
     // Revalidate necessary paths
     revalidatePath("/leads");
     revalidatePath("/list/leads");
-    revalidatePath("/list");
+    revalidatePath("/leads/kanban");
 
     // Return success with the newly created lead data
   } catch (error) {
     console.error("Error creating lead:", error);
+    throw new Error("Error en la creacion del Lead");
   }
 }
 

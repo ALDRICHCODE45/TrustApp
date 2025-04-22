@@ -3,9 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useDroppable } from "@dnd-kit/core";
-import { LeadStatus, Lead } from "@/lib/data";
 import { DraggableLeadCard } from "./DraggableLeadCard";
-import { CreateLeadForm } from "../../../list/leads/components/CreateLeadForm";
 import {
   TagIcon,
   UsersIcon,
@@ -16,12 +14,17 @@ import {
   HandshakeIcon,
   BriefcaseIcon,
 } from "lucide-react";
+import { User, Lead, LeadStatus } from "@prisma/client";
+import { CreateLeadForm } from "@/app/(dashboard)/list/leads/components/CreateLeadForm";
+import { LeadWithRelations } from "../page";
+import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 
 type KanbanColumnProps = {
   status: LeadStatus;
-  tasks: Lead[];
+  leads: LeadWithRelations[];
   setSelectedTask: (task: Lead | null) => void;
   showCreateLeadForm: boolean;
+  generadores: User[];
 };
 
 const getColumnIcon = (status: string) => {
@@ -62,12 +65,13 @@ const getColumnColor = (status: string): string => {
   return colors[status as LeadStatus] || "border-gray-500/50";
 };
 
-export const DroppableKanbanColumn: React.FC<KanbanColumnProps> = ({
+export const DroppableKanbanColumn = ({
   status,
-  tasks,
+  leads,
   setSelectedTask,
   showCreateLeadForm,
-}) => {
+  generadores,
+}: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
@@ -81,26 +85,28 @@ export const DroppableKanbanColumn: React.FC<KanbanColumnProps> = ({
         <CardTitle className="text-sm font-medium flex items-center justify-between">
           <div className="flex items-center gap-2">
             {getColumnIcon(status)}
-            <span>{status}</span>
+            <span>{leadStatusMap[status]}</span>
           </div>
           <Badge variant="secondary" className="bg-muted">
-            {tasks.length}
+            {leads.length}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3">
         <ScrollArea className="h-[calc(100vh-280px)]">
           <div className="space-y-3 pr-2">
-            {tasks.map((task) => (
+            {leads.map((lead) => (
               <DraggableLeadCard
-                key={task.empresa}
-                task={task}
+                key={lead.id}
+                lead={lead}
                 setSelectedTask={setSelectedTask}
               />
             ))}
           </div>
         </ScrollArea>
-        {showCreateLeadForm && <CreateLeadForm />}
+        <div className="w-full flex justify-center items-center">
+          {showCreateLeadForm && <CreateLeadForm generadores={generadores} />}
+        </div>
       </CardContent>
     </Card>
   );

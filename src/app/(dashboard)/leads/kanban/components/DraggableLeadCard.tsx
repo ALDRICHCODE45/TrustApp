@@ -11,21 +11,20 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CalendarIcon, TagIcon } from "lucide-react";
-import { Lead } from "@/lib/data";
 import { LeadEditForm } from "./LeadEditForm";
+import { Lead } from "@prisma/client";
+import { LeadWithRelations } from "../page";
+import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 
 type LeadCardProps = {
-  task: Lead;
+  lead: LeadWithRelations;
   setSelectedTask: (task: Lead | null) => void;
 };
 
-export const DraggableLeadCard: React.FC<LeadCardProps> = ({
-  task,
-  setSelectedTask,
-}) => {
+export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: task.empresa,
-    data: { task },
+    id: lead.id,
+    data: { lead },
   });
 
   return (
@@ -38,28 +37,28 @@ export const DraggableLeadCard: React.FC<LeadCardProps> = ({
           className={`p-3 cursor-move bg-background hover:shadow-md transition-all ${
             isDragging ? "opacity-50" : ""
           }`}
-          onClick={() => setSelectedTask(task)}
+          onClick={() => setSelectedTask(lead)}
         >
           <div className="space-y-3">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-medium text-sm leading-none">
-                  {task.empresa}
+                  {lead.empresa}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center">
                   <TagIcon className="h-3 w-3 mr-1" />
-                  {task.sector}
+                  {lead.sector}
                 </p>
               </div>
               <Badge variant="secondary" className="text-[10px]">
-                {task.status}
+                {leadStatusMap[lead.status]}
               </Badge>
             </div>
 
             <div className="flex items-center justify-between">
               <Avatar className="h-6 w-6">
                 <AvatarFallback className="text-[10px] bg-primary/10">
-                  {task.generadorLeads.name
+                  {lead.generadorLeads.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
@@ -67,7 +66,7 @@ export const DraggableLeadCard: React.FC<LeadCardProps> = ({
               </Avatar>
               <div className="flex items-center text-[10px] text-muted-foreground">
                 <CalendarIcon className="h-3 w-3 mr-1" />
-                {task.fechaAConectar}
+                {lead.fechaAConectar?.getDay()}
               </div>
             </div>
           </div>
@@ -80,7 +79,7 @@ export const DraggableLeadCard: React.FC<LeadCardProps> = ({
             Actualiza la información del lead según sea necesario.
           </DialogDescription>
         </DialogHeader>
-        <LeadEditForm task={task} />
+        <LeadEditForm task={lead} />
       </DialogContent>
     </Dialog>
   );

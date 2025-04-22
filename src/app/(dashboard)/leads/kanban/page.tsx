@@ -1,117 +1,74 @@
-"use client";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  MouseSensor,
-  TouchSensor,
-  useSensors,
-  useSensor,
-  closestCorners,
-} from "@dnd-kit/core";
-import { Card } from "@/components/ui/card";
-import { TagIcon } from "lucide-react";
-import { toast } from "sonner";
-import { leadsData, LeadStatus, Lead } from "@/lib/data";
-import { KanbanFilters } from "./components/KanbanFilters";
-import { DroppableKanbanColumn } from "./components/KanbanColumn";
-import { useState } from "react";
+import { auth } from "@/lib/auth";
+import KanbanLeadsBoard from "./ClientPage";
+import { log } from "console";
+import { Role } from "@prisma/client";
+import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
-export default function KanbanLeadsBoard() {
-  const [selectedTask, setSelectedTask] = useState<Lead | null>(null);
-  const [leads, setLeads] = useState<Lead[]>(leadsData);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeLead, setActiveLead] = useState<Lead | null>(null);
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 5 },
-    }),
-  );
-
-  const groupedLeads = Object.values(LeadStatus).reduce(
-    (acc, status) => {
-      acc[status] = leads.filter((lead) => lead.status === status);
-      return acc;
-    },
-    {} as Record<LeadStatus, Lead[]>,
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const lead = leads.find((lead) => lead.empresa === active.id);
-    if (lead) {
-      setActiveLead(lead);
-      setActiveId(active.id as string);
-    }
+export type LeadWithRelations = Prisma.LeadGetPayload<{
+  include: {
+    generadorLeads: true;
+    contactos: true;
   };
+}>;
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+const getInitialLeads = async (
+  userId: string,
+): Promise<LeadWithRelations[]> => {
+  if (!userId || userId.length < 2) {
+    throw new Error("UserId is required");
+  }
 
-    setActiveId(null);
-    setActiveLead(null);
+  try {
+    const leads = await prisma.lead.findMany({
+      where: {
+        generadorId: userId,
+      },
+      include: {
+        generadorLeads: true,
+        contactos: true,
+      },
+    });
 
-    if (!over) return;
+    return leads;
+  } catch (error) {
+    log(error);
+    throw new Error("Error trayendo las tareas");
+  }
+};
 
-    const leadId = active.id as string;
-    const newStatus = over.id as LeadStatus;
+const getGeneradores = async () => {
+  try {
+    const generadores = await prisma.user.findMany({
+      where: {
+        role: {
+          in: [Role.MK, Role.GL, Role.Admin],
+        },
+      },
+    });
+    return generadores;
+  } catch (error) {
+    log("Error");
 
-    const leadToUpdate = leads.find((lead) => lead.empresa === leadId);
-    if (leadToUpdate && leadToUpdate.status !== newStatus) {
-      setLeads((prevLeads) =>
-        prevLeads.map((lead) =>
-          lead.empresa === leadId ? { ...lead, status: newStatus } : lead,
-        ),
-      );
-      toast.success(`Lead movido a ${newStatus}`);
-    }
-  };
+    throw new Error("Generadores");
+  }
+};
+
+const page = async () => {
+  const session = await auth();
+
+  if (!session?.user.id) {
+    throw new Error("Id is required");
+  }
+
+  const leads = await getInitialLeads(session?.user.id);
+  const generadores = await getGeneradores();
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <KanbanFilters onFilterChange={() => {}} />
-
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        collisionDetection={closestCorners}
-      >
-        <div className="flex-1 overflow-x-auto p-4">
-          <div className="flex gap-4">
-            {Object.entries(groupedLeads).map(([status, tasks], index) => (
-              <DroppableKanbanColumn
-                key={status}
-                status={status as LeadStatus}
-                tasks={tasks}
-                setSelectedTask={setSelectedTask}
-                showCreateLeadForm={index === 0}
-              />
-            ))}
-          </div>
-        </div>
-
-        <DragOverlay>
-          {activeId && activeLead && (
-            <Card className="w-[280px] p-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-medium text-sm">{activeLead.empresa}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center">
-                    <TagIcon className="h-3 w-3 mr-1" />
-                    {activeLead.sector}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
-        </DragOverlay>
-      </DndContext>
-    </div>
+    <>
+      <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
+    </>
   );
-}
+};
+
+export default page;

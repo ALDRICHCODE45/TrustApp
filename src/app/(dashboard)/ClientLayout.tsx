@@ -20,7 +20,11 @@ interface ClientLayoutProps {
 export function ClientLayout({ children }: ClientLayoutProps) {
   const router = useRouter();
   const pathName = usePathname();
-  const currentUrl = pathName.split("/").at(-1);
+  let currentUrl = pathName.split("/").at(-1);
+
+  if (pathName.split("/").at(1) === "profile") {
+    currentUrl = "Usuario";
+  }
 
   return (
     <>

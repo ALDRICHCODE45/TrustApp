@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lead } from "@/lib/data";
+import { LeadWithRelations } from "../page";
 
 type LeadEditFormProps = {
-  task: Lead;
+  task: LeadWithRelations;
 };
 
-export const LeadEditForm: React.FC<LeadEditFormProps> = ({ task }) => {
+export const LeadEditForm = ({ task }: LeadEditFormProps) => {
   return (
     <form className="space-y-4">
       <div className="space-y-2">
@@ -25,7 +25,11 @@ export const LeadEditForm: React.FC<LeadEditFormProps> = ({ task }) => {
         <Input
           id="fechaAConectar"
           type="date"
-          defaultValue={task.fechaAConectar}
+          defaultValue={
+            task.fechaAConectar
+              ? new Date(task.fechaAConectar).toISOString().split("T").at(0)
+              : undefined
+          }
         />
       </div>
 

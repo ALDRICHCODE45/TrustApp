@@ -78,7 +78,7 @@ const allowLeadStatus = [
   },
 ];
 
-const objectToDisplay: Record<LeadStatus, string> = {
+export const leadStatusMap: Record<LeadStatus, string> = {
   ContactoCalido: "Contacto Calido",
   SocialSelling: "Social Selling",
   CitaValidada: "Cita Validada",
@@ -94,7 +94,7 @@ export const LeadChangeStatus = ({
   row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
 }) => {
   const status = row.original.status;
-  const valueToDisplay = objectToDisplay[status];
+  const valueToDisplay = leadStatusMap[status];
 
   const handleStatusChange = async (newStatus: LeadStatus) => {
     const leadId: string = row.original.id;
