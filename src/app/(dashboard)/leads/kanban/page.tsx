@@ -4,6 +4,7 @@ import { log } from "console";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import LeadHistoryDrawer from "./components/LeadStatusDrawer";
 
 export type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
@@ -57,6 +58,7 @@ const page = async () => {
 
   return (
     <>
+      <LeadHistoryDrawer />
       <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
     </>
   );

@@ -115,10 +115,10 @@ export async function createLead(prevState: any, formData: FormData) {
 }
 
 export const editLeadById = async (leadId: string, formData: FormData) => {
-  const sesion = await checkSession("/sing-in");
-  const geneadorId = formData.get("geneadorId");
+  const sesion = await checkSession();
+  const generadorId = formData.get("generadorId");
 
-  if (sesion.user.role != Role.Admin && geneadorId) {
+  if (sesion.user.role != Role.Admin && generadorId) {
     throw Error("No tienes los privilegios para editar");
   }
 
@@ -140,6 +140,11 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     throw Error("User does not exists");
   }
 
+  // Verificamos si el status está cambiando
+  const newStatus = submission.value.status;
+  const statusChanged = newStatus && newStatus !== existingLead.status;
+
+  // Actualizamos el lead
   await prisma.lead.update({
     where: { id: leadId },
     data: {
@@ -155,6 +160,18 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       status: submission.value.status || existingLead.status,
     },
   });
+
+  // Si el estado cambió, registramos en el historial
+  if (statusChanged) {
+    await prisma.leadStatusHistory.create({
+      data: {
+        leadId: leadId,
+        status: newStatus,
+        changedById: sesion.user.id,
+        // La fecha se establecerá automáticamente con @default(now())
+      },
+    });
+  }
 
   revalidatePath("/leads");
   revalidatePath("/list/leads");

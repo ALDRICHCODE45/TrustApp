@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   Select,
@@ -68,8 +69,17 @@ export function KanbanFilters({
     onFilterChange(resetFilters);
   };
 
+  const clearSingleFilter = (filterKey: keyof FilterState) => {
+    const newFilters = { ...filters, [filterKey]: null };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
+  };
+
   const hasActiveFilters =
-    filters.generadorId || filters.fechaProspeccion || filters.oficina;
+    filters.generadorId ||
+    filters.fechaProspeccion ||
+    filters.oficina ||
+    filters.searchTerm;
 
   return (
     <div className="p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -82,7 +92,7 @@ export function KanbanFilters({
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Buscar por empresa..."
+            placeholder="Sector, Empresa..."
             value={filters.searchTerm}
             onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
             className="pl-8 h-9 w-[200px]"
@@ -91,12 +101,12 @@ export function KanbanFilters({
 
         {/* Generator filter */}
         <Select
-          value={filters.generadorId || ""}
+          value={filters.generadorId === null ? "all" : filters.generadorId}
           onValueChange={(value) =>
-            handleFilterChange("generadorId", value || null)
+            handleFilterChange("generadorId", value === "all" ? null : value)
           }
         >
-          <SelectTrigger className="w-[180px] h-9">
+          <SelectTrigger className="w-[200px] h-9">
             <SelectValue placeholder="Generador" />
           </SelectTrigger>
           <SelectContent>
@@ -111,9 +121,12 @@ export function KanbanFilters({
 
         {/* Office filter */}
         <Select
-          value={filters.oficina || "all"}
+          value={filters.oficina === null ? "all" : filters.oficina}
           onValueChange={(value) =>
-            handleFilterChange("oficina", (value as Oficina) || null)
+            handleFilterChange(
+              "oficina",
+              value === "all" ? null : (value as Oficina),
+            )
           }
         >
           <SelectTrigger className="w-[180px] h-9">

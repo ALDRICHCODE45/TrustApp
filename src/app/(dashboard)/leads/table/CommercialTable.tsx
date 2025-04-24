@@ -103,6 +103,7 @@ function TableFilters<TData extends { id: string }, TValue>({
   generadores,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
+
   const handleDelete = async () => {
     setDeleteLoading(true);
     const selectedRows = table.getFilteredSelectedRowModel().rows;

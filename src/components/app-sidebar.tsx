@@ -147,6 +147,16 @@ const data: {
           url: "/list/reclutamiento",
           roles: [Role.Admin],
         },
+        {
+          title: "kanban Board - Leads",
+          url: "/leads/kanban",
+          roles: [Role.Admin],
+        },
+        {
+          title: "kanban Board - Reclutamiento",
+          url: "/reclutador/kanban",
+          roles: [Role.Admin],
+        },
       ],
     },
     {

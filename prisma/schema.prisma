@@ -1,6 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
@@ -49,7 +48,26 @@ model User {
   Lead      Lead[]
   Comment   Comment[]
   Task      Task[]
+  LeadStatusHistory   LeadStatusHistory[] // Nueva relación
 }
+
+
+// Modelo para registrar historial de cambios de estado de leads
+model LeadStatusHistory {
+  id        String     @id @default(cuid())
+  lead      Lead       @relation(fields: [leadId], references: [id])
+  leadId    String
+  status    LeadStatus
+  changedAt DateTime   @default(now())
+  
+  // Para auditoría
+  changedBy User       @relation(fields: [changedById], references: [id])
+  changedById String
+
+  @@index([leadId, changedAt]) // Índice para optimizar consultas por lead y fecha
+}
+
+
 
 enum LeadStatus {
   Contacto
@@ -77,6 +95,7 @@ model Lead {
   //relaciones -> Generador de leads
   generadorId    String
   generadorLeads User   @relation(fields: [generadorId], references: [id])
+  statusHistory    LeadStatusHistory[] // Relación con el historial
 }
 
 //modelo de contacto para todos los moodulos

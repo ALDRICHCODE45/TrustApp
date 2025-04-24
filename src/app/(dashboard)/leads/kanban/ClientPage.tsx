@@ -12,7 +12,7 @@ import {
   closestCorners,
 } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
-import { TagIcon } from "lucide-react";
+import { TagIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import { KanbanFilters, FilterState } from "./components/KanbanFilters";
 import { DroppableKanbanColumn } from "./components/KanbanColumn";
@@ -54,7 +54,6 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }),
   );
 
-  // Apply filters when they change
   useEffect(() => {
     let result = [...leads];
     // Filter by search term (empresa)
@@ -103,6 +102,13 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
+  };
+
+  const clearSingleFilter = (filterKey: keyof FilterState) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: null,
+    }));
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -187,24 +193,69 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       />
 
       {/* Filter status indicator */}
-      {filters.generadorId || filters.fechaProspeccion || filters.oficina ? (
-        <div className="px-4 py-2  text-black text-sm">
-          Mostrando {totalFilteredLeads} de {totalLeads} leads
+      {filters.generadorId ||
+      filters.fechaProspeccion ||
+      filters.oficina ||
+      filters.searchTerm ? (
+        <div className="px-4 py-2 flex flex-wrap gap-2 text-black text-sm items-center">
+          <span>
+            Mostrando {totalFilteredLeads} de {totalLeads} leads
+          </span>
+
+          {filters.searchTerm && (
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 px-3 py-1"
+            >
+              <span>Búsqueda: {filters.searchTerm}</span>
+              <X
+                className="size-4 ml-1 cursor-pointer hover:text-red-500"
+                onClick={() => clearSingleFilter("searchTerm")}
+              />
+            </Badge>
+          )}
+
           {filters.generadorId && (
-            <Badge variant="outline" className="ml-1">
-              Generador:{" "}
-              {generadores.find((g) => g.id === filters.generadorId)?.name}
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 px-3 py-1"
+            >
+              <span>
+                Generador:{" "}
+                {generadores.find((g) => g.id === filters.generadorId)?.name}
+              </span>
+              <X
+                className="size-4 ml-1 cursor-pointer hover:text-red-500"
+                onClick={() => clearSingleFilter("generadorId")}
+              />
             </Badge>
           )}
+
           {filters.oficina && (
-            <Badge variant="outline" className="ml-1">
-              {" "}
-              Oficina: {filters.oficina}
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 px-3 py-1"
+            >
+              <span>Oficina: {filters.oficina}</span>
+              <X
+                className="size-4 ml-1 cursor-pointer hover:text-red-500"
+                onClick={() => clearSingleFilter("oficina")}
+              />
             </Badge>
           )}
+
           {filters.fechaProspeccion && (
-            <Badge variant="outline" className="ml-1">
-              Fecha: {format(filters.fechaProspeccion, "dd/MM/yyyy")}
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 px-3 py-1"
+            >
+              <span>
+                Fecha: {format(filters.fechaProspeccion, "dd/MM/yyyy")}
+              </span>
+              <X
+                className="size-4 ml-1 cursor-pointer hover:text-red-500"
+                onClick={() => clearSingleFilter("fechaProspeccion")}
+              />
             </Badge>
           )}
         </div>
