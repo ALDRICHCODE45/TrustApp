@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import {
   Select,
@@ -22,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Oficina, User } from "@prisma/client";
 import { LeadWithRelations } from "../page";
 import { Input } from "@/components/ui/input";
+import LeadHistoryDrawer from "./LeadStatusDrawer";
 
 interface KanbanFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -82,7 +82,7 @@ export function KanbanFilters({
     filters.searchTerm;
 
   return (
-    <div className="p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="p-4">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center">
           <FilterIcon className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -169,6 +169,7 @@ export function KanbanFilters({
             />
           </PopoverContent>
         </Popover>
+          <LeadHistoryDrawer/>
 
         {/* Clear filters button */}
         {hasActiveFilters && (

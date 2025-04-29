@@ -51,8 +51,8 @@ import {
 } from "lucide-react";
 import { Lead, LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { deleteMayLeads } from "../../../../actions/leads/deleteLeads";
 import { toast } from "sonner";
+import { deleteMayLeads } from "@/actions/leads/deleteLeads";
 
 const filterAnything: FilterFn<Lead> = (
   row: Row<Lead>,
@@ -113,7 +113,7 @@ function TableFilters<TData extends { id: string }, TValue>({
       await deleteMayLeads(ids);
       toast.success("Leads Eliminados correctamente");
     } catch (error) {
-      toast.error("Error al desactivar usuarios");
+      toast.error("Error al eliminar leads");
     } finally {
       setDeleteLoading(false);
     }
@@ -186,6 +186,7 @@ function TableFilters<TData extends { id: string }, TValue>({
                     Cita Validada
                   </SelectItem>
                   <SelectItem value={LeadStatus.Cliente}>Cliente</SelectItem>
+                  <SelectItem value={LeadStatus.Eliminado}>Eliminado</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

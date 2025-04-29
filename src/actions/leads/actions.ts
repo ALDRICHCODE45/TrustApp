@@ -1,5 +1,4 @@
 "use server";
-
 import { createLeadSchema } from "@/zod/createLeadSchema";
 import prisma from "@/lib/db";
 import { parseWithZod } from "@conform-to/zod";
@@ -10,6 +9,7 @@ import { User, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
 export const deleteLeadById = async (leadId: string) => {
+
   const session = await auth();
 
   try {
@@ -116,15 +116,12 @@ export async function createLead(prevState: any, formData: FormData) {
 
 export const editLeadById = async (leadId: string, formData: FormData) => {
   const sesion = await checkSession();
-  const generadorId = formData.get("generadorId");
 
-  if (sesion.user.role != Role.Admin && generadorId) {
-    throw Error("No tienes los privilegios para editar");
-  }
+  try{
 
-  const submission = parseWithZod(formData, {
-    schema: editLeadZodSchema,
-  });
+    const submission = parseWithZod(formData, {
+      schema: editLeadZodSchema,
+    });
 
   if (submission.status !== "success") {
     return submission.reply();
@@ -175,4 +172,10 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
 
   revalidatePath("/leads");
   revalidatePath("/list/leads");
+
+  }catch(err){
+    console.log(err)
+    throw new Error('Error al editar el lead')
+
+  }
 };

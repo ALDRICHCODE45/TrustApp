@@ -31,6 +31,7 @@ interface Props {
 
 export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const { width, height } = useWindowSize();
+
   const [showConfetti, setShowConfetti] = useState(false);
   const [leads, setLeads] = useState<LeadWithRelations[]>(initialLeads);
   const [filteredLeads, setFilteredLeads] =
@@ -141,7 +142,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
         ),
       );
 
-      //Todo: llamar accion para mover lead
+      // llamar accion para ACTUALIZAR lead
       const formData = new FormData();
       formData.append("status", newStatus);
 
@@ -174,7 +175,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const totalFilteredLeads = filteredLeads.length;
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col  h-[calc(100vh-170px)]">
       {showConfetti && (
         <Confetti
           numberOfPieces={350}
@@ -267,8 +268,8 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCorners}
       >
-        <div className="flex-1 overflow-x-auto p-4">
-          <div className="flex gap-10">
+        <div className="flex-1 overflow-x-auto p-4 h-[calc(80vh-1400px)]">
+          <div className="flex gap-10 h-full">
             {Object.entries(groupedLeads).map(([status, leads], index) => (
               <DroppableKanbanColumn
                 key={status}

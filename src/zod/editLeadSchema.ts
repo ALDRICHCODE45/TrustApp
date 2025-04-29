@@ -21,6 +21,7 @@ export const editLeadZodSchema = z.object({
       "CitaAgendada",
       "CitaValidada",
       "Cliente",
+      "Eliminado"
     ])
     .optional(),
 

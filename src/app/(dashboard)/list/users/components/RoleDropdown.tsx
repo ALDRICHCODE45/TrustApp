@@ -13,6 +13,7 @@ import {
   DollarSign,
   Shield,
   Tag,
+  UserIcon,
   UserRoundSearch,
 } from "lucide-react";
 import { editUser } from "@/actions/users/create-user";
@@ -91,7 +92,7 @@ export const RoleDropDown = ({ row }: Props) => {
                     e.preventDefault();
                   }}
                 >
-                  <Tag className="size-4 mr-2" />
+                  <UserIcon className="size-4 mr-2" />
                   {role.role}
                 </DropdownMenuItem>
               </div>

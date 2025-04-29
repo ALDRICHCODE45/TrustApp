@@ -33,7 +33,7 @@ import { createLeadPerson } from "@/actions/person/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { createLeadPersonSchema } from "@/zod/createLeadPersonSchema";
-import { ContactoCard } from "../../../leads/components/ContactCard";
+import { ContactoCard } from "@/app/(dashboard)/leads/components/ContactCard";
 
 export function LeadContactosSheet({
   contactos,

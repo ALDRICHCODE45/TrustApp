@@ -14,7 +14,6 @@ import { Card } from "@/components/ui/card";
 import { TagIcon } from "lucide-react";
 import { toast } from "sonner";
 import { leadsData, LeadStatus, Lead } from "@/lib/data";
-import { KanbanFilters } from "./KanbanFilters";
 import { DroppableKanbanColumn } from "./KanbanColumn";
 import { useState } from "react";
 
@@ -86,9 +85,6 @@ export default function KanbanLeadsBoard() {
               <DroppableKanbanColumn
                 key={status}
                 status={status as LeadStatus}
-                tasks={tasks}
-                setSelectedTask={setSelectedTask}
-                showCreateLeadForm={index === 0}
               />
             ))}
           </div>

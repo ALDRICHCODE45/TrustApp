@@ -665,7 +665,6 @@ const VacanteTabs: React.FC<{ vacante: Vacante }> = ({ vacante }) => (
   </Tabs>
 );
 
-// Main Component
 export const KanbanBoardPage = () => {
   const [vacantes] = useState<Vacante[]>(mockVacantes);
   const [selectedVacante, setSelectedVacante] = useState<Vacante | null>(null);

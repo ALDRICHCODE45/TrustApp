@@ -20,6 +20,7 @@ export default function Error({
     console.error(error); // Loguea el error en consola
   }, [error]);
 
+
   return (
     <div className="flex h-[70vh] w-full items-center justify-center">
       <Card className="w-full max-w-md p-6 text-center">

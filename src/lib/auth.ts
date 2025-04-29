@@ -2,6 +2,7 @@ import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import prisma from "./db";
+import {UserState} from '@prisma/client'
 
 class InvalidLoginError extends CredentialsSignin {
   code = "Invalid identifier or password";
@@ -25,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (
           !user ||
           !bcrypt.compareSync(credentials.password as string, user.password) ||
-          user.State === "INACTIVO"
+          user.State === UserState.INACTIVO
         ) {
           // No user found, so this is their first attempt to login
           throw new InvalidLoginError();

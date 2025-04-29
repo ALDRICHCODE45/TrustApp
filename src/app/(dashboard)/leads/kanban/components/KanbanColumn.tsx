@@ -1,7 +1,4 @@
 "use client";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { useDroppable } from "@dnd-kit/core";
 import { DraggableLeadCard } from "./DraggableLeadCard";
 import {
@@ -13,9 +10,9 @@ import {
   CheckCircleIcon,
   HandshakeIcon,
   BriefcaseIcon,
+  CircleX
 } from "lucide-react";
 import { User, Lead, LeadStatus } from "@prisma/client";
-import { CreateLeadForm } from "@/app/(dashboard)/list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "../page";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 
@@ -29,21 +26,22 @@ type KanbanColumnProps = {
 
 const getColumnIcon = (status: string) => {
   const icons = {
-    [LeadStatus.Contacto]: <TagIcon className="h-5 w-5 text-blue-500" />,
+    [LeadStatus.Contacto]: <TagIcon className="h-5 w-5 " />,
     [LeadStatus.SocialSelling]: (
-      <UsersIcon className="h-5 w-5 text-purple-500" />
+      <UsersIcon className="h-5 w-5 " />
     ),
     [LeadStatus.ContactoCalido]: (
-      <PhoneIcon className="h-5 w-5 text-orange-500" />
+      <PhoneIcon className="h-5 w-5 " />
     ),
-    [LeadStatus.Prospecto]: <BuildingIcon className="h-5 w-5 text-amber-500" />,
+    [LeadStatus.Prospecto]: <BuildingIcon className="h-5 w-5 " />,
     [LeadStatus.CitaAgendada]: (
-      <CalendarIcon className="h-5 w-5 text-indigo-500" />
+      <CalendarIcon className="h-5 w-5 " />
     ),
     [LeadStatus.CitaValidada]: (
-      <CheckCircleIcon className="h-5 w-5 text-teal-500" />
+      <CheckCircleIcon className="h-5 w-5 " />
     ),
-    [LeadStatus.Cliente]: <HandshakeIcon className="h-5 w-5 text-green-500" />,
+    [LeadStatus.Cliente]: <HandshakeIcon className="h-5 w-5 " />,
+    [LeadStatus.Eliminado]: <CircleX className="size-5 " />
   };
   return (
     icons[status as LeadStatus] || (
@@ -52,79 +50,50 @@ const getColumnIcon = (status: string) => {
   );
 };
 
-const getColumnBackground = (status: string): string => {
-  const colors = {
-    [LeadStatus.Contacto]: "bg-blue-50 border-blue-200",
-    [LeadStatus.SocialSelling]: "bg-purple-50 border-purple-200",
-    [LeadStatus.ContactoCalido]: "bg-orange-50 border-orange-200",
-    [LeadStatus.Prospecto]: "bg-amber-50 border-amber-200",
-    [LeadStatus.CitaAgendada]: "bg-indigo-50 border-indigo-200",
-    [LeadStatus.CitaValidada]: "bg-teal-50 border-teal-200",
-    [LeadStatus.Cliente]: "bg-green-50 border-green-200",
-  };
-  return colors[status as LeadStatus] || "bg-gray-50 border-gray-200";
-};
 
-const getHeaderBackground = (status: string): string => {
-  const colors = {
-    [LeadStatus.Contacto]: "bg-blue-100",
-    [LeadStatus.SocialSelling]: "bg-purple-100",
-    [LeadStatus.ContactoCalido]: "bg-orange-100",
-    [LeadStatus.Prospecto]: "bg-amber-100",
-    [LeadStatus.CitaAgendada]: "bg-indigo-100",
-    [LeadStatus.CitaValidada]: "bg-teal-100",
-    [LeadStatus.Cliente]: "bg-green-100",
-  };
-  return colors[status as LeadStatus] || "bg-gray-100";
-};
 
 export const DroppableKanbanColumn = ({
   status,
   leads,
   setSelectedTask,
-  showCreateLeadForm,
   generadores = [],
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  
+  const leadTitle = leadStatusMap[status];
+  const leadsColumnIcon = getColumnIcon(status)
+
 
   return (
-    <Card
+     <div
       ref={setNodeRef}
-      className={`w-[340px] flex-shrink-0 rounded-xl shadow-sm ${getColumnBackground(status)} 
-      ${isOver ? "ring-2 ring-primary ring-offset-2" : ""}`}
+      className={`w-[320px] flex-shrink-0 border rounded-md h-full flex flex-col ${
+        isOver ? "border-slate-200" : "border-slate-200 dar:border-slate-100"
+      }`}
     >
-      <CardHeader className={`p-3 ${getHeaderBackground(status)} rounded-t-xl`}>
-        <CardTitle className="text-sm font-medium flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {getColumnIcon(status)}
-            <span className="font-normal dark:text-black">
-              {leadStatusMap[status]}
-            </span>
-          </div>
-          <Badge
-            variant="secondary"
-            className="bg-white/80 text-slate-800 font-medium"
-          >
+      <div className="p-3 border-b border-slate-200">
+        <div className="flex items-center justify-between">
+          <span className="text-sm  flex gap-3">
+          {leadsColumnIcon} {leadTitle}
+          </span>
+          <span className="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-full">
             {leads.length}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 pt-4">
-        <ScrollArea className="h-[calc(100vh-280px)]">
-          <div className="space-y-4 pr-2">
-            {leads.map((lead) => (
-              <DraggableLeadCard
-                key={lead.id}
-                lead={lead}
-                setSelectedTask={setSelectedTask}
-              />
-            ))}
-          </div>
-        </ScrollArea>
-        <div className="w-full flex justify-center items-center mt-4">
-          {showCreateLeadForm && <CreateLeadForm generadores={generadores} />}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="p-3 flex-1 overflow-y-auto">
+        <div className="space-y-2">
+          {leads.map((lead) => (
+            <DraggableLeadCard
+              key={lead.id}
+              lead={lead}
+              setSelectedTask={setSelectedTask}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
+
+

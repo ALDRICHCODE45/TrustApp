@@ -28,6 +28,8 @@ export const EventCalendar = ({ userId }: Props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleDateSelect = async (date: Date | undefined) => {
+    console.log({date});
+    
     if (!date) return;
     setSelectedDate(date);
     setLoading(true);

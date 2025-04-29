@@ -31,16 +31,22 @@ export const userStatsMockData = {
   },
 };
 
-export function AdminPage({
-  userCount,
-  userId,
-}: {
+interface Props {
   userCount: number;
+  clientsCount: number;
   userId: string;
-}) {
+}
+
+export function AdminPage({ userCount, userId, clientsCount }: Props) {
   const userData = {
     title: "Usuarios",
     value: userCount,
+    icon: <Users />,
+  };
+
+  const clientsData = {
+    title: "Clientes",
+    value: clientsCount,
     icon: <Users />,
   };
 
@@ -53,7 +59,7 @@ export function AdminPage({
             <StatCard {...userData} />
           </Link>
           <Link href="/list/clientes">
-            <StatCard {...userStatsMockData.clients} />
+            <StatCard {...clientsData} />
           </Link>
           <Link href="/list/facturas">
             <StatCard {...userStatsMockData.income} />

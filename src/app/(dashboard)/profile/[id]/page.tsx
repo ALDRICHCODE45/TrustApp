@@ -13,6 +13,7 @@ import { EventCalendar } from "@/components/EventCalendar";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
+import { Metadata } from "next";
 
 const fetchUser = async (userId: string) => {
   try {
@@ -40,6 +41,10 @@ const fetchTasksById = async (userId: string) => {
     throw new Error("Error en el fetch de tasks");
   }
 };
+
+export const metadata:Metadata = {
+  title: "Trust | Perfil"
+}
 
 export default async function UserProfile({
   params,

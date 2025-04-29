@@ -77,6 +77,7 @@ enum LeadStatus {
   CitaAgendada
   CitaValidada
   Cliente
+  Eliminado
 }
 
 model Lead {

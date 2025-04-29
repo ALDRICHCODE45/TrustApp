@@ -30,6 +30,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { LeadStatus } from "@prisma/client";
+import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 
 // Tipos para nuestra función y datos
 
@@ -43,10 +44,13 @@ type LeadStatusRecord = {
 
 export default function LeadHistoryDrawer() {
   // Estado para las fechas seleccionadas
-  const [dateRange, setDateRange] = useState<{
-    from: Date;
-    to: Date | undefined;
-  }>({
+  const [dateRange, setDateRange] = useState<
+    | {
+        from: Date | undefined;
+        to: Date | undefined;
+      }
+    | undefined
+  >({
     from: new Date(),
     to: undefined,
   });
@@ -58,7 +62,7 @@ export default function LeadHistoryDrawer() {
 
   // Función para obtener el historial de leads
   const fetchLeadHistory = async () => {
-    if (!dateRange.from || !dateRange.to) return;
+    if (!dateRange?.from || !dateRange.to) return;
 
     setIsLoading(true);
     try {
@@ -94,6 +98,7 @@ export default function LeadHistoryDrawer() {
       CitaAgendada: "bg-purple-500",
       CitaValidada: "bg-pink-500",
       Cliente: "bg-green-500",
+      Eliminado: "bg-red-500"
     };
 
     return statusColors[status] || "bg-gray-500";
@@ -130,16 +135,27 @@ export default function LeadHistoryDrawer() {
       }
     >,
   );
+  const handleCalendarSelect = (
+    range: { from?: Date; to?: Date } | undefined,
+  ) => {
+    if (!range) {
+      setDateRange({ from: undefined, to: undefined });
+      return;
+    }
+
+    setDateRange({ from: range.from, to: range.to });
+  };
+
+  const isDateRangeValid = Boolean(dateRange?.from && dateRange?.to);
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <HistoryIcon className="h-4 w-4" />
-          Historial de Leads
+        <Button variant="outline" className="gap-2" size="sm">
+          <HistoryIcon className="size-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="z-50 overflow-visible">
         <div className="mx-auto w-full max-w-4xl">
           <DrawerHeader>
             <DrawerTitle>Historial de Estados de Leads</DrawerTitle>
@@ -159,38 +175,35 @@ export default function LeadHistoryDrawer() {
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateRange.from ? (
-                        dateRange.to ? (
-                          <>
-                            {format(dateRange.from, "dd/MM/yyyy", {
-                              locale: es,
-                            })}{" "}
-                            -{" "}
-                            {format(dateRange.to, "dd/MM/yyyy", { locale: es })}
-                          </>
-                        ) : (
-                          format(dateRange.from, "dd/MM/yyyy", { locale: es })
-                        )
+                      {isDateRangeValid ? (
+                        <>
+                          {format(dateRange?.from!, "dd/MM/yyyy", {
+                            locale: es,
+                          })}{" "}
+                          -{" "}
+                          {format(dateRange?.to!, "dd/MM/yyyy", { locale: es })}
+                        </>
                       ) : (
                         <span>Selecciona un rango de fechas</span>
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <Calendar
-                    className="z-[999]"
-                    mode="range"
-                    selected={dateRange}
-                    onSelect={(range) => setDateRange(range as any)}
-                    initialFocus
-                    locale={es}
-                  />
+                  <PopoverContent className="z-[9999]">
+                    <Calendar
+                      className="z-[9999]"
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={(range) => setDateRange(range as any)}
+                      locale={es}
+                    />
+                  </PopoverContent>
                 </Popover>
               </div>
 
               {/* Botón de búsqueda */}
               <Button
                 onClick={fetchLeadHistory}
-                disabled={!dateRange.from || !dateRange.to || isLoading}
+                disabled={!dateRange?.from || !dateRange.to || isLoading}
                 className="md:w-auto"
               >
                 <SearchIcon className="mr-2 h-4 w-4" />
@@ -227,7 +240,7 @@ export default function LeadHistoryDrawer() {
                                       : getStatusColor(estado.status),
                                 )}
                               >
-                                {estado.status}
+                                {leadStatusMap[estado.status]}
                               </Badge>
                               <span className="text-sm text-muted-foreground">
                                 {estado.type === "initialState"
@@ -238,7 +251,7 @@ export default function LeadHistoryDrawer() {
                               </span>
                             </div>
                             <span className="text-sm">
-                              {format(estado.date, "dd/MM/yyyy HH:mm", {
+                              {format(estado.date, "EEE dd/MM/yy HH:mm", {
                                 locale: es,
                               })}
                             </span>
@@ -253,7 +266,7 @@ export default function LeadHistoryDrawer() {
               <div className="text-center py-10 text-muted-foreground">
                 {isLoading
                   ? "Cargando datos..."
-                  : dateRange.from && dateRange.to
+                  : isDateRangeValid
                     ? "No se encontraron datos para el rango seleccionado"
                     : "Selecciona un rango de fechas y haz clic en buscar"}
               </div>

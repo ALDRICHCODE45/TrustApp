@@ -11,6 +11,7 @@ import {
   Award,
   CalendarCheck,
   CalendarClock,
+  CircleX,
   Contact,
   UserRound,
   UserSearch,
@@ -76,6 +77,15 @@ const allowLeadStatus = [
     status: "Cliente",
     icon: Award,
   },
+
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres marcar como eliminado este Lead?",
+    onConfirmValule: LeadStatus.Eliminado,
+    oficeNumber: "Eliminado",
+    status: "Eliminado",
+    icon: CircleX,
+  },
 ];
 
 export const leadStatusMap: Record<LeadStatus, string> = {
@@ -86,6 +96,7 @@ export const leadStatusMap: Record<LeadStatus, string> = {
   Cliente: "Cliente",
   Contacto: "Contacto",
   Prospecto: "Prospecto",
+  Eliminado: "Eliminado"
 };
 
 export const LeadChangeStatus = ({
