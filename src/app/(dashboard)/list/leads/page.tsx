@@ -32,7 +32,7 @@ const fetchGeneradores = async () => {
   const users = await prisma.user.findMany({
     where: {
       role: {
-        in: ["GL", "Admin", "MK"],
+        in: [Role.GL, Role.Admin, Role.MK],
       },
     },
   });
@@ -51,7 +51,7 @@ export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
     <>
       {/* LIST */}
 
-      <ToastAlerts />
+      {/* <ToastAlerts /> */}
       <CreateLeadForm generadores={generadores} />
       <CommercialTable
         columns={columns}

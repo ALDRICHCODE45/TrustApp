@@ -9,7 +9,6 @@ import { User, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
 export const deleteLeadById = async (leadId: string) => {
-
   const session = await auth();
 
   try {
@@ -117,65 +116,62 @@ export async function createLead(prevState: any, formData: FormData) {
 export const editLeadById = async (leadId: string, formData: FormData) => {
   const sesion = await checkSession();
 
-  try{
-
+  try {
     const submission = parseWithZod(formData, {
       schema: editLeadZodSchema,
     });
 
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
+    if (submission.status !== "success") {
+      return submission.reply();
+    }
 
-  const existingLead = await prisma.lead.findUnique({
-    where: {
-      id: leadId,
-    },
-  });
-
-  if (!existingLead) {
-    throw Error("User does not exists");
-  }
-
-  // Verificamos si el status está cambiando
-  const newStatus = submission.value.status;
-  const statusChanged = newStatus && newStatus !== existingLead.status;
-
-  // Actualizamos el lead
-  await prisma.lead.update({
-    where: { id: leadId },
-    data: {
-      empresa: submission.value.empresa || existingLead.empresa,
-      fechaAConectar:
-        submission.value.fechaAConectar || existingLead.fechaAConectar,
-      fechaProspeccion:
-        submission.value.fechaProspeccion || existingLead.fechaProspeccion,
-      generadorId: submission.value.generadorId || existingLead.generadorId,
-      link: submission.value.link || existingLead.link,
-      origen: submission.value.origen || existingLead.origen,
-      sector: submission.value.sector || existingLead.sector,
-      status: submission.value.status || existingLead.status,
-    },
-  });
-
-  // Si el estado cambió, registramos en el historial
-  if (statusChanged) {
-    await prisma.leadStatusHistory.create({
-      data: {
-        leadId: leadId,
-        status: newStatus,
-        changedById: sesion.user.id,
-        // La fecha se establecerá automáticamente con @default(now())
+    const existingLead = await prisma.lead.findUnique({
+      where: {
+        id: leadId,
       },
     });
-  }
 
-  revalidatePath("/leads");
-  revalidatePath("/list/leads");
+    if (!existingLead) {
+      throw Error("User does not exists");
+    }
 
-  }catch(err){
-    console.log(err)
-    throw new Error('Error al editar el lead')
+    // Verificamos si el status está cambiando
+    const newStatus = submission.value.status;
+    const statusChanged = newStatus && newStatus !== existingLead.status;
 
+    // Actualizamos el lead
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        empresa: submission.value.empresa || existingLead.empresa,
+        fechaAConectar:
+          submission.value.fechaAConectar || existingLead.fechaAConectar,
+        fechaProspeccion:
+          submission.value.fechaProspeccion || existingLead.fechaProspeccion,
+        generadorId: submission.value.generadorId || existingLead.generadorId,
+        link: submission.value.link || existingLead.link,
+        origen: submission.value.origen || existingLead.origen,
+        sector: submission.value.sector || existingLead.sector,
+        status: submission.value.status || existingLead.status,
+      },
+    });
+
+    // Si el estado cambió, registramos en el historial
+    if (statusChanged) {
+      await prisma.leadStatusHistory.create({
+        data: {
+          leadId: leadId,
+          status: newStatus,
+          changedById: sesion.user.id,
+          // La fecha se establecerá automáticamente con @default(now())
+        },
+      });
+    }
+
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error al editar el lead");
   }
 };

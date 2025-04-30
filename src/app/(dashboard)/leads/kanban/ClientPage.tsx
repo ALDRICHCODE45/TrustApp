@@ -17,12 +17,13 @@ import { toast } from "sonner";
 import { KanbanFilters, FilterState } from "./components/KanbanFilters";
 import { DroppableKanbanColumn } from "./components/KanbanColumn";
 import { useState, useEffect } from "react";
-import { Lead, LeadStatus, User, Oficina } from "@prisma/client";
+import { Lead, LeadStatus, User } from "@prisma/client";
 import { LeadWithRelations } from "./page";
 import { editLeadById } from "@/actions/leads/actions";
 import { useWindowSize } from "@/components/providers/ConfettiProvider";
 import { format, isSameDay } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 interface Props {
   initialLeads: LeadWithRelations[];
@@ -173,6 +174,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   // Contar el total de leads y filtrarlos
   const totalLeads = leads.length;
   const totalFilteredLeads = filteredLeads.length;
+  const router = useRouter();
 
   return (
     <div className="flex flex-col  h-[calc(100vh-170px)]">
@@ -268,8 +270,8 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCorners}
       >
-        <div className="flex-1 overflow-x-auto p-4 h-[calc(80vh-1400px)]">
-          <div className="flex gap-10 h-full">
+        <div className="flex-1 overflow-x-auto scroll-hide p-4 h-[calc(80vh-1400px)]">
+          <div className="flex gap-14 h-full">
             {Object.entries(groupedLeads).map(([status, leads], index) => (
               <DroppableKanbanColumn
                 key={status}

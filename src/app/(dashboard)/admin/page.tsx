@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 
 export default async function Dashboardpage() {
   const session = await auth();
-  console.log({session:session?.user.id});
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
   const userCount = await prisma.user.count();
 

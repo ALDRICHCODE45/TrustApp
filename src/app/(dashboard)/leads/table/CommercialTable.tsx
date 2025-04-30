@@ -48,6 +48,7 @@ import {
   ChevronRight,
   Trash2,
   Loader2,
+  LoaderCircle,
 } from "lucide-react";
 import { Lead, LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -186,7 +187,9 @@ function TableFilters<TData extends { id: string }, TValue>({
                     Cita Validada
                   </SelectItem>
                   <SelectItem value={LeadStatus.Cliente}>Cliente</SelectItem>
-                  <SelectItem value={LeadStatus.Eliminado}>Eliminado</SelectItem>
+                  <SelectItem value={LeadStatus.Eliminado}>
+                    Eliminado
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -524,7 +527,11 @@ export function CommercialTable<TData extends { id: string }, TValue>({
   };
 
   if (!isMounted) {
-    return <div className="p-4">Loading table...</div>;
+    return (
+      <div className="flex items-center justify-center w-full h-[100%]">
+        <LoaderCircle className="h-8 w-8 text-blue-600 animate-spin" />
+      </div>
+    );
   }
 
   return (

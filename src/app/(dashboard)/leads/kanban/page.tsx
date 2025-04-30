@@ -10,11 +10,11 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
     generadorLeads: true;
     contactos: true;
-    statusHistory:{
-      include:{
-        changedBy:true
-      }
-    }
+    statusHistory: {
+      include: {
+        changedBy: true;
+      };
+    };
   };
 }>;
 
@@ -24,11 +24,11 @@ const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
       include: {
         generadorLeads: true,
         contactos: true,
-        statusHistory:{
-          include:{
-            changedBy:true
-          }
-        }
+        statusHistory: {
+          include: {
+            changedBy: true,
+          },
+        },
       },
     });
     return leads;
@@ -55,10 +55,9 @@ const getGeneradores = async () => {
   }
 };
 
-
-export const metadata:Metadata = {
-  title: "Kanban | Leads"
-}
+export const metadata: Metadata = {
+  title: "Kanban | Leads",
+};
 
 const page = async () => {
   const session = await auth();

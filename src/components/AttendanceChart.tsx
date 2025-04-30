@@ -16,8 +16,9 @@ interface PerformanceData {
   present: number;
   absent: number;
 }
+
 /* PERFORMANCE CHART */
-export const AttendanceChart: React.FC = () => {
+export const AttendanceChart = () => {
   const data: PerformanceData[] = [
     { month: "Lun", present: 60, absent: 39 },
     { month: "Mar", present: 99, absent: 34 },
