@@ -65,6 +65,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
       id: true,
       empresa: true,
       createdAt: true,
+      generadorLeads: true,
     },
   });
 
@@ -84,6 +85,9 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
       orderBy: {
         changedAt: "asc",
       },
+      include: {
+        changedBy: true,
+      },
     });
 
     // Si el lead no tuvo cambios dentro del rango, necesitamos encontrar su estado previo
@@ -96,6 +100,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
             lt: startDate,
           },
         },
+        include: { changedBy: true },
         orderBy: {
           changedAt: "desc",
         },
@@ -111,6 +116,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
             : ("Contacto" as LeadStatus),
           statusDate: startDate.toISOString(),
           type: "initialState",
+          generador: statusBeforeRange?.changedBy.name,
         });
       }
       // Si el lead fue creado durante el rango pero no tuvo cambios
@@ -121,6 +127,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
           status: "Contacto" as LeadStatus,
           statusDate: lead.createdAt.toISOString(),
           type: "created",
+          generador: lead.generadorLeads.name,
         });
       }
     }
@@ -135,6 +142,9 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
               lt: startDate,
             },
           },
+          include: {
+            changedBy: true,
+          },
           orderBy: {
             changedAt: "desc",
           },
@@ -147,6 +157,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
             status: statusBeforeRange.status,
             statusDate: startDate.toISOString(),
             type: "initialState",
+            generador: statusBeforeRange.changedBy.name,
           });
         }
       }
@@ -159,6 +170,7 @@ async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
           status: change.status,
           statusDate: change.changedAt.toISOString(),
           type: "statusChange",
+          generador: change.changedBy,
         });
       });
     }

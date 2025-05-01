@@ -23,7 +23,6 @@ import { editLeadById } from "@/actions/leads/actions";
 import { useWindowSize } from "@/components/providers/ConfettiProvider";
 import { format, isSameDay } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
 
 interface Props {
   initialLeads: LeadWithRelations[];
@@ -37,7 +36,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const [leads, setLeads] = useState<LeadWithRelations[]>(initialLeads);
   const [filteredLeads, setFilteredLeads] =
     useState<LeadWithRelations[]>(initialLeads);
-  const [selectedTask, setSelectedTask] = useState<Lead | null>(null);
+  const [, setSelectedTask] = useState<Lead | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
   const [filters, setFilters] = useState<FilterState>({
@@ -174,7 +173,6 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   // Contar el total de leads y filtrarlos
   const totalLeads = leads.length;
   const totalFilteredLeads = filteredLeads.length;
-  const router = useRouter();
 
   return (
     <div className="flex flex-col  h-[calc(100vh-170px)]">
@@ -270,7 +268,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCorners}
       >
-        <div className="flex-1 overflow-x-auto scroll-hide p-4 h-[calc(80vh-1400px)]">
+        <div className="flex-1 overflow-x-auto scroll-hide pt-4 h-[calc(80vh-1400px)]">
           <div className="flex gap-14 h-full">
             {Object.entries(groupedLeads).map(([status, leads], index) => (
               <DroppableKanbanColumn

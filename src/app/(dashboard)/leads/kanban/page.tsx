@@ -5,6 +5,8 @@ import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LeadHistoryDrawer from "./components/LeadStatusDrawer";
 
 export type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
@@ -71,7 +73,18 @@ const page = async () => {
 
   return (
     <>
-      <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
+      <Tabs defaultValue="kanban" className="w-full">
+        <TabsList>
+          <TabsTrigger value="kanban">Kanban</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+        </TabsList>
+        <TabsContent value="kanban">
+          <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
+        </TabsContent>
+        <TabsContent value="history">
+          <LeadHistoryDrawer />
+        </TabsContent>
+      </Tabs>
     </>
   );
 };

@@ -8,28 +8,14 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { getStatusColor, LeadSheet } from "./SheetLead";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
+import { Clock3, Users } from "lucide-react";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 import { Separator } from "@/components/ui/separator";
-import { LeadStatus } from "@prisma/client";
+import { getDiffDays } from "@/app/helpers/getDiffDays";
 
 type LeadCardProps = {
   lead: LeadWithRelations;
   setSelectedTask: (task: Lead | null) => void;
-};
-
-const getHeaderStatus = (status: LeadStatus) => {
-  const headerStatus = {
-    [LeadStatus.Contacto]: "bg-gray-200 text-black",
-    [LeadStatus.Prospecto]: "bg-blue-100 text-blue-800",
-    [LeadStatus.ContactoCalido]: "bg-yellow-100 text-yellow-800",
-    [LeadStatus.SocialSelling]: "bg-green-100 text-green-800",
-    [LeadStatus.CitaValidada]: "bg-purple-100 text-purple-800",
-    [LeadStatus.CitaAgendada]: "bg-indigo-100 text-indigo-800",
-    [LeadStatus.Cliente]: "bg-emerald-100 text-emerald-800",
-    [LeadStatus.Eliminado]: "bg-red-100 text-red-800",
-  };
-  return headerStatus[status];
 };
 
 export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
@@ -38,6 +24,8 @@ export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
     data: { lead },
   });
 
+  const days = getDiffDays(lead.createdAt);
+
   return (
     <Sheet>
       <DialogTrigger asChild>
@@ -45,14 +33,14 @@ export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
           ref={setNodeRef}
           {...attributes}
           {...listeners}
-          className={`p-3 cursor-move bg-white border ${
+          className={`p-3 cursor-move bg-white border shadow-xl ${
             isDragging ? "opacity-50 border-slate-300" : "border-gray-200"
-          }  hover:shadow-sm transition-all rounded-2xl`}
+          }  hover:shadow-sm transition-all rounded-xl`}
           onClick={() => setSelectedTask(lead)}
         >
           <div className="space-y-2">
             <div>
-              <Badge className={getStatusColor(lead.status)}>
+              <Badge className={getStatusColor(lead.status)} variant="outline">
                 {leadStatusMap[lead.status]}
               </Badge>
             </div>
@@ -69,23 +57,31 @@ export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center  border-t border-slate-50">
                 <div className="flex items-center space-x-1">
-                  <Avatar className="size-8">
-                    <AvatarFallback className=" bg-blue-100 text-blue-600">
+                  <Avatar className="size-5">
+                    <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
                       {lead.generadorLeads?.name
                         ? lead.generadorLeads.name[0].toUpperCase()
                         : "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm capitalize text-slate-500">
+                  <span className="text-xs capitalize text-slate-500">
                     {lead.generadorLeads?.name?.split(" ")[0] || "Usuario"}
                   </span>
                 </div>
               </div>
-              <div>
+              <div className="flex gap-3">
                 <div className="flex items-center gap-2">
-                  <Users size={20} className="text-gray-500" />
+                  <Users size={14} className="text-gray-500" />
                   <Badge variant="outline">
-                    <p className="text-black">{lead.contactos.length}</p>
+                    <p className="text-black text-xs">
+                      {lead.contactos.length}
+                    </p>
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock3 size={14} className="text-gray-500" />
+                  <Badge variant="outline">
+                    <p className="text-black text-xs">{days}</p>
                   </Badge>
                 </div>
               </div>

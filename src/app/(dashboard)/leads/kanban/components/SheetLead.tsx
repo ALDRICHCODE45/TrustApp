@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, UserX } from "lucide-react";
@@ -10,6 +9,7 @@ import { ContactoCard } from "../../components/ContactCard";
 import { Badge } from "@/components/ui/badge";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getDiffDays } from "@/app/helpers/getDiffDays";
 
 interface Props {
   lead: LeadWithRelations;
@@ -30,27 +30,7 @@ export const getStatusColor = (status: LeadStatus) => {
 };
 
 export function LeadSheet({ lead }: Props) {
-  const [fechaConectar, setFechaConectar] = useState(
-    lead?.fechaAConectar ? new Date(lead.fechaAConectar) : undefined,
-  );
-
-  const [fechaProspectar, setFechaProspectar] = useState(
-    lead?.fechaProspeccion ? new Date(lead.fechaProspeccion) : undefined,
-  );
-
-  const [status, setStatus] = useState<LeadStatus>(lead?.status);
-
-  const createdAt = lead.createdAt; //fecha inicial
-  const now = new Date(); // fecha actual
-
-  // Convertimos createdAt a Date
-  const createdAtDate = new Date(createdAt);
-
-  // Calculamos la diferencia en milisegundos
-  const diffInMs = now.getTime() - createdAtDate.getTime();
-
-  // Convertimos la diferencia a días
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  const diffInDays = getDiffDays(lead.createdAt);
 
   return (
     <>
@@ -101,8 +81,10 @@ export function LeadSheet({ lead }: Props) {
                   <Badge variant="outline">
                     <CalendarIcon className="h-3 w-3 mr-2" />
                     <span className="text-muted-foreground">
-                      {fechaConectar
-                        ? format(fechaConectar, "dd MMM yyyy", { locale: es })
+                      {lead.fechaAConectar
+                        ? format(lead.fechaAConectar, "dd MMM yyyy", {
+                            locale: es,
+                          })
                         : "No establecida"}
                     </span>
                   </Badge>
@@ -114,8 +96,10 @@ export function LeadSheet({ lead }: Props) {
                   <Badge variant="outline">
                     <CalendarIcon className="h-3 w-3 mr-2" />
                     <span className="text-muted-foreground">
-                      {fechaProspectar
-                        ? format(fechaProspectar, "dd MMM yyyy", { locale: es })
+                      {lead.fechaProspeccion
+                        ? format(lead.fechaProspeccion, "dd MMM yyyy", {
+                            locale: es,
+                          })
                         : "No establecida"}
                     </span>
                   </Badge>
@@ -166,7 +150,7 @@ export function LeadSheet({ lead }: Props) {
               <TabsContent value="contacts" className="py-4">
                 {lead?.contactos?.length > 0 ? (
                   <div className="space-y-4">
-                    {lead.contactos.map((contacto, index) => (
+                    {lead.contactos.map((contacto) => (
                       <ContactoCard contacto={contacto} key={contacto.id} />
                     ))}
                   </div>

@@ -169,7 +169,6 @@ export function KanbanFilters({
             />
           </PopoverContent>
         </Popover>
-        <LeadHistoryDrawer />
 
         {/* Clear filters button */}
         {hasActiveFilters && (

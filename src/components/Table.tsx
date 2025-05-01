@@ -76,9 +76,9 @@ export function DataTable<TData, TValue>({
   };
 
   return (
-    <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
+    <div className="dark:bg-[#0e0e0e] flex flex-col gap-1 w-full max-w-[93vw] ">
       {/* FILTRO POR EMAIL */}
-      <div className="flex items-center py-4 dark:bg-[#0e0e0e]">
+      <div className="flex items-center dark:bg-[#0e0e0e]">
         <Input placeholder="Filtrar..." className="max-w-sm" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

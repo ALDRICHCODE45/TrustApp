@@ -24,35 +24,63 @@ type KanbanColumnProps = {
   generadores?: User[];
 };
 
-const getHeaderStatus = (status: LeadStatus) => {
-  const headerStatus = {
-    [LeadStatus.Contacto]: "bg-gray-200 text-black",
-    [LeadStatus.Prospecto]: "bg-blue-100 text-blue-800",
-    [LeadStatus.ContactoCalido]: "bg-yellow-100 text-yellow-800",
-    [LeadStatus.SocialSelling]: "bg-green-100 text-green-800",
-    [LeadStatus.CitaValidada]: "bg-purple-100 text-purple-800",
-    [LeadStatus.CitaAgendada]: "bg-indigo-100 text-indigo-800",
-    [LeadStatus.Cliente]: "bg-emerald-100 text-emerald-800",
-    [LeadStatus.Eliminado]: "bg-red-100 text-red-800",
-  };
-  return headerStatus[status];
-};
-
 const getColumnIcon = (status: string) => {
   const icons = {
-    [LeadStatus.Contacto]: <TagIcon className="h-5 w-5 " />,
-    [LeadStatus.SocialSelling]: <UsersIcon className="h-5 w-5 " />,
-    [LeadStatus.ContactoCalido]: <PhoneIcon className="h-5 w-5 " />,
-    [LeadStatus.Prospecto]: <BuildingIcon className="h-5 w-5 " />,
-    [LeadStatus.CitaAgendada]: <CalendarIcon className="h-5 w-5 " />,
-    [LeadStatus.CitaValidada]: <CheckCircleIcon className="h-5 w-5 " />,
-    [LeadStatus.Cliente]: <HandshakeIcon className="h-5 w-5 " />,
-    [LeadStatus.Eliminado]: <CircleX className="size-5 " />,
+    [LeadStatus.Contacto]: (
+      <TagIcon className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+    ),
+    [LeadStatus.SocialSelling]: (
+      <UsersIcon className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+    ),
+    [LeadStatus.ContactoCalido]: (
+      <PhoneIcon className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+    ),
+    [LeadStatus.Prospecto]: (
+      <BuildingIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+    ),
+    [LeadStatus.CitaAgendada]: (
+      <CalendarIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+    ),
+    [LeadStatus.CitaValidada]: (
+      <CheckCircleIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
+    ),
+    [LeadStatus.Cliente]: (
+      <HandshakeIcon className="h-5 w-5 text-rose-500 dark:text-rose-400" />
+    ),
+    [LeadStatus.Eliminado]: (
+      <CircleX className="h-5 w-5 text-red-500 dark:text-red-400" />
+    ),
   };
   return (
     icons[status as LeadStatus] || (
-      <BriefcaseIcon className="h-5 w-5 text-gray-500" />
+      <BriefcaseIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
     )
+  );
+};
+
+// Count badge color based on status
+const getBadgeColor = (status: string) => {
+  const colorMap = {
+    [LeadStatus.Contacto]:
+      "bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300",
+    [LeadStatus.SocialSelling]:
+      "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300",
+    [LeadStatus.ContactoCalido]:
+      "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300",
+    [LeadStatus.Prospecto]:
+      "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300",
+    [LeadStatus.CitaAgendada]:
+      "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300",
+    [LeadStatus.CitaValidada]:
+      "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300",
+    [LeadStatus.Cliente]:
+      "bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300",
+    [LeadStatus.Eliminado]:
+      "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300",
+  };
+  return (
+    colorMap[status as LeadStatus] ||
+    "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
   );
 };
 
@@ -69,20 +97,22 @@ export const DroppableKanbanColumn = ({
   return (
     <div
       ref={setNodeRef}
-      className={`w-[320px] flex-shrink-0 bg-[#f1f5f9] rounded-2xl p-3 h-full flex flex-col ${
+      className={`w-[320px] flex-shrink-0 bg-[#f1f5f9] dark:bg-gray-800 rounded-3xl p-3 h-full flex flex-col ${
         isOver
-          ? " border border-dashed border-gray-400"
-          : "border-slate-200 dar:border-slate-100"
+          ? "border-2 border-dashed border-blue-400 dark:border-blue-500"
+          : "border border-slate-200 dark:border-gray-700"
       }`}
     >
       <div
-        className={`p-3 border ${getHeaderStatus(status)} border-slate-200 rounded-full bg-blue-50`}
+        className={`p-3 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md`}
       >
         <div className="flex items-center justify-between">
-          <span className="text-sm  flex gap-3 text-black">
+          <span className="text-sm font-medium flex items-center gap-2 text-gray-800 ">
             {leadsColumnIcon} {leadTitle}
           </span>
-          <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+          <span
+            className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getBadgeColor(status)}`}
+          >
             {leads.length}
           </span>
         </div>
