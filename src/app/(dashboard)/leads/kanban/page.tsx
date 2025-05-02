@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LeadHistoryDrawer from "./components/LeadStatusDrawer";
+import LeadHistory from "./components/LeadHistory";
 
 export type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
@@ -82,7 +82,7 @@ const page = async () => {
           <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
         </TabsContent>
         <TabsContent value="history">
-          <LeadHistoryDrawer />
+          <LeadHistory generadores={generadores} />
         </TabsContent>
       </Tabs>
     </>

@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { Oficina, User } from "@prisma/client";
 import { LeadWithRelations } from "../page";
 import { Input } from "@/components/ui/input";
-import LeadHistoryDrawer from "./LeadStatusDrawer";
 
 interface KanbanFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -39,7 +38,6 @@ export interface FilterState {
 export function KanbanFilters({
   onFilterChange,
   generadores,
-  initialLeads,
 }: KanbanFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,

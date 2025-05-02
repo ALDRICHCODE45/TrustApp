@@ -39,6 +39,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const [, setSelectedTask] = useState<Lead | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
     fechaProspeccion: null,
