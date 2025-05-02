@@ -52,7 +52,7 @@ export const getRecruiters = async (): Promise<User[]> => {
 
 export async function createLead(prevState: any, formData: FormData) {
   try {
-    await checkSession("/sing-in");
+    await checkSession();
 
     const submission = parseWithZod(formData, {
       schema: createLeadSchema,

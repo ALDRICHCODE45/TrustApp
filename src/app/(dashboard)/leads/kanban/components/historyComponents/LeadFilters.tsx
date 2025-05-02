@@ -158,8 +158,8 @@ export function LeadFilters({
           {/* Botón de búsqueda */}
           <Button
             onClick={fetchLeadHistory}
+            variant="default"
             disabled={!dateRange?.from || !dateRange.to || isLoading}
-            className="md:w-auto bg-blue-600 hover:bg-blue-700 text-white transition-colors"
           >
             <SearchIcon className="mr-2 h-4 w-4" />
             {isLoading ? "Cargando..." : "Buscar"}

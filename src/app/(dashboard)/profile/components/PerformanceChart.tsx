@@ -1,13 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  BarChart,
-  Bar,
   XAxis,
   CartesianGrid,
+  AreaChart,
+  Area,
   ResponsiveContainer,
-  Tooltip,
-  Legend,
 } from "recharts";
 import { Calendar, ChevronDown } from "lucide-react";
 import {
@@ -32,6 +30,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getLeadsUsers } from "@/actions/users/create-user";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 // Definir los tipos principales
 interface User {
@@ -189,7 +192,6 @@ export const LeadPerformanceChart: React.FC = () => {
               {getUserName(selectedUser)} - {dateRangeLabels[dateRange]}
             </CardDescription>
           </div>
-
           <div className="flex space-x-2">
             {/* Selección de usuario */}
             <Select value={selectedUser} onValueChange={setSelectedUser}>
@@ -204,7 +206,6 @@ export const LeadPerformanceChart: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
-
             {/* Selección de rango de fecha */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -232,62 +233,59 @@ export const LeadPerformanceChart: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <p>Cargando datos...</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={269}>
-            <BarChart
-              data={data}
-              margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                opacity={0.2}
-              />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tick={{ fontSize: 12 }}
-                interval={dateRange === "month" ? 2 : 0}
-              />
-              <Tooltip
-                cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
-                contentStyle={{
-                  borderRadius: "8px",
-                  border: "1px solid #e2e8f0",
-                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+          <div className="w-full h-14">
+            {" "}
+            {/* Contenedor con altura fija */}
+            <ChartContainer config={chartConfig}>
+              <AreaChart
+                data={data}
+                margin={{
+                  top: 5,
+                  right: 0,
+                  left: 0,
+                  bottom: 5,
                 }}
-              />
-              <Legend
-                verticalAlign="top"
-                height={36}
-                iconType="circle"
-                iconSize={8}
-              />
-              <Bar
-                name="Prospectos"
-                dataKey="leads"
-                fill="#94a3b8"
-                radius={[4, 4, 0, 0]}
-                barSize={dateRange === "month" ? 8 : 16}
-              />
-              <Bar
-                name="Clientes"
-                dataKey="clientes"
-                fill="#3b82f6"
-                radius={[4, 4, 0, 0]}
-                barSize={dateRange === "month" ? 8 : 16}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Area
+                  dataKey="clientes"
+                  type="natural"
+                  fill={chartConfig.clientes.color}
+                  fillOpacity={0.4}
+                  stroke={chartConfig.clientes.color}
+                  stackId="a"
+                  name={chartConfig.clientes.label}
+                />
+                <Area
+                  dataKey="leads"
+                  type="natural"
+                  fill={chartConfig.leads.color}
+                  fillOpacity={0.4}
+                  stroke={chartConfig.leads.color}
+                  stackId="a"
+                  name={chartConfig.leads.label}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </div>
         )}
-
         <div className="mt-4 flex justify-between text-sm text-gray-500">
           <div>Total de prospectos: {stats.totalLeads || totalLeads}</div>
           <div>

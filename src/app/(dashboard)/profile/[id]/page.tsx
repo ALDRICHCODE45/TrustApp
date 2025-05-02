@@ -127,9 +127,7 @@ export default async function UserProfile({
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="h-80">
-              <LeadPerformanceChart />
-            </div>
+            <LeadPerformanceChart />
           </CardContent>
         </Card>
         {/* Second Row - Grid with Calendar and Performance Chart */}
@@ -157,10 +155,8 @@ export default async function UserProfile({
                 Visualiza tu rendimiento y progreso
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <LeadPerformanceChart />
-              </div>
+            <CardContent className="w-10 h-10">
+              <LeadPerformanceChart />
             </CardContent>
           </Card>
         </div>
