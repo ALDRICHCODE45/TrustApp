@@ -5,7 +5,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { AttendanceChart } from "@/components/AttendanceChart";
 import { notFound } from "next/navigation";
 import "yet-another-react-lightbox-lite/styles.css";
 import { UserProfileHeader } from "./components/UserProfileHeader";
@@ -14,6 +13,7 @@ import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
+import LeadPerformanceChart from "../components/PerformanceChart";
 
 const fetchUser = async (userId: string) => {
   try {
@@ -42,9 +42,9 @@ const fetchTasksById = async (userId: string) => {
   }
 };
 
-export const metadata:Metadata = {
-  title: "Trust | Perfil"
-}
+export const metadata: Metadata = {
+  title: "Trust | Perfil",
+};
 
 export default async function UserProfile({
   params,
@@ -91,76 +91,81 @@ export default async function UserProfile({
         tasks={tasks}
       />
 
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Calendar Section - 2/5 width */}
-        <Card className="lg:col-span-2 border">
+      {/* Main Layout */}
+      <div className="space-y-6">
+        {/* First Row - Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border">
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-500">Este mes</p>
+              <p className="text-2xl font-medium mt-1">
+                {/* {user?.placements || user?.clientes || "14"} */}
+                14
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border">
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-500">Tiempo Promedio</p>
+              <p className="text-2xl font-medium mt-1">
+                8.5 <span className="text-sm">(dias)</span>
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border">
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-500">Tareas Completadas</p>
+              <p className="text-2xl font-medium mt-1">11</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Calendario</CardTitle>
-            <CardDescription>Gestiona tus eventos y reuniones</CardDescription>
+            <CardTitle className="text-md font-medium">
+              Tendencia de Rendimiento Detallada
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-full w-full container mx-auto">
-              <EventCalendar userId={user.id} />
+          <CardContent className="pt-2">
+            <div className="h-80">
+              <LeadPerformanceChart />
             </div>
           </CardContent>
         </Card>
-
-        {/* Performance Tab - 3/5 width */}
-        <Card className="lg:col-span-3 border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Desempeño</CardTitle>
-            <CardDescription>
-              Visualiza tu rendimiento y progreso
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="border">
-                  <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Este mes</p>
-                    <p className="text-2xl font-medium mt-1">
-                      {/* {user?.placements || user?.clientes || "14"} */}
-                      14
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border">
-                  <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Tiempo Promedio</p>
-                    <p className="text-2xl font-medium mt-1">
-                      8.5 <span className="text-sm">(dias)</span>
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border">
-                  <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Tareas Completadas</p>
-                    <p className="text-2xl font-medium mt-1">11</p>
-                  </CardContent>
-                </Card>
+        {/* Second Row - Grid with Calendar and Performance Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Calendar Section - 2/5 width */}
+          <Card className="lg:col-span-2 border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Calendario</CardTitle>
+              <CardDescription>
+                Gestiona tus eventos y reuniones
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-full w-full container mx-auto">
+                <EventCalendar userId={user.id} />
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Performance Chart */}
-              <Card className="border">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-md font-medium">
-                    Tendencia de Rendimiento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-2">
-                  <div className="">
-                    <AttendanceChart />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Performance Card - 3/5 width */}
+          <Card className="lg:col-span-3 border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Desempeño</CardTitle>
+              <CardDescription>
+                Visualiza tu rendimiento y progreso
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <LeadPerformanceChart />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Third Row - Full Width Performance Chart */}
       </div>
     </div>
   );

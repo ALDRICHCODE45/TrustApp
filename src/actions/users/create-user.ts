@@ -8,6 +8,22 @@ import { revalidatePath } from "next/cache";
 import { editUserSchema } from "@/zod/editUserSchema";
 import { Role } from "@prisma/client";
 
+export const getLeadsUsers = async () => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["GL", "MK", "Admin"],
+        },
+      },
+    });
+    return users;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error al devolver los usuarios");
+  }
+};
+
 export const editUser = async (userId: string, formData: FormData) => {
   const session = await checkSession("/sing-in");
 

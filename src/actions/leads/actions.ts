@@ -135,6 +135,10 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       throw Error("User does not exists");
     }
 
+    if (sesion.user.id !== existingLead.generadorId) {
+      throw new Error("No puedes modificar este lead");
+    }
+
     // Verificamos si el status está cambiando
     const newStatus = submission.value.status;
     const statusChanged = newStatus && newStatus !== existingLead.status;

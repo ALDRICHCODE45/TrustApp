@@ -17,7 +17,7 @@ interface FinanceData {
   expense: number;
 }
 
-export const FinanceChart: React.FC = () => {
+export const FinanceChart = () => {
   const data: FinanceData[] = [
     { month: "Ene", income: 4000, expense: 2400 },
     { month: "Feb", income: 3000, expense: 1398 },

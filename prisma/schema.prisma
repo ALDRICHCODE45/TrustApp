@@ -55,7 +55,7 @@ model User {
 // Modelo para registrar historial de cambios de estado de leads
 model LeadStatusHistory {
   id        String     @id @default(cuid())
-  lead      Lead       @relation(fields: [leadId], references: [id])
+  lead      Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   status    LeadStatus
   changedAt DateTime   @default(now())

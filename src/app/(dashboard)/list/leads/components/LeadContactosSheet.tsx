@@ -66,7 +66,6 @@ export function LeadContactosSheet({
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 640);
     };
-
     // Ejecutar en el cliente
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -140,7 +139,7 @@ export function LeadContactosSheet({
               Cargando...
             </>
           ) : (
-            <span>Crear lead</span>
+            <span>Crear contacto</span>
           )}
         </Button>
       </div>
