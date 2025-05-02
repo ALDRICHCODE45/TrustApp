@@ -76,7 +76,7 @@ const page = async () => {
       <Tabs defaultValue="kanban" className="w-full">
         <TabsList>
           <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="history">Historial</TabsTrigger>
         </TabsList>
         <TabsContent value="kanban">
           <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
