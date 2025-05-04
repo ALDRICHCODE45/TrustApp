@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -220,7 +219,7 @@ export function LeadContactosSheet({
               ))
             ) : (
               <div className="flex flex-col justify-center  items-center gap-2">
-                <UserX size={40} />
+                <UserX size={40} className="text-gray-400" />
                 <p className="text-sm text-gray-400 text-center">
                   No hay contactos disponibles.
                 </p>

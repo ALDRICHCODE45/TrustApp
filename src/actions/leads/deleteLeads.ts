@@ -8,7 +8,6 @@ export const deleteMayLeads = async (ids: string[]) => {
   if (!ids) return;
 
   try {
-
     const leads = await prisma.lead.deleteMany({
       where: {
         id: {
@@ -21,5 +20,4 @@ export const deleteMayLeads = async (ids: string[]) => {
   } catch (error) {
     throw new Error("erorr eliminando muchos leads");
   }
-
 };

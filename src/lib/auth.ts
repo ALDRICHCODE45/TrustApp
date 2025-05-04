@@ -2,7 +2,7 @@ import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import prisma from "./db";
-import {UserState} from '@prisma/client'
+import { UserState } from "@prisma/client";
 
 class InvalidLoginError extends CredentialsSignin {
   code = "Invalid identifier or password";
