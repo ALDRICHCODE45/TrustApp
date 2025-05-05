@@ -6,6 +6,7 @@ import {
   AreaChart,
   Area,
   ResponsiveContainer,
+  YAxis,
 } from "recharts";
 import { Calendar, ChevronDown } from "lucide-react";
 import {
@@ -59,10 +60,8 @@ interface ApiResponse {
   stats: PerformanceStats;
 }
 
-// Tipo para las opciones de rango de fecha
 type DateRangeOption = "year" | "quarter" | "month" | "lastYear";
 
-// Función para obtener datos de la API con tipado
 const fetchLeadPerformanceData = async (
   userId: string,
   dateRange: DateRangeOption,
@@ -181,120 +180,124 @@ export const LeadPerformanceChart: React.FC = () => {
   const totalClientes = data.reduce((acc, cur) => acc + cur.clientes, 0);
 
   return (
-    <Card className="shadow-sm h-full">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-base">
-              Rendimiento de Generador de Leads
-            </CardTitle>
-            <CardDescription>
-              {getUserName(selectedUser)} - {dateRangeLabels[dateRange]}
-            </CardDescription>
+    <>
+      <Card className="shadow-sm h-full">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-base">
+                Rendimiento de Generador de Leads
+              </CardTitle>
+              <CardDescription>
+                {getUserName(selectedUser)} - {dateRangeLabels[dateRange]}
+              </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              {/* Selección de usuario */}
+              <Select value={selectedUser} onValueChange={setSelectedUser}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Seleccionar usuario" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Selección de rango de fecha */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{dateRangeLabels[dateRange]}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setDateRange("month")}>
+                    Mes actual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDateRange("quarter")}>
+                    Trimestre actual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDateRange("year")}>
+                    Año 2025
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDateRange("lastYear")}>
+                    Último año
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            {/* Selección de usuario */}
-            <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Seleccionar usuario" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* Selección de rango de fecha */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{dateRangeLabels[dateRange]}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setDateRange("month")}>
-                  Mes actual
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateRange("quarter")}>
-                  Trimestre actual
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateRange("year")}>
-                  Año 2025
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateRange("lastYear")}>
-                  Último año
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        </CardHeader>
+        <CardContent>
+          <div className="mt-4 flex justify-between text-sm text-gray-500">
+            <div>Total de prospectos: {stats.totalLeads || totalLeads}</div>
+            <div>
+              Conversión a clientes: {stats.totalClientes || totalClientes} (
+              {stats.conversionRate}%)
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <p>Cargando datos...</p>
-          </div>
-        ) : (
-          <div className="w-full h-14">
-            {" "}
-            {/* Contenedor con altura fija */}
-            <ChartContainer config={chartConfig}>
-              <AreaChart
-                data={data}
-                margin={{
-                  top: 5,
-                  right: 0,
-                  left: 0,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Area
-                  dataKey="clientes"
-                  type="natural"
-                  fill={chartConfig.clientes.color}
-                  fillOpacity={0.4}
-                  stroke={chartConfig.clientes.color}
-                  stackId="a"
-                  name={chartConfig.clientes.label}
-                />
-                <Area
-                  dataKey="leads"
-                  type="natural"
-                  fill={chartConfig.leads.color}
-                  fillOpacity={0.4}
-                  stroke={chartConfig.leads.color}
-                  stackId="a"
-                  name={chartConfig.leads.label}
-                />
-              </AreaChart>
-            </ChartContainer>
-          </div>
-        )}
-        <div className="mt-4 flex justify-between text-sm text-gray-500">
-          <div>Total de prospectos: {stats.totalLeads || totalLeads}</div>
-          <div>
-            Conversión a clientes: {stats.totalClientes || totalClientes} (
-            {stats.conversionRate}%)
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <p>Cargando datos...</p>
+            </div>
+          ) : (
+            <div className="w-full h-full mt-4">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={data}
+                    margin={{
+                      top: 10,
+                      right: 10,
+                      left: 10,
+                      bottom: 10,
+                    }}
+                  >
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(value) => value.slice(0, 3)}
+                    />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    <Area
+                      dataKey="clientes"
+                      type="natural"
+                      fill={chartConfig.clientes.color}
+                      fillOpacity={0.4}
+                      stroke={chartConfig.clientes.color}
+                      stackId="a"
+                      name={chartConfig.clientes.label}
+                    />
+                    <Area
+                      dataKey="leads"
+                      type="natural"
+                      fill={chartConfig.leads.color}
+                      fillOpacity={0.4}
+                      stroke={chartConfig.leads.color}
+                      stackId="a"
+                      name={chartConfig.leads.label}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

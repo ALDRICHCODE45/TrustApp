@@ -14,6 +14,7 @@ import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
 import LeadPerformanceChart from "../components/PerformanceChart";
+import { AttendanceChart } from "@/components/AttendanceChart";
 
 const fetchUser = async (userId: string) => {
   try {
@@ -126,7 +127,7 @@ export default async function UserProfile({
               Tendencia de Rendimiento Detallada
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-2 min-h-[16rem] overflow-hidden">
             <LeadPerformanceChart />
           </CardContent>
         </Card>
@@ -155,12 +156,11 @@ export default async function UserProfile({
                 Visualiza tu rendimiento y progreso
               </CardDescription>
             </CardHeader>
-            <CardContent className="w-10 h-10">
-              <LeadPerformanceChart />
+            <CardContent>
+              <AttendanceChart />
             </CardContent>
           </Card>
         </div>
-
         {/* Third Row - Full Width Performance Chart */}
       </div>
     </div>
