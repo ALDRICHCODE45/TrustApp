@@ -13,8 +13,8 @@ import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
-import LeadPerformanceChart from "../components/PerformanceChart";
 import { AttendanceChart } from "@/components/AttendanceChart";
+import { LeadPerformanceChart } from "../components/PerformanceChart";
 
 const fetchUser = async (userId: string) => {
   try {
@@ -123,9 +123,7 @@ export default async function UserProfile({
 
         <Card className="border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-md font-medium">
-              Tendencia de Rendimiento Detallada
-            </CardTitle>
+            <CardTitle className="text-md font-medium"></CardTitle>
           </CardHeader>
           <CardContent className="pt-2 min-h-[16rem] overflow-hidden">
             <LeadPerformanceChart />

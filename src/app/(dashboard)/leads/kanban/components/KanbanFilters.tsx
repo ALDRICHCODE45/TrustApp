@@ -63,6 +63,7 @@ export function KanbanFilters({
       oficina: null,
       searchTerm: "",
     };
+
     setFilters(resetFilters);
     onFilterChange(resetFilters);
   };

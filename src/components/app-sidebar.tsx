@@ -92,17 +92,17 @@ const data: {
       title: "Generacion de Leads",
       url: "#",
       icon: HandCoins,
-      roles: [Role.GL],
+      roles: [Role.GL, Role.MK],
       items: [
         {
           title: "Prospecciones",
           url: "/leads",
-          roles: [Role.GL],
+          roles: [Role.GL, Role.MK],
         },
         {
           title: "Kanban Board",
           url: "/leads/kanban",
-          roles: [Role.GL],
+          roles: [Role.GL, Role.MK],
         },
       ],
     },
