@@ -48,10 +48,10 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Oficina, Role, UserState } from "@prisma/client";
+import { Oficina, Role, User, UserState } from "@prisma/client";
 import CreateProfile from "../components/CreateProfile";
-import { desactivateUsers } from "../../../../../actions/users/delete-users";
 import { toast } from "sonner";
+import { desactivateUsers } from "@/actions/users/delete-users";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -62,7 +62,7 @@ interface DataTableProps<TData, TValue> {
   title?: string;
 }
 
-export function UsersTable<TData, TValue>({
+export function UsersTable<TData extends User, TValue>({
   columns,
   data,
   searchPlaceholder = "Buscar por correo...",

@@ -2,7 +2,7 @@
 import { checkSession } from "@/hooks/auth/checkSession";
 import { parseWithZod } from "@conform-to/zod";
 import { createUserSchema } from "@/zod/createUserSchema";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { editUserSchema } from "@/zod/editUserSchema";

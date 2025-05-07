@@ -5,6 +5,7 @@ import { ClientLayout } from "./ClientLayout";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
+import { ToastAlerts } from "@/components/ToastAlerts";
 
 interface LayoutProps {
   children: ReactNode;
@@ -49,6 +50,7 @@ export default async function Layout({ children }: LayoutProps) {
 
   return (
     <>
+      <ToastAlerts />
       <SidebarProvider>
         <AppSidebar user={user} hasPendingTasks={hasPendingTasks} />
         <SidebarInset>

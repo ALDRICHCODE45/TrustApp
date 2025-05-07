@@ -38,10 +38,7 @@ export async function GET(request: Request) {
 }
 
 // Función simplificada para obtener historial de leads
-export async function getLeadsStatusInDateRange(
-  startDate: Date,
-  endDate: Date,
-) {
+async function getLeadsStatusInDateRange(startDate: Date, endDate: Date) {
   // Obtener todos los cambios de estado en el rango de fechas
   const statusChanges = await prisma.leadStatusHistory.findMany({
     where: {

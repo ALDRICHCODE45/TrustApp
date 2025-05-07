@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/themeToggle";
+import Image from "next/image";
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -59,7 +60,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         </div>
         {/* Right side of navbar - add user profile or actions */}
         <div className="flex items-center">
-          <img
+          <Image
             src="/trust-logo.webp"
             alt="Trust Logo"
             className=" rounded-full object-cover"

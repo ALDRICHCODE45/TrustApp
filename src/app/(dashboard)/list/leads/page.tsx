@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
-import { ToastAlerts } from "@/components/ToastAlerts";
 import { Metadata } from "next";
 
 interface pageProps {}

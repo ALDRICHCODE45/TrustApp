@@ -181,16 +181,6 @@ export const LeadPerformanceChart: React.FC = () => {
                   />
 
                   <Area
-                    dataKey="citasAgendadas"
-                    type="natural"
-                    fill={chartConfig.citasAgendadas.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.citasAgendadas.color}
-                    stackId="a"
-                    name={chartConfig.citasAgendadas.label}
-                  />
-
-                  <Area
                     dataKey="citasValidadas"
                     type="natural"
                     fill={chartConfig.citasValidadas.color}

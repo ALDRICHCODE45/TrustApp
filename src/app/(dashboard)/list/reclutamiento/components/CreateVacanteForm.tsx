@@ -5,15 +5,12 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
-  UsersIcon,
-  DollarSignIcon,
   FileText,
   Upload,
   MoreVertical,
   Download,
   Edit,
   Trash,
-  Briefcase,
   User,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -357,7 +354,7 @@ const FilesTab = ({ files }: { files: File[] }) => (
           <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <p>No hay documentos subidos</p>
           <p className="text-sm">
-            Sube tus archivos usando el botón "Subir Archivo"
+            Sube tus archivos usando el botón Subir Archivo
           </p>
         </div>
       )}

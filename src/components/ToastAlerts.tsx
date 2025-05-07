@@ -37,7 +37,7 @@ export function ToastAlerts() {
 
       router.replace(newUrl);
     }
-  }, [error, ok]);
+  }, [error, ok, router, searchParams]);
 
   return null;
 }
