@@ -16,6 +16,9 @@ const fetchData = async () => {
       generadorLeads: true,
       contactos: true,
     },
+    orderBy: {
+      updatedAt: "desc",
+    },
   });
   return {
     columns: leadsColumns,

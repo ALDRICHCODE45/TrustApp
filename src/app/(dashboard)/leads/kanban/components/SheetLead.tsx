@@ -42,7 +42,7 @@ export function LeadSheet({ lead }: Props) {
               {lead?.empresa || "Información del Lead"}
             </SheetTitle>
             <div className="flex items-center gap-3 mt-2">
-              <Badge className={getStatusColor(lead?.status)}>
+              <Badge className={getStatusColor(lead?.status)} variant="outline">
                 {leadStatusMap[lead?.status] || "Sin estado"}
               </Badge>
               <span className="text-sm text-muted-foreground">

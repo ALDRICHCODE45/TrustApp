@@ -49,11 +49,20 @@ import {
   Trash2,
   Loader2,
   LoaderCircle,
+  CalendarIcon,
 } from "lucide-react";
 import { Lead, LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { deleteMayLeads } from "@/actions/leads/deleteLeads";
+import { es } from "date-fns/locale";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 const filterAnything: FilterFn<Lead> = (
   row: Row<Lead>,
@@ -91,6 +100,10 @@ interface TableFiltersProps<TData, TValue> {
   currentGl: string;
   setCurrentGl: (newGl: string) => void;
   generadores: User[];
+  currentDateProspection: Date | undefined;
+  setCurrentDateProspection: (newDate: Date | undefined) => void;
+  currentDateConection: Date | undefined;
+  setCurrentDateConection: (newDate: Date | undefined) => void;
 }
 
 function TableFilters<TData extends { id: string }, TValue>({
@@ -102,8 +115,36 @@ function TableFilters<TData extends { id: string }, TValue>({
   currentGl,
   setCurrentGl,
   generadores,
+  currentDateProspection,
+  setCurrentDateProspection,
+  currentDateConection,
+  setCurrentDateConection,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  useEffect(() => {
+    if (!currentDateProspection) {
+      table.getColumn("fechaProspeccion")?.setFilterValue(undefined);
+      setCurrentDateProspection(undefined);
+      return;
+    }
+
+    setCurrentDateProspection(currentDateProspection);
+    table.getColumn("fechaProspeccion")?.setFilterValue(currentDateProspection);
+    table.setPageIndex(0);
+  }, [currentDateProspection, setCurrentDateProspection]);
+
+  useEffect(() => {
+    if (!currentDateConection) {
+      table.getColumn("fechaAConectar")?.setFilterValue(undefined);
+      setCurrentDateConection(undefined);
+      return;
+    }
+
+    setCurrentDateConection(currentDateConection);
+    table.getColumn("fechaAConectar")?.setFilterValue(currentDateConection);
+    table.setPageIndex(0);
+  }, [currentDateConection, setCurrentDateConection]);
 
   const handleDelete = async () => {
     setDeleteLoading(true);
@@ -193,6 +234,80 @@ function TableFilters<TData extends { id: string }, TValue>({
                 </SelectGroup>
               </SelectContent>
             </Select>
+          </div>
+          {/* Filtro de fecha de coneccion */}
+          <div className="space-y-2">
+            <Label htmlFor="date-filter" className="text-sm font-medium">
+              Fecha de Prospección
+            </Label>
+            <div className="flex flex-col gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    id="date-filter"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {currentDateProspection ? (
+                      format(currentDateProspection, "eee dd/M/yyyy", {
+                        locale: es,
+                      })
+                    ) : (
+                      <span>Seleccionar fechas</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={currentDateProspection}
+                    onSelect={setCurrentDateProspection}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Badge to show active filter with clear option */}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date-filter" className="text-sm font-medium">
+              Fecha de coneccion
+            </Label>
+            <div className="flex flex-col gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    id="date-filter"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {currentDateConection ? (
+                      format(currentDateConection, "eee dd/M/yyyy", {
+                        locale: es,
+                      })
+                    ) : (
+                      <span>Seleccionar fecha</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={currentDateConection}
+                    onSelect={setCurrentDateConection}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Badge to show active filter with clear option */}
+            </div>
           </div>
 
           {/* Filtro por generador */}
@@ -473,6 +588,14 @@ export function CommercialTable<TData extends { id: string }, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
+  const [currentDateProspection, setCurrentDateProspection] = useState<
+    Date | undefined
+  >(undefined);
+
+  const [currentDateConection, setCurrentDateConection] = useState<
+    Date | undefined
+  >(undefined);
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: defaultPageSize,
@@ -528,7 +651,7 @@ export function CommercialTable<TData extends { id: string }, TValue>({
 
   if (!isMounted) {
     return (
-      <div className="flex items-center justify-center w-full h-[100%]">
+      <div className="flex items-center justify-center w-full h-full">
         <LoaderCircle className="h-8 w-8 text-blue-600 animate-spin" />
       </div>
     );
@@ -537,6 +660,10 @@ export function CommercialTable<TData extends { id: string }, TValue>({
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <TableFilters
+        setCurrentDateConection={setCurrentDateConection}
+        currentDateConection={currentDateConection}
+        setCurrentDateProspection={setCurrentDateProspection}
+        currentDateProspection={currentDateProspection}
         generadores={generadores}
         table={table}
         filterPlaceholder={filterPlaceholder}

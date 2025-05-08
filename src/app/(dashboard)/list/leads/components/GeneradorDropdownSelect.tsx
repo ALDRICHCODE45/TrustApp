@@ -7,46 +7,61 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lead, Person, User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 import { editLeadById, getRecruiters } from "@/actions/leads/actions";
 import { toast } from "sonner";
+import { Loader2, RotateCw } from "lucide-react";
 
 export const GeneradorDropdownSelect = ({
   row,
 }: {
   row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
 }) => {
-  // Use the generadorLeads from row.original as the source of truth
   const [recruiters, setRecruiters] = useState<User[] | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Get the current generator ID directly from row.original each time
-  // This ensures we always show the latest data
   const currentGeneratorId = row.original.generadorId;
   const currentGenerator = row.original.generadorLeads;
 
+  const loadRecruiters = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const recruitersData = await getRecruiters();
+      if (Array.isArray(recruitersData) && recruitersData.length > 0) {
+        setRecruiters(recruitersData);
+      } else {
+        setError("No se pudieron cargar los reclutadores");
+        console.warn("Recruiters data is empty or invalid:", recruitersData);
+      }
+    } catch (error) {
+      setError("Error al cargar reclutadores");
+      console.error("Error loading recruiters:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Cargar reclutadores al montar el componente
   useEffect(() => {
-    const loadRecruiters = async () => {
-      try {
-        const recruiters = await getRecruiters();
-        setRecruiters(recruiters);
-      } catch (error) {
-        console.error("Error loading recruiters:", error);
-      } finally {
-        setLoading(false);
+    loadRecruiters();
+
+    const checkInterval = () => {
+      if (loading && !recruiters) {
+        console.log("Retry loading recruiters after timeout");
+        loadRecruiters();
       }
     };
-    loadRecruiters();
-  }, []);
+  }, [loadRecruiters]);
 
   const handleUserChange = async (newUser: User) => {
     if (newUser.id === currentGeneratorId) return;
-
     setIsUpdating(true);
     try {
       const formData = new FormData();
@@ -66,6 +81,10 @@ export const GeneradorDropdownSelect = ({
     router.push(`/profile/${id}`);
   };
 
+  const retryLoading = () => {
+    loadRecruiters();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -74,58 +93,97 @@ export const GeneradorDropdownSelect = ({
           size="sm"
           className="flex items-center gap-2 w-full"
           disabled={isUpdating}
+          onClick={loading && !recruiters ? retryLoading : undefined}
         >
           {isUpdating ? (
             "Actualizando..."
           ) : loading ? (
-            "Cargando..."
+            <div className="flex items-center gap-2">
+              <span>Cargando...</span>
+              {loading && !recruiters && (
+                <RotateCw className="h-3 w-3 animate-spin" />
+              )}
+            </div>
+          ) : error ? (
+            <div
+              className="flex items-center gap-2 text-red-500"
+              onClick={retryLoading}
+            >
+              <span className="truncate max-w-[100px]">Error</span>
+              <RotateCw className="h-3 w-3" />
+            </div>
           ) : (
             <>
               <span className="truncate max-w-[120px]">
-                {currentGenerator?.name}
+                {currentGenerator?.name || "Sin asignar"}
               </span>
             </>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 max-h-[300px] overflow-y-auto">
-        {recruiters?.map((recruiter) => (
-          <DropdownMenuItem
-            key={recruiter.id}
-            className={`flex items-center gap-3 p-2 cursor-pointer ${
-              recruiter.id === currentGeneratorId ? "bg-muted" : ""
-            }`}
-            onClick={() => handleUserChange(recruiter)}
-          >
-            <div className="flex items-center gap-3 flex-1">
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarImage
-                  src={recruiter.image ?? undefined}
-                  alt={recruiter.name}
-                  className="object-cover"
-                />
-                <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{recruiter.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {recruiter.email}
-                </span>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              variant="link"
-              className="ml-auto h-8 w-8 p-0"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent dropdown from closing
-                navigateToProfile(recruiter.id);
-              }}
-            >
-              Ver
+        {error ? (
+          <div className="p-3 text-center">
+            <p className="text-sm text-red-500 mb-2">{error}</p>
+            <Button size="sm" onClick={retryLoading}>
+              Reintentar
             </Button>
-          </DropdownMenuItem>
-        ))}
+          </div>
+        ) : loading ? (
+          <div className="p-3 text-center">
+            <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+            <p className="text-sm text-muted-foreground mt-2">
+              Cargando reclutadores...
+            </p>
+          </div>
+        ) : recruiters && recruiters.length > 0 ? (
+          recruiters.map((recruiter) => (
+            <DropdownMenuItem
+              key={recruiter.id}
+              className={`flex items-center gap-3 p-2 cursor-pointer ${
+                recruiter.id === currentGeneratorId ? "bg-muted" : ""
+              }`}
+              onClick={() => handleUserChange(recruiter)}
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarImage
+                    src={recruiter.image ?? undefined}
+                    alt={recruiter.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{recruiter.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {recruiter.email}
+                  </span>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="link"
+                className="ml-auto h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent dropdown from closing
+                  navigateToProfile(recruiter.id);
+                }}
+              >
+                Ver
+              </Button>
+            </DropdownMenuItem>
+          ))
+        ) : (
+          <div className="p-3 text-center">
+            <p className="text-sm text-muted-foreground">
+              No hay reclutadores disponibles
+            </p>
+            <Button size="sm" onClick={retryLoading} className="mt-2">
+              Reintentar
+            </Button>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
