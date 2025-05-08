@@ -135,7 +135,11 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       throw Error("User does not exists");
     }
 
-    if (sesion.user.id !== existingLead.generadorId) {
+    //solo si es admin puede modificar
+    if (
+      sesion.user.id !== existingLead.generadorId &&
+      sesion.user.role !== Role.Admin
+    ) {
       throw new Error("No puedes modificar este lead");
     }
 
