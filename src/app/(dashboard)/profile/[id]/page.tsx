@@ -11,12 +11,26 @@ import { UserProfileHeader } from "./components/UserProfileHeader";
 import { EventCalendar } from "@/components/EventCalendar";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { Role } from "@prisma/client";
+import { Role, TaskStatus } from "@prisma/client";
 import { Metadata } from "next";
 import { AttendanceChart } from "@/components/AttendanceChart";
 import { LeadPerformanceChart } from "../components/PerformanceChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KanbanUserTasks from "./components/kanban/KanbanUserTask";
+
+const fetchDoneTasksByUserId = async (userId: string) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+        status: TaskStatus.Done,
+      },
+    });
+    return tasks;
+  } catch (err) {
+    throw new Error("Error al traer las tareas");
+  }
+};
 
 const fetchUser = async (userId: string) => {
   try {
@@ -87,6 +101,7 @@ export default async function UserProfile({
 
   const user = await loadProfile();
   const tasks = await loadTasks();
+  const doneTasks = await fetchDoneTasksByUserId(id);
 
   return (
     <>
@@ -130,7 +145,9 @@ export default async function UserProfile({
                       <p className="text-sm text-gray-500">
                         Tareas Completadas
                       </p>
-                      <p className="text-2xl font-medium mt-1">11</p>
+                      <p className="text-2xl font-medium mt-1">
+                        {doneTasks.length || 0}
+                      </p>
                     </CardContent>
                   </Card>
                 </div>

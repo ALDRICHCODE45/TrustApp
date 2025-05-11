@@ -9,14 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -33,6 +26,14 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { createLeadPersonSchema } from "@/zod/createLeadPersonSchema";
 import { ContactoCard } from "@/app/(dashboard)/leads/components/ContactCard";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 export function LeadContactosSheet({
   contactos,
@@ -43,6 +44,7 @@ export function LeadContactosSheet({
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [open, setOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const [lastResult, formAction, isPending] = useActionState(
     createLeadPerson,
@@ -56,8 +58,7 @@ export function LeadContactosSheet({
         schema: createLeadPersonSchema,
       });
     },
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
+    shouldValidate: "onSubmit",
   });
 
   // Detectar si el dispositivo es móvil
@@ -67,10 +68,21 @@ export function LeadContactosSheet({
     };
     // Ejecutar en el cliente
     checkMobile();
-    window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener("resize", checkMobile);
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Manejar el resultado de la acción
+  useEffect(() => {
+    if (lastResult && !lastResult.error) {
+      setOpen(false);
+    }
+  }, [lastResult]);
 
   // Formulario de contacto
   const ContactForm = () => (
@@ -85,53 +97,59 @@ export function LeadContactosSheet({
         type="hidden"
         value={leadId}
         name={fields.leadId.name}
-        key={fields.leadId.key}
+        id={fields.leadId.id}
       />
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
-          <Label htmlFor="nombre">Nombre completo</Label>
+          <Label htmlFor={fields.name.id}>Nombre completo</Label>
           <Input
             name={fields.name.name}
             id={fields.name.id}
             placeholder="Juan Pérez"
             type="text"
             required
-            key={fields.name.key}
-            defaultValue={fields.name.initialValue}
+            autoComplete="name"
           />
+          {fields.name.errors && (
+            <p className="text-sm text-red-500">{fields.name.errors}</p>
+          )}
         </div>
         <div className="flex-1 space-y-2">
-          <Label htmlFor="puesto">Puesto</Label>
+          <Label htmlFor={fields.position.id}>Puesto</Label>
           <Input
             id={fields.position.id}
             name={fields.position.name}
-            key={fields.position.key}
-            defaultValue={fields.position.initialValue}
             placeholder="Gerente de producto"
             type="text"
             required
+            autoComplete="organization-title"
           />
+          {fields.position.errors && (
+            <p className="text-sm text-red-500">{fields.position.errors}</p>
+          )}
         </div>
       </div>
-      <div className="*">
-        <Label htmlFor="correo">Correo electrónico</Label>
+      <div className="space-y-2">
+        <Label htmlFor={fields.email.id}>Correo electrónico</Label>
         <Input
           id={fields.email.id}
           name={fields.email.name}
-          key={fields.email.key}
-          defaultValue={fields.email.initialValue}
           placeholder="candidato@ejemplo.com"
           type="email"
           required
+          autoComplete="email"
         />
+        {fields.email.errors && (
+          <p className="text-sm text-red-500">{fields.email.errors}</p>
+        )}
       </div>
 
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => setOpen(false)}>
+        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isPending}>
           {isPending ? (
             <>
               <Loader2 className="size-4 mr-2 animate-spin" />
@@ -151,7 +169,10 @@ export function LeadContactosSheet({
       size="sm"
       className="gap-1"
       variant="outline"
-      onClick={() => setOpen(true)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(true);
+      }}
     >
       <PlusIcon size={16} />
       <span>Agregar</span>
@@ -198,7 +219,7 @@ export function LeadContactosSheet({
       )}
 
       {/* Sheet con botón y listado */}
-      <Sheet>
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
           <Button variant="outline">
             <Users />
@@ -206,9 +227,10 @@ export function LeadContactosSheet({
         </SheetTrigger>
         <SheetContent>
           <SheetHeader className="mt-5">
-            <AddContactTrigger />
-
-            <SheetTitle></SheetTitle>
+            <div className="flex items-center justify-between">
+              <SheetTitle>Contactos</SheetTitle>
+              <AddContactTrigger />
+            </div>
           </SheetHeader>
 
           {/* Lista de contactos */}
@@ -218,7 +240,7 @@ export function LeadContactosSheet({
                 <ContactoCard key={contacto.id} contacto={contacto} />
               ))
             ) : (
-              <div className="flex flex-col justify-center  items-center gap-2">
+              <div className="flex flex-col justify-center items-center gap-2 py-8">
                 <UserX size={40} className="text-gray-400" />
                 <p className="text-sm text-gray-400 text-center">
                   No hay contactos disponibles.
