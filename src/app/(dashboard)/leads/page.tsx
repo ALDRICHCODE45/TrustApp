@@ -1,12 +1,12 @@
 import { type ReactElement } from "react";
 import { leadsColumns } from "../list/leads/leadsColumns";
-import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { CommercialTable } from "./table/CommercialTable";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { ToastAlerts } from "@/components/ToastAlerts";
 import prisma from "@/lib/db";
+import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 
 export interface pageProps {}
 
@@ -14,6 +14,8 @@ const fetchData = async () => {
   const leads = await prisma.lead.findMany({
     include: {
       generadorLeads: true,
+      origen: true,
+      sector: true,
       contactos: true,
     },
     orderBy: {
@@ -27,15 +29,40 @@ const fetchData = async () => {
 };
 
 const fetchGeneradores = async () => {
-  const users = await prisma.user.findMany({
-    where: {
-      role: {
-        in: ["GL", "Admin", "MK"],
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["GL", "Admin", "MK"],
+        },
       },
-    },
-  });
+    });
 
-  return users;
+    return users;
+  } catch (err) {
+    throw new Error("no se pueden fetchear los generadores");
+  }
+};
+const fetchSectores = async () => {
+  try {
+    const sectores = await prisma.sector.findMany({
+      select: { id: true, nombre: true },
+    });
+    return sectores;
+  } catch (err) {
+    throw new Error("No se pueden fetchear los sectores");
+  }
+};
+
+const fetchOrigenes = async () => {
+  try {
+    const origenes = await prisma.leadOrigen.findMany({
+      select: { id: true, nombre: true },
+    });
+    return origenes;
+  } catch (err) {
+    throw new Error("No se pueden fetchear los origenes");
+  }
 };
 
 export default async function page({}: pageProps): Promise<ReactElement> {
@@ -43,13 +70,20 @@ export default async function page({}: pageProps): Promise<ReactElement> {
   const session = await auth();
   const generadores = await fetchGeneradores();
 
+  const sectores = await fetchSectores();
+  const origenes = await fetchOrigenes();
+
   checkRoleRedirect(session?.user.role as Role, [Role.Admin, Role.GL, Role.MK]);
 
   return (
     <>
       {/* LIST */}
       <ToastAlerts />
-      <CreateLeadForm generadores={generadores} />
+      <CreateLeadForm
+        sectores={sectores}
+        generadores={generadores}
+        origenes={origenes}
+      />
       <CommercialTable
         columns={columns}
         data={data}

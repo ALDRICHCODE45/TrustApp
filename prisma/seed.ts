@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -24,6 +24,81 @@ async function main() {
   } else {
     console.log("Ya existe un usuario administrador.");
   }
+  const sectores = [
+    "Tecnología",
+    "Manufactura",
+    "Logística",
+    "Salud",
+    "Finanzas",
+    "Educación",
+    "Retail",
+    "Agroindustria",
+    "Energía",
+    "Construcción",
+    "Turismo y Hospitalidad",
+    "Transporte",
+    "Bienes Raíces",
+    "Alimentación y Bebidas",
+    "Legal",
+    "Entretenimiento y Medios",
+    "Marketing y Publicidad",
+    "Gobierno",
+    "Telecomunicaciones",
+    "Minería",
+    "Automotriz",
+    "Moda y Textil",
+    "Recursos Humanos",
+    "Consultoría",
+    "ONG / Sector Social",
+  ];
+
+  const origenes = [
+    "LinkedIn",
+    "Marketing",
+    "Referenciado",
+    "Cold Email",
+    "Evento",
+    "Página Web",
+    "Llamada en Frío",
+    "ChatBot",
+    "WhatsApp",
+    "Orgánico",
+    "Publicidad en redes sociales",
+    "Google Ads",
+    "Campaña de Email",
+    "Webinar",
+    "Landing Page",
+    "YouTube",
+    "Podcast",
+    "Ferias Comerciales",
+    "Networking presencial",
+    "Telegram",
+    "Discord",
+    "Recomendación interna",
+    "Newsletter",
+    "Instagram",
+    "TikTok",
+  ];
+
+  await Promise.all(
+    sectores.map((nombre) =>
+      prisma.sector.upsert({
+        where: { nombre },
+        update: {},
+        create: { nombre },
+      }),
+    ),
+  );
+
+  await Promise.all(
+    origenes.map((nombre) =>
+      prisma.leadOrigen.upsert({
+        where: { nombre },
+        update: {},
+        create: { nombre },
+      }),
+    ),
+  );
 }
 
 main()

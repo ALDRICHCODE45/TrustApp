@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LeadStatus } from "@prisma/client";
 
 export const editLeadZodSchema = z.object({
   empresa: z
@@ -14,14 +15,14 @@ export const editLeadZodSchema = z.object({
 
   status: z
     .enum([
-      "Contacto",
-      "SocialSelling",
-      "ContactoCalido",
-      "Prospecto",
-      "CitaAgendada",
-      "CitaValidada",
-      "Cliente",
-      "Eliminado"
+      LeadStatus.Contacto,
+      LeadStatus.SocialSelling,
+      LeadStatus.ContactoCalido,
+      LeadStatus.Prospecto,
+      LeadStatus.CitaAgendada,
+      LeadStatus.CitaValidada,
+      LeadStatus.Asignadas,
+      LeadStatus.StandBy,
     ])
     .optional(),
 

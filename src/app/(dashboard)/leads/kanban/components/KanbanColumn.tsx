@@ -44,10 +44,10 @@ const getColumnIcon = (status: string) => {
     [LeadStatus.CitaValidada]: (
       <CheckCircleIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
     ),
-    [LeadStatus.Cliente]: (
+    [LeadStatus.Asignadas]: (
       <HandshakeIcon className="h-5 w-5 text-rose-500 dark:text-rose-400" />
     ),
-    [LeadStatus.Eliminado]: (
+    [LeadStatus.StandBy]: (
       <CircleX className="h-5 w-5 text-red-500 dark:text-red-400" />
     ),
   };
@@ -73,9 +73,9 @@ const getBadgeColor = (status: string) => {
       "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300",
     [LeadStatus.CitaValidada]:
       "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300",
-    [LeadStatus.Cliente]:
+    [LeadStatus.Asignadas]:
       "bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300",
-    [LeadStatus.Eliminado]:
+    [LeadStatus.StandBy]:
       "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300",
   };
   return (

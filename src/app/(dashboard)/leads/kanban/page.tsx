@@ -10,6 +10,8 @@ import LeadHistory from "./components/LeadHistory";
 
 export type LeadWithRelations = Prisma.LeadGetPayload<{
   include: {
+    sector: true;
+    origen: true;
     generadorLeads: true;
     contactos: true;
     statusHistory: {
@@ -26,6 +28,8 @@ const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
       include: {
         generadorLeads: true,
         contactos: true,
+        sector: true,
+        origen: true,
         statusHistory: {
           include: {
             changedBy: true,

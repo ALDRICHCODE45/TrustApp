@@ -242,8 +242,11 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                         <SelectItem value={LeadStatus.Prospecto}>
                           Prospecto
                         </SelectItem>
-                        <SelectItem value={LeadStatus.Cliente}>
-                          Cliente
+                        <SelectItem value={LeadStatus.Asignadas}>
+                          Asignadas
+                        </SelectItem>
+                        <SelectItem value={LeadStatus.StandBy}>
+                          Stand By
                         </SelectItem>
                       </SelectGroup>
                     </SelectContent>

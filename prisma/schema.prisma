@@ -68,6 +68,17 @@ model LeadStatusHistory {
 }
 
 
+model Sector {
+  id    String @id @default(cuid())
+  nombre String @unique
+  leads  Lead[]
+}
+
+model LeadOrigen {
+  id    String @id @default(cuid())
+  nombre String @unique
+  leads  Lead[]
+}
 
 enum LeadStatus {
   Contacto
@@ -76,28 +87,35 @@ enum LeadStatus {
   Prospecto
   CitaAgendada
   CitaValidada
-  Cliente
-  Eliminado
+  Asignadas
+  StandBy
 }
+
 
 model Lead {
   id               String     @id @default(cuid())
   empresa          String
-  sector           String
   link             String
   fechaProspeccion DateTime?
   fechaAConectar   DateTime?
   status           LeadStatus @default(Contacto)
-  origen           String
   contactos        Person[]
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  //relaciones -> Generador de leads
-  generadorId    String
-  generadorLeads User   @relation(fields: [generadorId], references: [id])
-  statusHistory    LeadStatusHistory[] // Relación con el historial
+  // Relaciones con Sector y Origen
+  sectorId         String
+  sector           Sector      @relation(fields: [sectorId], references: [id])
+
+  origenId         String
+  origen           LeadOrigen  @relation(fields: [origenId], references: [id])
+
+  // Relaciones -> Generador de leads
+  generadorId      String
+  generadorLeads   User        @relation(fields: [generadorId], references: [id])
+  statusHistory    LeadStatusHistory[]
 }
+
 
 //modelo de contacto para todos los moodulos
 model Person {

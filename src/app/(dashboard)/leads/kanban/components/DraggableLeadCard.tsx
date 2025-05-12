@@ -47,7 +47,9 @@ export const DraggableLeadCard = ({ lead, setSelectedTask }: LeadCardProps) => {
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-medium  text-slate-800">{lead.empresa}</h3>
-                <p className="text-md text-slate-500 mt-1">{lead.sector}</p>
+                <p className="text-md text-slate-500 mt-1">
+                  {lead.sector.nombre}
+                </p>
               </div>
             </div>
             <div className="pt-1 pb-1">

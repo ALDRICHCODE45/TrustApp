@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   CalendarIcon,
   Loader2,
+  Plus,
   PlusCircle,
   User as UserIcon,
 } from "lucide-react";
@@ -22,6 +23,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useActionState, useEffect, useState } from "react";
@@ -41,14 +44,23 @@ import { es } from "date-fns/locale";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Sector, LeadOrigen } from "@prisma/client";
 
-export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
+export const CreateLeadForm = ({
+  generadores,
+  sectores,
+  origenes,
+}: {
+  generadores: User[];
+  sectores: Sector[];
+  origenes: LeadOrigen[];
+}) => {
   return (
     <>
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline">
-            <PlusCircle />
+            <Plus />
             Crear Lead
           </Button>
         </DialogTrigger>
@@ -58,18 +70,41 @@ export const CreateLeadForm = ({ generadores }: { generadores: User[] }) => {
             <Separator />
           </DialogHeader>
           {/* Envolver el formulario con FormProvider */}
-          <NuevoLeadForm generadores={generadores} />
+          <NuevoLeadForm
+            generadores={generadores}
+            sectores={sectores}
+            origenes={origenes}
+          />
         </DialogContent>
       </Dialog>
     </>
   );
 };
 
-function NuevoLeadForm({ generadores }: { generadores: User[] }) {
+function NuevoLeadForm({
+  generadores,
+  sectores,
+  origenes,
+}: {
+  generadores: User[];
+  sectores: Sector[];
+  origenes: LeadOrigen[];
+}) {
+  const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
+  const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(null);
+
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<User>();
   const [fechaConectar, setFechaConectar] = useState<Date>();
   const [fechaProspectar, setFechaProspectar] = useState<Date>();
+
+  const handleSelectSector = (sector: Sector) => {
+    setSelectedSector(sector);
+  };
+
+  const handleSelecteOrigen = (origen: LeadOrigen) => {
+    setSelectedOrigen(origen);
+  };
 
   const [lastResult, formAction, isPending] = useActionState(
     createLead,
@@ -169,14 +204,35 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
           </div>
           <div className="flex flex-col gap-2">
             <Label>Sector</Label>
-            <div className="">
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {selectedSector?.nombre || "Selecciona sector"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-scroll">
+                <DropdownMenuLabel>Sectores</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {sectores.map((sector) => (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    key={sector.nombre}
+                    onSelect={() => handleSelectSector(sector)}
+                  >
+                    {sector.nombre}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {selectedSector && (
               <Input
-                id={fields.sector.id}
                 name={fields.sector.name}
                 key={fields.sector.key}
-                placeholder="Tecnología"
+                value={selectedSector.id}
+                type="hidden"
               />
-            </div>
+            )}
             <p className="text-sm text-red-500">{fields.sector.errors}</p>
           </div>
         </div>
@@ -329,17 +385,39 @@ function NuevoLeadForm({ generadores }: { generadores: User[] }) {
             </div>
           </div>
         </div>
-
-        <div className="flex gap-4">
-          <div className="w-1/2 space-y-2">
+        <div className="w-1/2 space-y-1">
+          <div className="flex flex-col gap-2">
             <Label>Origen</Label>
-            <Input
-              id={fields.origen.id}
-              name={fields.origen.name}
-              key={fields.origen.key}
-              placeholder="Likedin"
-              defaultValue={fields.origen.initialValue}
-            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {selectedOrigen?.nombre || "Selecciona un origen"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-scroll">
+                <DropdownMenuLabel>Origenes</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {origenes.map((origen) => (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    key={origen.nombre}
+                    onSelect={() => handleSelecteOrigen(origen)}
+                  >
+                    {origen.nombre}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {selectedOrigen && (
+              <Input
+                name={fields.origen.name}
+                key={fields.origen.key}
+                value={selectedOrigen.id}
+                type="hidden"
+              />
+            )}
+            <p className="text-sm text-red-500">{fields.origen.errors}</p>
           </div>
         </div>
 

@@ -14,11 +14,12 @@ import { Row } from "@tanstack/react-table";
 import { editLeadById, getRecruiters } from "@/actions/leads/actions";
 import { toast } from "sonner";
 import { Loader2, RotateCw } from "lucide-react";
+import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
 
 export const GeneradorDropdownSelect = ({
   row,
 }: {
-  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
+  row: Row<LeadWithRelations>;
 }) => {
   const [recruiters, setRecruiters] = useState<User[] | null>(null);
   const router = useRouter();

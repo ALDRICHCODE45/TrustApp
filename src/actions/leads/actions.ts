@@ -83,6 +83,18 @@ export async function createLead(prevState: any, formData: FormData) {
       });
     }
 
+    const origen = await prisma.leadOrigen.findUnique({
+      where: {
+        id: submission.value.origen,
+      },
+    });
+
+    const sector = await prisma.sector.findUnique({
+      where: {
+        id: submission.value.sector,
+      },
+    });
+
     // Create the new lead
     await prisma.lead.create({
       data: {
@@ -90,8 +102,8 @@ export async function createLead(prevState: any, formData: FormData) {
         fechaAConectar: submission.value.fechaAConectar,
         fechaProspeccion: submission.value.fechaProspeccion,
         link: submission.value.link,
-        origen: submission.value.origen,
-        sector: submission.value.sector,
+        origenId: origen!.id,
+        sectorId: sector!.id,
         status: submission.value.status,
         generadorId: submission.value.generadorId,
       },
@@ -125,9 +137,17 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       return submission.reply();
     }
 
+    if (submission.value.generadorId && sesion.user.role !== Role.Admin) {
+      throw Error("No tienes los privilegios para reasignar el role");
+    }
+
     const existingLead = await prisma.lead.findUnique({
       where: {
         id: leadId,
+      },
+      include: {
+        origen: true,
+        sector: true,
       },
     });
 
@@ -135,10 +155,10 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       throw Error("User does not exists");
     }
 
-    //solo si es admin puede modificar
+    // Modificado: Si NO es admin Y además no es el creador del lead, entonces no puede modificarlo
     if (
-      sesion.user.id !== existingLead.generadorId &&
-      sesion.user.role !== Role.Admin
+      sesion.user.role !== Role.Admin &&
+      sesion.user.id !== existingLead.generadorId
     ) {
       throw new Error("No puedes modificar este lead");
     }
@@ -158,8 +178,8 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
           submission.value.fechaProspeccion || existingLead.fechaProspeccion,
         generadorId: submission.value.generadorId || existingLead.generadorId,
         link: submission.value.link || existingLead.link,
-        origen: submission.value.origen || existingLead.origen,
-        sector: submission.value.sector || existingLead.sector,
+        origenId: submission.value.origen || existingLead.origenId,
+        sectorId: submission.value.sector || existingLead.sectorId,
         status: submission.value.status || existingLead.status,
       },
     });

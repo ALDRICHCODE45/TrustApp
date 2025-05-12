@@ -51,7 +51,7 @@ import {
   LoaderCircle,
   CalendarIcon,
 } from "lucide-react";
-import { Lead, LeadStatus, User } from "@prisma/client";
+import { LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { deleteMayLeads } from "@/actions/leads/deleteLeads";
@@ -63,9 +63,10 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { LeadWithRelations } from "../kanban/page";
 
-const filterAnything: FilterFn<Lead> = (
-  row: Row<Lead>,
+const filterAnything: FilterFn<LeadWithRelations> = (
+  row: Row<LeadWithRelations>,
   columnId: string,
   filterValue: any,
   addMeta: (meta: any) => void,
@@ -74,9 +75,9 @@ const filterAnything: FilterFn<Lead> = (
 
   const searchTerm = filterValue.toLowerCase();
   return (
-    row.original.origen.toLowerCase().includes(searchTerm) ||
+    row.original.origen.nombre.toLowerCase().includes(searchTerm) ||
     //row.original.generadorId.toLowerCase().includes(searchTerm) ||
-    row.original.sector.toLowerCase().includes(searchTerm) ||
+    row.original.sector.nombre.toLowerCase().includes(searchTerm) ||
     row.original.empresa.toLowerCase().includes(searchTerm)
   );
 };
@@ -227,10 +228,10 @@ function TableFilters<TData extends { id: string }, TValue>({
                   <SelectItem value={LeadStatus.CitaValidada}>
                     Cita Validada
                   </SelectItem>
-                  <SelectItem value={LeadStatus.Cliente}>Cliente</SelectItem>
-                  <SelectItem value={LeadStatus.Eliminado}>
-                    Eliminado
+                  <SelectItem value={LeadStatus.Asignadas}>
+                    Asignadas
                   </SelectItem>
+                  <SelectItem value={LeadStatus.StandBy}>Eliminado</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

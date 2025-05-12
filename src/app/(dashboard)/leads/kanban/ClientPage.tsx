@@ -38,7 +38,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     useState<LeadWithRelations[]>(initialLeads);
   const [, setSelectedTask] = useState<Lead | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+  const [activeLead, setActiveLead] = useState<LeadWithRelations | null>(null);
 
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
@@ -64,7 +64,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       result = result.filter(
         (lead) =>
           lead.empresa.toLowerCase().includes(searchLower) ||
-          lead.sector.toLowerCase().includes(searchLower),
+          lead.sector.nombre.toLowerCase().includes(searchLower),
       );
     }
 
@@ -164,7 +164,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
           return `Error al actualizar`;
         },
       });
-      if (newStatus === LeadStatus.Cliente) {
+      if (newStatus === LeadStatus.Asignadas) {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 10000);
       }
@@ -292,7 +292,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
                   <h3 className="font-medium text-sm">{activeLead.empresa}</h3>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center">
                     <TagIcon className="h-3 w-3 mr-1" />
-                    {activeLead.sector}
+                    {activeLead.sector.nombre}
                   </p>
                 </div>
               </div>

@@ -37,7 +37,7 @@ const allowLeadStatus = [
   },
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar tu oficina el status a Cita Validada?",
+    description: "¿Quieres cambiar el status a Cita Validada?",
     onConfirmValule: LeadStatus.CitaValidada,
     oficeNumber: "Cita Validada",
     status: "Cita Validada",
@@ -46,7 +46,7 @@ const allowLeadStatus = [
 
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar tu oficina el status a Contacto Calido?",
+    description: "¿Quieres cambiar el status a Contacto Calido?",
     onConfirmValule: LeadStatus.ContactoCalido,
     oficeNumber: "Contacto Calido",
 
@@ -55,7 +55,7 @@ const allowLeadStatus = [
   },
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar tu oficina el status a Prospecto?",
+    description: "¿Quieres cambiar el status a Prospecto?",
     onConfirmValule: LeadStatus.Prospecto,
     oficeNumber: "Prospecto",
     status: "Prospecto",
@@ -63,7 +63,7 @@ const allowLeadStatus = [
   },
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar tu oficina el status a Social Selling?",
+    description: "¿Quieres cambiar el status a Social Selling?",
     onConfirmValule: LeadStatus.SocialSelling,
     oficeNumber: "Social Selling",
     status: "Social Selling",
@@ -71,8 +71,8 @@ const allowLeadStatus = [
   },
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar tu oficina el status a Cliente?",
-    onConfirmValule: LeadStatus.Cliente,
+    description: "¿Quieres cambiar el status a Cliente?",
+    onConfirmValule: LeadStatus.Asignadas,
     oficeNumber: "Cliente",
     status: "Cliente",
     icon: Award,
@@ -80,10 +80,10 @@ const allowLeadStatus = [
 
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres marcar como eliminado este Lead?",
-    onConfirmValule: LeadStatus.Eliminado,
-    oficeNumber: "Eliminado",
-    status: "Eliminado",
+    description: "¿Quieres cambiar el status a StandBy este Lead?",
+    onConfirmValule: LeadStatus.StandBy,
+    oficeNumber: "StandBy",
+    status: "StandBy",
     icon: CircleX,
   },
 ];
@@ -93,10 +93,10 @@ export const leadStatusMap: Record<LeadStatus, string> = {
   SocialSelling: "Social Selling",
   CitaValidada: "Cita Validada",
   CitaAgendada: "Cita Agendada",
-  Cliente: "Cliente",
+  Asignadas: "Asignadas",
   Contacto: "Contacto",
   Prospecto: "Prospecto",
-  Eliminado: "Eliminado"
+  StandBy: "StandBy",
 };
 
 export const LeadChangeStatus = ({

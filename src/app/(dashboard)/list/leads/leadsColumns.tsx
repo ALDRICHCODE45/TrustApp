@@ -7,13 +7,12 @@ import { LeadContactosSheet } from "./components/LeadContactosSheet";
 import { LeadChangeStatus } from "./components/LeadChangeStatus";
 import { GeneradorDropdownSelect } from "./components/GeneradorDropdownSelect";
 import { ChangeDateComponent } from "../reclutamiento/components/AsignacionDatePickerComponent";
-import { Lead, User, Person } from "@prisma/client";
 import { editLeadById } from "@/actions/leads/actions";
 import { toast } from "sonner";
+import { LeadWithRelations } from "../../leads/kanban/page";
+import { Button } from "@/components/ui/button";
 
-export const leadsColumns: ColumnDef<
-  Lead & { generadorLeads: User; contactos: Person[] }
->[] = [
+export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -56,10 +55,27 @@ export const leadsColumns: ColumnDef<
     id: "Origen",
     accessorKey: "origen",
     header: "Origen",
+    cell: ({ row }) => {
+      const origen = row.original.origen.nombre;
+
+      return (
+        <>
+          <Button variant="outline">{origen}</Button>
+        </>
+      );
+    },
   },
   {
     accessorKey: "sector",
     header: "Sector",
+    cell: ({ row }) => {
+      const sector = row.original.sector.nombre;
+      return (
+        <>
+          <Button variant="outline">{sector}</Button>
+        </>
+      );
+    },
   },
   {
     id: "generadorLeads",

@@ -53,7 +53,7 @@ const createDataByMonth = async (userId: string) => {
   const statusClientsChanges = await prisma.leadStatusHistory.findMany({
     where: {
       changedById: userId,
-      status: LeadStatus.Cliente,
+      status: LeadStatus.Asignadas,
       changedAt: {
         gte: startDate,
         lte: endDate,

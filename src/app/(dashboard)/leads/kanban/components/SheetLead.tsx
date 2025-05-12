@@ -23,8 +23,8 @@ export const getStatusColor = (status: LeadStatus) => {
     [LeadStatus.SocialSelling]: "bg-green-100 text-green-800",
     [LeadStatus.CitaValidada]: "bg-purple-100 text-purple-800",
     [LeadStatus.CitaAgendada]: "bg-indigo-100 text-indigo-800",
-    [LeadStatus.Cliente]: "bg-emerald-100 text-emerald-800",
-    [LeadStatus.Eliminado]: "bg-red-100 text-red-800",
+    [LeadStatus.Asignadas]: "bg-emerald-100 text-emerald-800",
+    [LeadStatus.StandBy]: "bg-red-100 text-red-800",
   };
   return statusColors[status];
 };
