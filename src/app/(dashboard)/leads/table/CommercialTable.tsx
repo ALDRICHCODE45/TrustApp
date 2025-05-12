@@ -221,7 +221,7 @@ function TableFilters<TData extends { id: string }, TValue>({
                   <SelectItem value={LeadStatus.Asignadas}>
                     Asignadas
                   </SelectItem>
-                  <SelectItem value={LeadStatus.StandBy}>Eliminado</SelectItem>
+                  <SelectItem value={LeadStatus.StandBy}>StandBy</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
