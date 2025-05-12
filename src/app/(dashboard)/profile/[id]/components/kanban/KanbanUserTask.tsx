@@ -1,17 +1,18 @@
-"use client";
-import React from "react";
 import { TaskStatus } from "@prisma/client";
-import TaskKanban from "./taskKanban";
-import { TaskWithRelations } from "./taskKanban";
+import { KanbanBoard } from "./taskKanban";
+import { TasksWithRelations } from "../../page";
 
-// Sample data for the demo
-interface Props {
-  initialTasks: TaskWithRelations[];
-}
-
-export default function KanbanUserTasks({ initialTasks }: Props) {
+// Create a wrapper component that will use the initialTasks provided by the parent
+export function TaskKanbanBoard({
+  initialTasks,
+}: {
+  initialTasks: TasksWithRelations[];
+}) {
   // This function would call your API to update task status
-  const handleTaskUpdate = async (taskId: string, newStatus: TaskStatus) => {
+  const handleTaskUpdate = async (
+    taskId: string,
+    newStatus: TaskStatus,
+  ): Promise<void> => {
     console.log(`Task ${taskId} status updated to ${newStatus}`);
     // Here you would call your API
     // const response = await fetch('/api/tasks/update-status', {
@@ -24,24 +25,30 @@ export default function KanbanUserTasks({ initialTasks }: Props) {
 
   // This function would call your API to update task order
   const handleTaskReorder = async (
-    tasks: TaskWithRelations[],
+    tasks: TasksWithRelations[],
   ): Promise<void> => {
+    console.log(
+      "Tasks reordered:",
+      tasks.map((t) => t.id),
+    );
     // Here you would call your API
     // const response = await fetch('/api/tasks/reorder', {
     //   method: 'PUT',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ tasks: tasks.map(t => ({ id: t.id, order: tasks.indexOf(t) })) })
+    //   body: JSON.stringify({ tasks: tasks.map((t, index) => ({ id: t.id, order: index })) })
     // });
     // if (!response.ok) throw new Error('Failed to reorder tasks');
   };
 
   return (
-    <div className="min-w-full flex justify-center items-center">
-      <TaskKanban
-        tasks={initialTasks}
-        onTaskUpdate={handleTaskUpdate}
-        onTaskReorder={handleTaskReorder}
-      />
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-6xl mx-auto">
+        <KanbanBoard
+          initialTasks={initialTasks}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskReorder={handleTaskReorder}
+        />
+      </div>
     </div>
   );
 }

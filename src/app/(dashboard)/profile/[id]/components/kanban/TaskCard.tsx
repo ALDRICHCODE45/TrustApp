@@ -1,12 +1,13 @@
+"use client";
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { format } from "date-fns";
 import { ClipboardCheck, Clock, CalendarClock } from "lucide-react";
-import { TaskWithRelations } from "./taskKanban";
+import { TasksWithRelations } from "../../page";
 
 interface TaskCardProps {
-  task: TaskWithRelations;
+  task: TasksWithRelations;
   isActive: boolean;
 }
 

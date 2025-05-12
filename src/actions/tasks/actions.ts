@@ -208,6 +208,7 @@ export const getTaskByDate = async (userId: string, date: string) => {
       where: {
         assignedToId: userId,
         dueDate: date,
+        status: TaskStatus.Pending,
       },
     });
     return {
