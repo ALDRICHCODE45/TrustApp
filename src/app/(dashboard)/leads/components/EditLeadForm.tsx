@@ -28,9 +28,10 @@ import { editLeadById } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { editLeadZodSchema } from "@/zod/editLeadSchema";
+import { LeadWithRelations } from "../kanban/page";
 
 interface EditLeadFormProps {
-  leadData: Lead & { generadorLeads: User; contactos: Person[] };
+  leadData: LeadWithRelations;
 }
 
 export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
@@ -54,14 +55,6 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
     shouldRevalidate: "onInput",
   });
 
-  const [fechaConectar, setFechaConectar] = useState<Date | undefined>(
-    leadData.fechaAConectar ? new Date(leadData.fechaAConectar) : undefined,
-  );
-
-  const [fechaProspectar, setFechaProspectar] = useState<Date | undefined>(
-    leadData.fechaProspeccion ? new Date(leadData.fechaProspeccion) : undefined,
-  );
-
   const [status, setStatus] = useState<LeadStatus>(leadData.status);
 
   return (
@@ -75,23 +68,6 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
             id={form.id}
             noValidate
           >
-            {fechaProspectar && (
-              <input
-                type="hidden"
-                name={fields.fechaProspeccion.name}
-                key={fields.fechaProspeccion.key}
-                value={fechaProspectar?.toISOString()}
-              />
-            )}
-
-            {fechaConectar && (
-              <input
-                type="hidden"
-                name={fields.fechaAConectar.name}
-                key={fields.fechaAConectar.key}
-                value={fechaConectar?.toISOString()}
-              />
-            )}
             {status && (
               <input
                 type="hidden"
@@ -131,35 +107,6 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                   defaultValue={leadData.link || undefined}
                 />
               </div>
-              <div className="flex-1 space-y-2">
-                <Label className="flex gap-2 items-center">
-                  <span>Fecha De Prospección</span>
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaProspectar ? (
-                        format(fechaProspectar, "EEE dd/MM/yy", { locale: es })
-                      ) : (
-                        <span>Selecciona una fecha</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto z-[9999] p-0">
-                    <Calendar
-                      mode="single"
-                      selected={fechaProspectar}
-                      onSelect={setFechaProspectar}
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
             </div>
 
             <div className="flex-1 space-y-2">
@@ -172,42 +119,11 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                 name={fields.sector.name}
                 placeholder="Sector"
                 type="text"
-                defaultValue={leadData.sector || undefined}
+                defaultValue={leadData.sector.nombre || undefined}
               />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row pt-3">
-              <div className="flex-1 space-y-2">
-                <Label className="flex gap-2 items-center">
-                  <span>Fecha De Conexión</span>
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="fecha-coneccion"
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaConectar ? (
-                        format(fechaConectar, "EEE dd/MM/yy", { locale: es })
-                      ) : (
-                        <span>Selecciona una fecha</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto z-[9999] p-0">
-                    <Calendar
-                      mode="single"
-                      selected={fechaConectar}
-                      onSelect={setFechaConectar}
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
               <div className="flex-1 space-y-2">
                 <Label className="flex gap-1 items-center">
                   <span>Status</span>

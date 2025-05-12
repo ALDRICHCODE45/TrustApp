@@ -11,6 +11,8 @@ import { editLeadById } from "@/actions/leads/actions";
 import { toast } from "sonner";
 import { LeadWithRelations } from "../../leads/kanban/page";
 import { Button } from "@/components/ui/button";
+import { format, isSameDay } from "date-fns";
+import { es } from "date-fns/locale";
 
 export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   {
@@ -40,15 +42,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     header: "Empresa",
     cell: ({ row }) => {
       const empresa = row.original.empresa;
-      return (
-        <div className="flex flex-row gap-2 items-center">
-          <Building
-            size={15}
-            className="hidden md:block text-black dark:text-white"
-          />
-          <span className="text-black dark:text-white">{empresa}</span>
-        </div>
-      );
+      return <span>{empresa}</span>;
     },
   },
   {
@@ -101,45 +95,34 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     },
   },
   {
-    accessorKey: "fechaProspeccion",
-    header: "Fecha Prospección",
+    accessorKey: "createdAt",
+    header: "Fecha Creación",
     cell: ({ row }) => {
-      const fecha = row.getValue("fechaProspeccion") as Date;
-
+      const fecha = row.original.createdAt;
       return (
-        <ChangeDateComponent
-          fecha={fecha}
-          onFechaChange={async (nuevaFecha) => {
-            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
-            const date = nuevaFecha.toISOString();
-            const formData = new FormData();
-            formData.append("fechaProspeccion", date);
-            try {
-              await editLeadById(row.original.id, formData);
-              toast.info("Fecha cambiada correctamente");
-            } catch (error) {
-              console.log(error);
-              toast.error("Error al actualizar el lead");
-            }
-          }}
-        />
+        <div className="text-center">
+          <Button variant="outline">
+            {format(new Date(fecha), "eee dd/MM/yyyy", { locale: es })}
+          </Button>
+        </div>
       );
     },
-    accessorFn: (row) => row.fechaProspeccion,
+    accessorFn: (row) => new Date(row.createdAt),
+    // Usar la función de filtro directamente en lugar de referirla por nombre
     filterFn: (row, columnId, filterValue) => {
       // Si no hay valor de filtro, mostrar todas las filas
       if (!filterValue) return true;
 
-      // Convertir ambas fechas al mismo formato para comparar
-      const rowDate = new Date(row.getValue(columnId));
-      const filterDate = new Date(filterValue);
+      // Obtener la fecha de los datos de la fila
+      const rowDate = row.getValue(columnId) as Date;
+      const rowDateObj = rowDate instanceof Date ? rowDate : new Date(rowDate);
 
-      // Comparar solo año, mes y día (ignorando horas, minutos, etc.)
-      return (
-        rowDate.getFullYear() === filterDate.getFullYear() &&
-        rowDate.getMonth() === filterDate.getMonth() &&
-        rowDate.getDate() === filterDate.getDate()
-      );
+      // Asegurar que el valor del filtro es un objeto Date
+      const filterDate =
+        filterValue instanceof Date ? filterValue : new Date(filterValue);
+
+      // Comparar solo año, mes y día usando isSameDay de date-fns
+      return isSameDay(rowDateObj, filterDate);
     },
   },
   {
@@ -152,45 +135,45 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       />
     ),
   },
-  {
-    accessorKey: "fechaAConectar",
-    header: "Fecha de Coneccion",
-    cell: ({ row }) => {
-      return (
-        <ChangeDateComponent
-          fecha={row.original.fechaAConectar}
-          onFechaChange={async (nuevaFecha) => {
-            // Aquí implementarías la lógica para actualizar de tu fuente de datos
-            const date = nuevaFecha.toISOString();
-            const formData = new FormData();
-            formData.append("fechaAConectar", date);
-            try {
-              await editLeadById(row.original.id, formData);
-              toast.success("Fecha de coneccion actualizada con exito");
-            } catch (err) {
-              toast.info("Error al editar el lead");
-            }
-          }}
-        />
-      );
-    },
-    accessorFn: (row) => row.fechaAConectar,
-    filterFn: (row, columnId, filterValue) => {
-      // Si no hay valor de filtro, mostrar todas las filas
-      if (!filterValue) return true;
-
-      // Convertir ambas fechas al mismo formato para comparar
-      const rowDate = new Date(row.getValue(columnId));
-      const filterDate = new Date(filterValue);
-
-      // Comparar solo año, mes y día (ignorando horas, minutos, etc.)
-      return (
-        rowDate.getFullYear() === filterDate.getFullYear() &&
-        rowDate.getMonth() === filterDate.getMonth() &&
-        rowDate.getDate() === filterDate.getDate()
-      );
-    },
-  },
+  // {
+  //   accessorKey: "fechaAConectar",
+  //   header: "Fecha de Coneccion",
+  //   cell: ({ row }) => {
+  //     return (
+  //       <ChangeDateComponent
+  //         fecha={row.original.fechaAConectar}
+  //         onFechaChange={async (nuevaFecha) => {
+  //           // Aquí implementarías la lógica para actualizar de tu fuente de datos
+  //           const date = nuevaFecha.toISOString();
+  //           const formData = new FormData();
+  //           formData.append("fechaAConectar", date);
+  //           try {
+  //             await editLeadById(row.original.id, formData);
+  //             toast.success("Fecha de coneccion actualizada con exito");
+  //           } catch (err) {
+  //             toast.info("Error al editar el lead");
+  //           }
+  //         }}
+  //       />
+  //     );
+  //   },
+  //   accessorFn: (row) => row.fechaAConectar,
+  //   filterFn: (row, columnId, filterValue) => {
+  //     // Si no hay valor de filtro, mostrar todas las filas
+  //     if (!filterValue) return true;
+  //
+  //     // Convertir ambas fechas al mismo formato para comparar
+  //     const rowDate = new Date(row.getValue(columnId));
+  //     const filterDate = new Date(filterValue);
+  //
+  //     // Comparar solo año, mes y día (ignorando horas, minutos, etc.)
+  //     return (
+  //       rowDate.getFullYear() === filterDate.getFullYear() &&
+  //       rowDate.getMonth() === filterDate.getMonth() &&
+  //       rowDate.getDate() === filterDate.getDate()
+  //     );
+  //   },
+  // },
   {
     accessorKey: "status",
     header: "Status",

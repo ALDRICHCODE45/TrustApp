@@ -30,7 +30,7 @@ interface KanbanFiltersProps {
 
 export interface FilterState {
   generadorId: string | null;
-  fechaProspeccion: Date | null;
+  fechaCreacion: Date | null;
   oficina: Oficina | null;
   searchTerm: string;
 }
@@ -41,7 +41,7 @@ export function KanbanFilters({
 }: KanbanFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
-    fechaProspeccion: null,
+    fechaCreacion: null,
     oficina: null,
     searchTerm: "",
   });
@@ -59,7 +59,7 @@ export function KanbanFilters({
   const clearFilters = () => {
     const resetFilters = {
       generadorId: null,
-      fechaProspeccion: null,
+      fechaCreacion: null,
       oficina: null,
       searchTerm: "",
     };
@@ -76,7 +76,7 @@ export function KanbanFilters({
 
   const hasActiveFilters =
     filters.generadorId ||
-    filters.fechaProspeccion ||
+    filters.fechaCreacion ||
     filters.oficina ||
     filters.searchTerm;
 
@@ -148,12 +148,12 @@ export function KanbanFilters({
               variant="outline"
               className={cn(
                 "w-[240px] justify-start text-left font-normal h-9",
-                !filters.fechaProspeccion && "text-muted-foreground",
+                !filters.fechaCreacion && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filters.fechaProspeccion ? (
-                format(filters.fechaProspeccion, "PPP", { locale: es })
+              {filters.fechaCreacion ? (
+                format(filters.fechaCreacion, "PPP", { locale: es })
               ) : (
                 <span>Fecha de prospección</span>
               )}
@@ -162,8 +162,8 @@ export function KanbanFilters({
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={filters.fechaProspeccion || undefined}
-              onSelect={(date) => handleFilterChange("fechaProspeccion", date)}
+              selected={filters.fechaCreacion || undefined}
+              onSelect={(date) => handleFilterChange("fechaCreacion", date)}
               initialFocus
             />
           </PopoverContent>

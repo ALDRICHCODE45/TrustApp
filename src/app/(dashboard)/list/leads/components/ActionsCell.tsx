@@ -18,7 +18,6 @@ import {
 import { useState } from "react";
 import { MoreHorizontal, SquarePen, Trash2 } from "lucide-react";
 import { Row } from "@tanstack/react-table";
-import { Lead, Person, User } from "@prisma/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,12 +32,9 @@ import {
 import { toast } from "sonner";
 import { deleteLeadById } from "@/actions/leads/actions";
 import { EditLeadForm } from "@/app/(dashboard)/leads/components/EditLeadForm";
+import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
 
-export const ActionsCell = ({
-  row,
-}: {
-  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
-}) => {
+export const ActionsCell = ({ row }: { row: Row<LeadWithRelations> }) => {
   // Estado para controlar la visibilidad del diálogo y del dropdown
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);

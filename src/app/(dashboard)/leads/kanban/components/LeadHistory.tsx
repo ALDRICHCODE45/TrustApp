@@ -20,7 +20,6 @@ export type LeadStatusRecord = {
 export interface FilterState {
   generadorId: string | null;
   oficina: Oficina | null;
-  fechaProspeccion: Date | null;
 }
 
 interface Props {
@@ -53,13 +52,11 @@ export default function LeadHistory({ generadores }: Props) {
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
     oficina: null,
-    fechaProspeccion: null,
   });
 
   // Limpiar filtros
   const cleanFilters = () => {
     setFilters({
-      fechaProspeccion: null,
       generadorId: null,
       oficina: null,
     });

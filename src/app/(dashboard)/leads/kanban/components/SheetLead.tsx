@@ -63,7 +63,7 @@ export function LeadSheet({ lead }: Props) {
                 <h3 className="text-sm font-medium ">Sector</h3>
                 <Badge variant="outline">
                   <p className="text-muted-foreground">
-                    {lead?.sector || "No especificado"}
+                    {lead?.sector.nombre || "No especificado"}
                   </p>
                 </Badge>
               </div>
@@ -71,36 +71,19 @@ export function LeadSheet({ lead }: Props) {
                 <h3 className="text-sm font-medium">Origen</h3>
                 <Badge variant="outline">
                   <p className="text-muted-foreground">
-                    {lead?.origen || "No especificado"}
+                    {lead?.origen.nombre || "No especificado"}
                   </p>
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <h3 className="text-sm font-medium">Fecha de Conexión</h3>
+                <h3 className="text-sm font-medium">Fecha de Creacion</h3>
                 <div className="flex items-center gap-1">
                   <Badge variant="outline">
                     <CalendarIcon className="h-3 w-3 mr-2" />
                     <span className="text-muted-foreground">
-                      {lead.fechaAConectar
-                        ? format(lead.fechaAConectar, "dd MMM yyyy", {
-                            locale: es,
-                          })
-                        : "No establecida"}
-                    </span>
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <h3 className="text-sm font-medium ">Fecha de Prospección</h3>
-                <div className="flex items-center gap-1">
-                  <Badge variant="outline">
-                    <CalendarIcon className="h-3 w-3 mr-2" />
-                    <span className="text-muted-foreground">
-                      {lead.fechaProspeccion
-                        ? format(lead.fechaProspeccion, "dd MMM yyyy", {
-                            locale: es,
-                          })
-                        : "No establecida"}
+                      {format(lead.createdAt, "dd MMM yyyy", {
+                        locale: es,
+                      })}
                     </span>
                   </Badge>
                 </div>

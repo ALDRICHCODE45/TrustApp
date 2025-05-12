@@ -96,8 +96,6 @@ model Lead {
   id               String     @id @default(cuid())
   empresa          String
   link             String
-  fechaProspeccion DateTime?
-  fechaAConectar   DateTime?
   status           LeadStatus @default(Contacto)
   contactos        Person[]
   createdAt        DateTime   @default(now())

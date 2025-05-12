@@ -50,6 +50,7 @@ import {
   Loader2,
   LoaderCircle,
   CalendarIcon,
+  X,
 } from "lucide-react";
 import { LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,8 +63,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { LeadWithRelations } from "../kanban/page";
+import { Badge } from "@/components/ui/badge";
 
 const filterAnything: FilterFn<LeadWithRelations> = (
   row: Row<LeadWithRelations>,
@@ -83,9 +85,9 @@ const filterAnything: FilterFn<LeadWithRelations> = (
 };
 
 // Tipos
-export interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+export interface DataTableProps<LeadWithRelations, TValue> {
+  columns: ColumnDef<LeadWithRelations, TValue>[];
+  data: LeadWithRelations[];
   defaultPageSize?: number;
   filterPlaceholder?: string;
   generadores: User[];
@@ -101,10 +103,8 @@ interface TableFiltersProps<TData, TValue> {
   currentGl: string;
   setCurrentGl: (newGl: string) => void;
   generadores: User[];
-  currentDateProspection: Date | undefined;
-  setCurrentDateProspection: (newDate: Date | undefined) => void;
-  currentDateConection: Date | undefined;
-  setCurrentDateConection: (newDate: Date | undefined) => void;
+  currentDateCreation: Date | undefined;
+  setCurrentDateCreation: (newDate: Date | undefined) => void;
 }
 
 function TableFilters<TData extends { id: string }, TValue>({
@@ -116,36 +116,20 @@ function TableFilters<TData extends { id: string }, TValue>({
   currentGl,
   setCurrentGl,
   generadores,
-  currentDateProspection,
-  setCurrentDateProspection,
-  currentDateConection,
-  setCurrentDateConection,
+  currentDateCreation,
+  setCurrentDateCreation,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
-    if (!currentDateProspection) {
-      table.getColumn("fechaProspeccion")?.setFilterValue(undefined);
-      setCurrentDateProspection(undefined);
+    if (!currentDateCreation) {
+      table.getColumn("createdAt")?.setFilterValue(undefined);
       return;
     }
 
-    setCurrentDateProspection(currentDateProspection);
-    table.getColumn("fechaProspeccion")?.setFilterValue(currentDateProspection);
+    table.getColumn("createdAt")?.setFilterValue(currentDateCreation);
     table.setPageIndex(0);
-  }, [currentDateProspection, setCurrentDateProspection]);
-
-  useEffect(() => {
-    if (!currentDateConection) {
-      table.getColumn("fechaAConectar")?.setFilterValue(undefined);
-      setCurrentDateConection(undefined);
-      return;
-    }
-
-    setCurrentDateConection(currentDateConection);
-    table.getColumn("fechaAConectar")?.setFilterValue(currentDateConection);
-    table.setPageIndex(0);
-  }, [currentDateConection, setCurrentDateConection]);
+  }, [currentDateCreation, table]);
 
   const handleDelete = async () => {
     setDeleteLoading(true);
@@ -163,6 +147,12 @@ function TableFilters<TData extends { id: string }, TValue>({
   };
 
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
+
+  const handleClearDateFilter = () => {
+    setCurrentDateCreation(undefined);
+    table.getColumn("createdAt")?.setFilterValue(undefined);
+    table.setPageIndex(0);
+  };
 
   return (
     <Card className="mb-6 mt-6 shadow-sm">
@@ -236,10 +226,11 @@ function TableFilters<TData extends { id: string }, TValue>({
               </SelectContent>
             </Select>
           </div>
-          {/* Filtro de fecha de coneccion */}
+
+          {/* Date filter */}
           <div className="space-y-2">
             <Label htmlFor="date-filter" className="text-sm font-medium">
-              Fecha de Prospección
+              Fecha de Creación
             </Label>
             <div className="flex flex-col gap-2">
               <Popover>
@@ -250,45 +241,8 @@ function TableFilters<TData extends { id: string }, TValue>({
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {currentDateProspection ? (
-                      format(currentDateProspection, "eee dd/M/yyyy", {
-                        locale: es,
-                      })
-                    ) : (
-                      <span>Seleccionar fechas</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={currentDateProspection}
-                    onSelect={setCurrentDateProspection}
-                    initialFocus
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
-
-              {/* Badge to show active filter with clear option */}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="date-filter" className="text-sm font-medium">
-              Fecha de coneccion
-            </Label>
-            <div className="flex flex-col gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    id="date-filter"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {currentDateConection ? (
-                      format(currentDateConection, "eee dd/M/yyyy", {
+                    {currentDateCreation ? (
+                      format(currentDateCreation, "eee dd/MM/yyyy", {
                         locale: es,
                       })
                     ) : (
@@ -299,15 +253,28 @@ function TableFilters<TData extends { id: string }, TValue>({
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={currentDateConection}
-                    onSelect={setCurrentDateConection}
+                    selected={currentDateCreation}
+                    onSelect={setCurrentDateCreation}
                     initialFocus
                     locale={es}
                   />
                 </PopoverContent>
               </Popover>
 
-              {/* Badge to show active filter with clear option */}
+              {/* Badge to show active date filter with clear option */}
+              {currentDateCreation && (
+                <Badge variant="outline" className="w-fit gap-1">
+                  {format(currentDateCreation, "dd/MM/yyyy", { locale: es })}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 p-0"
+                    onClick={handleClearDateFilter}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -573,7 +540,7 @@ function TablePagination<TData>({
 }
 
 // Componente principal
-export function CommercialTable<TData extends { id: string }, TValue>({
+export function CommercialTable<TData extends LeadWithRelations, TValue>({
   columns,
   data,
   defaultPageSize = 10,
@@ -589,11 +556,7 @@ export function CommercialTable<TData extends { id: string }, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
-  const [currentDateProspection, setCurrentDateProspection] = useState<
-    Date | undefined
-  >(undefined);
-
-  const [currentDateConection, setCurrentDateConection] = useState<
+  const [currentDateCreation, setCurrentDateCreation] = useState<
     Date | undefined
   >(undefined);
 
@@ -661,10 +624,8 @@ export function CommercialTable<TData extends { id: string }, TValue>({
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <TableFilters
-        setCurrentDateConection={setCurrentDateConection}
-        currentDateConection={currentDateConection}
-        setCurrentDateProspection={setCurrentDateProspection}
-        currentDateProspection={currentDateProspection}
+        setCurrentDateCreation={setCurrentDateCreation}
+        currentDateCreation={currentDateCreation}
         generadores={generadores}
         table={table}
         filterPlaceholder={filterPlaceholder}

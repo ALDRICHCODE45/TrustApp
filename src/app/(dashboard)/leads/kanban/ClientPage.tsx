@@ -42,7 +42,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
-    fechaProspeccion: null,
+    fechaCreacion: null,
     oficina: null,
     searchTerm: "",
   });
@@ -83,11 +83,11 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }
 
     // Filter by prospection date
-    if (filters.fechaProspeccion) {
+    if (filters.fechaCreacion) {
       result = result.filter(
         (lead) =>
-          lead.fechaProspeccion &&
-          isSameDay(new Date(lead.fechaProspeccion), filters.fechaProspeccion!),
+          lead.createdAt &&
+          isSameDay(new Date(lead.createdAt), filters.fechaCreacion!),
       );
     }
 
@@ -196,7 +196,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
       {/* Filter status indicator */}
       {filters.generadorId ||
-      filters.fechaProspeccion ||
+      filters.fechaCreacion ||
       filters.oficina ||
       filters.searchTerm ? (
         <div className="px-4 py-2 flex flex-wrap gap-2 text-black text-sm items-center">
@@ -246,17 +246,15 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
             </Badge>
           )}
 
-          {filters.fechaProspeccion && (
+          {filters.fechaCreacion && (
             <Badge
               variant="outline"
               className="flex items-center gap-1 px-3 py-1"
             >
-              <span>
-                Fecha: {format(filters.fechaProspeccion, "dd/MM/yyyy")}
-              </span>
+              <span>Fecha: {format(filters.fechaCreacion, "dd/MM/yyyy")}</span>
               <X
                 className="size-4 ml-1 cursor-pointer hover:text-red-500"
-                onClick={() => clearSingleFilter("fechaProspeccion")}
+                onClick={() => clearSingleFilter("fechaCreacion")}
               />
             </Badge>
           )}

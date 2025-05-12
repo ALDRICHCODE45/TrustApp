@@ -19,6 +19,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { editLeadById } from "@/actions/leads/actions";
 import { toast } from "sonner";
+import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
 
 const allowLeadStatus = [
   {
@@ -99,11 +100,7 @@ export const leadStatusMap: Record<LeadStatus, string> = {
   StandBy: "StandBy",
 };
 
-export const LeadChangeStatus = ({
-  row,
-}: {
-  row: Row<Lead & { generadorLeads: User; contactos: Person[] }>;
-}) => {
+export const LeadChangeStatus = ({ row }: { row: Row<LeadWithRelations> }) => {
   const status = row.original.status;
   const valueToDisplay = leadStatusMap[status];
 

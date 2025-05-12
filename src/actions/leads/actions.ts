@@ -99,8 +99,6 @@ export async function createLead(prevState: any, formData: FormData) {
     await prisma.lead.create({
       data: {
         empresa: submission.value.empresa,
-        fechaAConectar: submission.value.fechaAConectar,
-        fechaProspeccion: submission.value.fechaProspeccion,
         link: submission.value.link,
         origenId: origen!.id,
         sectorId: sector!.id,
@@ -172,10 +170,6 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       where: { id: leadId },
       data: {
         empresa: submission.value.empresa || existingLead.empresa,
-        fechaAConectar:
-          submission.value.fechaAConectar || existingLead.fechaAConectar,
-        fechaProspeccion:
-          submission.value.fechaProspeccion || existingLead.fechaProspeccion,
         generadorId: submission.value.generadorId || existingLead.generadorId,
         link: submission.value.link || existingLead.link,
         origenId: submission.value.origen || existingLead.origenId,

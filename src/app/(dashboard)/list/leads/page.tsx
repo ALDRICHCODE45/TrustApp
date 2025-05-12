@@ -1,4 +1,3 @@
-import { ReactElement } from "react";
 import { leadsColumns } from "./leadsColumns";
 import { CreateLeadForm } from "./components/CreateLeadForm";
 import { CommercialTable } from "@/app/(dashboard)/leads/table/CommercialTable";
@@ -7,6 +6,8 @@ import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Metadata } from "next";
+import { ColumnDef } from "@tanstack/react-table";
+import { LeadWithRelations } from "../../leads/kanban/page";
 
 interface pageProps {}
 
@@ -14,15 +15,24 @@ export const metadata: Metadata = {
   title: "Trust | Leads",
 };
 
-const fetchData = async () => {
+const fetchData = async (): Promise<{
+  data: LeadWithRelations[];
+  columns: ColumnDef<LeadWithRelations>[];
+}> => {
   const leads = await prisma.lead.findMany({
     include: {
       generadorLeads: true,
       contactos: true,
       sector: true,
       origen: true,
+      statusHistory: {
+        include: {
+          changedBy: true,
+        },
+      },
     },
   });
+
   return {
     columns: leadsColumns,
     data: leads,
@@ -63,15 +73,26 @@ const fetchOrigenes = async () => {
   }
 };
 
-export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
+export default async function LeadsPage({}: pageProps) {
   const { columns, data } = await fetchData();
   const session = await auth();
+
   const generadores = await fetchGeneradores();
 
   const sectores = await fetchSectores();
   const origenes = await fetchOrigenes();
 
+  if (!session) {
+    throw new Error("User does not exists");
+  }
+
   checkRoleRedirect(session?.user.role as Role, [Role.Admin, Role.GL, Role.MK]);
+
+  const isAdmin = session?.user.role === Role.Admin;
+  const activeUser = {
+    name: session.user.name,
+    id: session.user.id,
+  };
 
   return (
     <>
@@ -80,6 +101,8 @@ export default async function LeadsPage({}: pageProps): Promise<ReactElement> {
       {/* <ToastAlerts /> */}
 
       <CreateLeadForm
+        isAdmin={isAdmin}
+        activeUser={activeUser}
         sectores={sectores}
         generadores={generadores}
         origenes={origenes}
