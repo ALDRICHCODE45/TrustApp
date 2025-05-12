@@ -36,6 +36,7 @@ interface EditLeadFormProps {
 }
 
 export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
+  console.log({ leadData });
   const wrapEditLead = (leadId: string) => {
     return async (_prevState: any, formData: FormData) => {
       return await editLeadById(leadId, formData);
@@ -44,6 +45,8 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
 
   const [sectores, setSectores] = useState<Sector[] | null>(null);
   const [origenes, setOrigenes] = useState<LeadOrigen[] | null>(null);
+  const [link, setLink] = useState(leadData.link);
+  const [empresa, setEmpresa] = useState(leadData.empresa);
 
   const [selectedSector, setSelectedSector] = useState<Sector | null>(
     leadData.sector,
@@ -84,8 +87,14 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: editLeadZodSchema });
     },
+    defaultValue: {
+      empresa: empresa,
+      link: link,
+      status: leadData.status,
+      sector: selectedSector?.id,
+      origen: selectedOrigen?.id,
+    },
     shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
   });
 
   const handleSelectSector = (sector: Sector) => {
@@ -121,25 +130,27 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
             {/* Empresa y Página Web */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-1/2">
-                <Label htmlFor={fields.empresa.id}>Empresa</Label>
+                <Label>Empresa</Label>
                 <Input
                   id={fields.empresa.id}
                   name={fields.empresa.name}
                   key={fields.empresa.key}
                   placeholder="Empresa"
                   type="text"
-                  defaultValue={leadData.empresa || ""}
+                  defaultValue={empresa}
+                  onChange={(e) => setEmpresa(e.target.value)}
                 />
               </div>
               <div className="w-full sm:w-1/2">
-                <Label htmlFor={fields.link.id}>Página Web</Label>
+                <Label>Página Web</Label>
                 <Input
                   id={fields.link.id}
                   name={fields.link.name}
                   key={fields.link.key}
                   placeholder="https://"
                   type="text"
-                  defaultValue={leadData.link || ""}
+                  defaultValue={link}
+                  onChange={(e) => setLink(e.target.value)}
                 />
               </div>
             </div>
