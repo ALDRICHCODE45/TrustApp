@@ -155,7 +155,7 @@ export function KanbanFilters({
               {filters.fechaCreacion ? (
                 format(filters.fechaCreacion, "PPP", { locale: es })
               ) : (
-                <span>Fecha de prospección</span>
+                <span>Fecha de Creacion</span>
               )}
             </Button>
           </PopoverTrigger>

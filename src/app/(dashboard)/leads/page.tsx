@@ -21,6 +21,11 @@ const fetchData = async (): Promise<{
       origen: true,
       sector: true,
       contactos: true,
+      statusHistory: {
+        include: {
+          changedBy: true,
+        },
+      },
     },
     orderBy: {
       updatedAt: "desc",

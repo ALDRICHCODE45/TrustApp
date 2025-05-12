@@ -135,45 +135,6 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       />
     ),
   },
-  // {
-  //   accessorKey: "fechaAConectar",
-  //   header: "Fecha de Coneccion",
-  //   cell: ({ row }) => {
-  //     return (
-  //       <ChangeDateComponent
-  //         fecha={row.original.fechaAConectar}
-  //         onFechaChange={async (nuevaFecha) => {
-  //           // Aquí implementarías la lógica para actualizar de tu fuente de datos
-  //           const date = nuevaFecha.toISOString();
-  //           const formData = new FormData();
-  //           formData.append("fechaAConectar", date);
-  //           try {
-  //             await editLeadById(row.original.id, formData);
-  //             toast.success("Fecha de coneccion actualizada con exito");
-  //           } catch (err) {
-  //             toast.info("Error al editar el lead");
-  //           }
-  //         }}
-  //       />
-  //     );
-  //   },
-  //   accessorFn: (row) => row.fechaAConectar,
-  //   filterFn: (row, columnId, filterValue) => {
-  //     // Si no hay valor de filtro, mostrar todas las filas
-  //     if (!filterValue) return true;
-  //
-  //     // Convertir ambas fechas al mismo formato para comparar
-  //     const rowDate = new Date(row.getValue(columnId));
-  //     const filterDate = new Date(filterValue);
-  //
-  //     // Comparar solo año, mes y día (ignorando horas, minutos, etc.)
-  //     return (
-  //       rowDate.getFullYear() === filterDate.getFullYear() &&
-  //       rowDate.getMonth() === filterDate.getMonth() &&
-  //       rowDate.getDate() === filterDate.getDate()
-  //     );
-  //   },
-  // },
   {
     accessorKey: "status",
     header: "Status",

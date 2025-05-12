@@ -2,14 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { useActionState, useState } from "react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { useActionState, useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -19,16 +14,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Lead, LeadStatus, Person, User } from "@prisma/client";
-import { Calendar } from "@/components/ui/calendar";
-import { es } from "date-fns/locale";
-import { format } from "date-fns";
+import { LeadOrigen, LeadStatus, Sector } from "@prisma/client";
 import { Separator } from "@/components/ui/separator";
 import { editLeadById } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { editLeadZodSchema } from "@/zod/editLeadSchema";
 import { LeadWithRelations } from "../kanban/page";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { getAllOrigenes, getAllSectores } from "@/actions/sectores/actions";
 
 interface EditLeadFormProps {
   leadData: LeadWithRelations;
@@ -40,6 +41,38 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
       return await editLeadById(leadId, formData);
     };
   };
+
+  const [sectores, setSectores] = useState<Sector[] | null>(null);
+  const [origenes, setOrigenes] = useState<LeadOrigen[] | null>(null);
+
+  const [selectedSector, setSelectedSector] = useState<Sector | null>(
+    leadData.sector,
+  );
+  const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(
+    leadData.origen,
+  );
+
+  useEffect(() => {
+    const getSectores = async () => {
+      try {
+        const sectores = await getAllSectores();
+        setSectores(sectores);
+      } catch (err) {
+        throw new Error("No se pueden obtener los sectores");
+      }
+    };
+
+    const getOrigenes = async () => {
+      try {
+        const origenes = await getAllOrigenes();
+        setOrigenes(origenes);
+      } catch (err) {
+        throw new Error("No se pueden obtener los origenes");
+      }
+    };
+    getSectores();
+    getOrigenes();
+  }, []);
 
   const [lastResult, formAction, isPending] = useActionState(
     wrapEditLead(String(leadData.id)),
@@ -55,6 +88,14 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
     shouldRevalidate: "onInput",
   });
 
+  const handleSelectSector = (sector: Sector) => {
+    setSelectedSector(sector);
+  };
+
+  const handleSelecteOrigen = (origen: LeadOrigen) => {
+    setSelectedOrigen(origen);
+  };
+
   const [status, setStatus] = useState<LeadStatus>(leadData.status);
 
   return (
@@ -62,7 +103,7 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
       <div className="overflow-y-auto">
         <div className="px-6 pb-6 pt-4">
           <form
-            className="space-y-4"
+            className="space-y-6"
             onSubmit={form.onSubmit}
             action={formAction}
             id={form.id}
@@ -77,101 +118,148 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
               />
             )}
 
-            <div className="">
-              <div className="flex-1 space-y-2">
-                <Label className="flex gap-2 items-center">
-                  <span>Empresa</span>
-                </Label>
+            {/* Empresa y Página Web */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="w-full sm:w-1/2">
+                <Label htmlFor={fields.empresa.id}>Empresa</Label>
                 <Input
                   id={fields.empresa.id}
                   name={fields.empresa.name}
                   key={fields.empresa.key}
                   placeholder="Empresa"
                   type="text"
-                  defaultValue={leadData.empresa || undefined}
+                  defaultValue={leadData.empresa || ""}
                 />
               </div>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row pt-3">
-              <div className="flex-1 space-y-2">
-                <Label className="flex gap-2 items-center">
-                  <span>Pagina Web</span>
-                </Label>
+              <div className="w-full sm:w-1/2">
+                <Label htmlFor={fields.link.id}>Página Web</Label>
                 <Input
                   id={fields.link.id}
                   name={fields.link.name}
                   key={fields.link.key}
                   placeholder="https://"
                   type="text"
-                  defaultValue={leadData.link || undefined}
+                  defaultValue={leadData.link || ""}
                 />
               </div>
             </div>
 
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="sector" className="flex gap-2 items-center">
-                <span>Sector</span>
-              </Label>
-              <Input
-                id={fields.sector.id}
-                key={fields.sector.key}
-                name={fields.sector.name}
-                placeholder="Sector"
-                type="text"
-                defaultValue={leadData.sector.nombre || undefined}
-              />
-            </div>
+            {/* Sector y Status */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Sector */}
+              <div className="w-full sm:w-1/2">
+                <Label className="mb-2 block">Sector</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full text-left">
+                      {selectedSector?.nombre || "Selecciona sector"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-auto">
+                    <DropdownMenuLabel>Sectores</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {sectores?.map((sector) => (
+                      <DropdownMenuItem
+                        key={sector.nombre}
+                        onSelect={() => handleSelectSector(sector)}
+                        className="cursor-pointer"
+                      >
+                        {sector.nombre}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {selectedSector && (
+                  <input
+                    type="hidden"
+                    name={fields.sector.name}
+                    key={fields.sector.key}
+                    value={selectedSector.id}
+                  />
+                )}
+              </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row pt-3">
-              <div className="flex-1 space-y-2">
-                <Label className="flex gap-1 items-center">
-                  <span>Status</span>
+              {/* Status */}
+              <div className="w-full sm:w-1/2">
+                <Label htmlFor="status" className="mb-2 block">
+                  Status
                 </Label>
-                <div>
-                  <Select
-                    defaultValue={leadData.status}
-                    onValueChange={(val) => setStatus(val as LeadStatus)}
-                  >
-                    <SelectTrigger id="status" className="w-full">
-                      <SelectValue placeholder="Status..." />
-                    </SelectTrigger>
-                    <SelectContent className="z-[999]">
-                      <SelectGroup>
-                        <SelectLabel>Status</SelectLabel>
-                        <Separator />
-                        <SelectItem value={LeadStatus.SocialSelling}>
-                          S.S
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.ContactoCalido}>
-                          C.C
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.Contacto}>
-                          Contacto
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.CitaAgendada}>
-                          C.A
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.CitaValidada}>
-                          C.V
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.Prospecto}>
-                          Prospecto
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.Asignadas}>
-                          Asignadas
-                        </SelectItem>
-                        <SelectItem value={LeadStatus.StandBy}>
-                          Stand By
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select
+                  defaultValue={leadData.status}
+                  onValueChange={(val) => setStatus(val as LeadStatus)}
+                >
+                  <SelectTrigger id="status" className="w-full">
+                    <SelectValue placeholder="Status..." />
+                  </SelectTrigger>
+                  <SelectContent className="z-[999]">
+                    <SelectGroup>
+                      <SelectLabel>Status</SelectLabel>
+                      <Separator />
+                      <SelectItem value={LeadStatus.SocialSelling}>
+                        S.S
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.ContactoCalido}>
+                        C.C
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.Contacto}>
+                        Contacto
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.CitaAgendada}>
+                        C.A
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.CitaValidada}>
+                        C.V
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.Prospecto}>
+                        Prospecto
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.Asignadas}>
+                        Asignadas
+                      </SelectItem>
+                      <SelectItem value={LeadStatus.StandBy}>
+                        Stand By
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+            <div className="flex flex-col gap-3 w-full">
+              <Label>Origen</Label>
 
-            <div className="border-t border-border mt-6 pt-4 flex justify-end space-x-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    {selectedOrigen?.nombre || "Selecciona un origen"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-scroll">
+                  <DropdownMenuLabel>Origenes</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {origenes?.map((origen) => (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      key={origen.nombre}
+                      onSelect={() => handleSelecteOrigen(origen)}
+                    >
+                      {origen.nombre}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {selectedOrigen && (
+                <input
+                  type="hidden"
+                  name={fields.origen.name}
+                  key={fields.origen.key}
+                  value={selectedOrigen.id}
+                />
+              )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="border-t border-border pt-6 flex justify-end gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   Cancelar

@@ -31,16 +31,15 @@ export function LeadCard({ leadId, lead }: LeadCardProps) {
   // Función para obtener el color del badge según el estado
   const getStatusColor = (status: LeadStatus) => {
     const statusColors = {
-      Contacto: "bg-slate-500 hover:bg-slate-600",
-      SocialSelling: "bg-blue-500 hover:bg-blue-600",
-      ContactoCalido: "bg-yellow-500 hover:bg-yellow-600",
-      Prospecto: "bg-orange-500 hover:bg-orange-600",
-      CitaAgendada: "bg-purple-500 hover:bg-purple-600",
-      CitaValidada: "bg-pink-500 hover:bg-pink-600",
-      Cliente: "bg-green-500 hover:bg-green-600",
-      Eliminado: "bg-red-500 hover:bg-red-600",
+      [LeadStatus.Contacto]: "bg-slate-500 hover:bg-slate-600",
+      [LeadStatus.SocialSelling]: "bg-blue-500 hover:bg-blue-600",
+      [LeadStatus.ContactoCalido]: "bg-yellow-500 hover:bg-yellow-600",
+      [LeadStatus.Prospecto]: "bg-orange-500 hover:bg-orange-600",
+      [LeadStatus.CitaAgendada]: "bg-purple-500 hover:bg-purple-600",
+      [LeadStatus.CitaValidada]: "bg-pink-500 hover:bg-pink-600",
+      [LeadStatus.Asignadas]: "bg-green-500 hover:bg-green-600",
+      [LeadStatus.StandBy]: "bg-red-500 hover:bg-red-600",
     };
-
     return statusColors[status] || "bg-gray-500";
   };
 
