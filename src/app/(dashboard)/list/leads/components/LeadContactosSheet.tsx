@@ -118,7 +118,7 @@ export function LeadContactosSheet({
           )}
         </div>
         <div className="flex-1 space-y-2">
-          <Label htmlFor={fields.position.id}>Puesto</Label>
+          <Label htmlFor={fields.position.id}>Posición</Label>
           <Input
             id={fields.position.id}
             name={fields.position.name}
