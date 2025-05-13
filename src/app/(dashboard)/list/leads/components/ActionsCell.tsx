@@ -50,7 +50,6 @@ export const ActionsCell = ({ row }: { row: Row<LeadWithRelations> }) => {
       await deleteLeadById(row.original.id);
       toast.success("Lead eliminado con éxito");
     } catch (error) {
-      console.log(error);
       toast.error("Error al eliminar el lead");
     }
   };

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -17,9 +17,6 @@ import {
 import { LeadOrigen, LeadStatus, Sector } from "@prisma/client";
 import { Separator } from "@/components/ui/separator";
 import { editLeadById } from "@/actions/leads/actions";
-import { useForm } from "@conform-to/react";
-import { parseWithZod } from "@conform-to/zod";
-import { editLeadZodSchema } from "@/zod/editLeadSchema";
 import { LeadWithRelations } from "../kanban/page";
 import {
   DropdownMenu,
@@ -30,18 +27,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getAllOrigenes, getAllSectores } from "@/actions/sectores/actions";
+import { toast } from "sonner"; // Import toast from sonner or your preferred toast library
 
 interface EditLeadFormProps {
   leadData: LeadWithRelations;
 }
 
 export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
-  console.log({ leadData });
-  const wrapEditLead = (leadId: string) => {
-    return async (_prevState: any, formData: FormData) => {
-      return await editLeadById(leadId, formData);
-    };
-  };
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [sectores, setSectores] = useState<Sector[] | null>(null);
   const [origenes, setOrigenes] = useState<LeadOrigen[] | null>(null);
@@ -54,6 +48,7 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(
     leadData.origen,
   );
+  const [status, setStatus] = useState<LeadStatus>(leadData.status);
 
   useEffect(() => {
     const getSectores = async () => {
@@ -61,7 +56,7 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
         const sectores = await getAllSectores();
         setSectores(sectores);
       } catch (err) {
-        throw new Error("No se pueden obtener los sectores");
+        toast.error("No se pueden obtener los sectores");
       }
     };
 
@@ -70,32 +65,12 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
         const origenes = await getAllOrigenes();
         setOrigenes(origenes);
       } catch (err) {
-        throw new Error("No se pueden obtener los origenes");
+        toast.error("No se pueden obtener los origenes");
       }
     };
     getSectores();
     getOrigenes();
   }, []);
-
-  const [lastResult, formAction, isPending] = useActionState(
-    wrapEditLead(String(leadData.id)),
-    undefined,
-  );
-
-  const [form, fields] = useForm({
-    lastResult,
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: editLeadZodSchema });
-    },
-    defaultValue: {
-      empresa: empresa,
-      link: link,
-      status: leadData.status,
-      sector: selectedSector?.id,
-      origen: selectedOrigen?.id,
-    },
-    shouldValidate: "onBlur",
-  });
 
   const handleSelectSector = (sector: Sector) => {
     setSelectedSector(sector);
@@ -105,51 +80,56 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
     setSelectedOrigen(origen);
   };
 
-  const [status, setStatus] = useState<LeadStatus>(leadData.status);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsPending(true);
+    setError(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+
+      formData.set("status", status);
+      if (selectedSector) formData.set("sector", selectedSector.id);
+      if (selectedOrigen) formData.set("origen", selectedOrigen.id);
+
+      await editLeadById(String(leadData.id), formData);
+      toast.success("Lead actualizado correctamente");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al editar el lead";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <>
       <div className="overflow-y-auto">
         <div className="px-6 pb-6 pt-4">
-          <form
-            className="space-y-6"
-            onSubmit={form.onSubmit}
-            action={formAction}
-            id={form.id}
-            noValidate
-          >
-            {status && (
-              <input
-                type="hidden"
-                name={fields.status.name}
-                key={fields.status.key}
-                value={status}
-              />
-            )}
-
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {/* Empresa y Página Web */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-1/2">
-                <Label>Empresa</Label>
+                <Label htmlFor="empresa">Empresa</Label>
                 <Input
-                  id={fields.empresa.id}
-                  name={fields.empresa.name}
-                  key={fields.empresa.key}
+                  id="empresa"
+                  name="empresa"
                   placeholder="Empresa"
                   type="text"
-                  defaultValue={empresa}
+                  value={empresa}
                   onChange={(e) => setEmpresa(e.target.value)}
                 />
               </div>
               <div className="w-full sm:w-1/2">
-                <Label>Página Web</Label>
+                <Label htmlFor="link">Página Web</Label>
                 <Input
-                  id={fields.link.id}
-                  name={fields.link.name}
-                  key={fields.link.key}
+                  id="link"
+                  name="link"
                   placeholder="https://"
                   type="text"
-                  defaultValue={link}
+                  value={link}
                   onChange={(e) => setLink(e.target.value)}
                 />
               </div>
@@ -180,14 +160,6 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {selectedSector && (
-                  <input
-                    type="hidden"
-                    name={fields.sector.name}
-                    key={fields.sector.key}
-                    value={selectedSector.id}
-                  />
-                )}
               </div>
 
               {/* Status */}
@@ -196,7 +168,7 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                   Status
                 </Label>
                 <Select
-                  defaultValue={leadData.status}
+                  value={status}
                   onValueChange={(val) => setStatus(val as LeadStatus)}
                 >
                   <SelectTrigger id="status" className="w-full">
@@ -258,15 +230,6 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {selectedOrigen && (
-                <input
-                  type="hidden"
-                  name={fields.origen.name}
-                  key={fields.origen.key}
-                  value={selectedOrigen.id}
-                />
-              )}
             </div>
 
             {/* Botones de acción */}

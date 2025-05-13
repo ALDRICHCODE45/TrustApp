@@ -1,7 +1,7 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
-import { Building, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
 import { LeadContactosSheet } from "./components/LeadContactosSheet";
 import { LeadChangeStatus } from "./components/LeadChangeStatus";
