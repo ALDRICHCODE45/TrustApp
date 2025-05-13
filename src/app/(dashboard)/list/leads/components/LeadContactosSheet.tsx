@@ -20,12 +20,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Loader2, PlusIcon, Users, UserX } from "lucide-react";
-import { Person } from "@prisma/client";
 import { createLeadPerson } from "@/actions/person/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { createLeadPersonSchema } from "@/zod/createLeadPersonSchema";
-import { ContactoCard } from "@/app/(dashboard)/leads/components/ContactCard";
+import {
+  ContactoCard,
+  ContactWithRelations,
+} from "@/app/(dashboard)/leads/components/ContactCard";
 import {
   Drawer,
   DrawerContent,
@@ -39,7 +41,7 @@ export function LeadContactosSheet({
   contactos,
   leadId,
 }: {
-  contactos: Person[];
+  contactos: ContactWithRelations[];
   leadId: string;
 }) {
   const [isMobile, setIsMobile] = useState(false);

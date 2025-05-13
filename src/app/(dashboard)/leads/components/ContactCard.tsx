@@ -1,10 +1,24 @@
 "use client";
-import { useState } from "react";
-import { Mail, MoreVertical, Edit, Trash2, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Mail,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Loader2,
+  GalleryHorizontalEnd,
+  MessageSquare,
+  Download,
+  PaperclipIcon,
+  FileText,
+  X,
+  Plus,
+} from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Person } from "@prisma/client";
+import { ContactInteraction, Person, Prisma } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +40,73 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { deleteContactById, editLeadPerson } from "@/actions/person/actions";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  ContactInteractionWithRelations,
+  createInteraction,
+  getAllContactInteractionsByContactId,
+} from "@/actions/leadSeguimiento/ations";
 
 // Definición de tipos
-
 interface ContactoCardProps {
-  contacto: Person;
+  contacto: ContactWithRelations;
+}
+
+export type ContactWithRelations = Prisma.PersonGetPayload<{
+  include: {
+    interactions: {
+      include: {
+        autor: true;
+        contacto: true;
+      };
+    };
+  };
+}>;
+
+// Función para crear una nueva interacción con un contacto
+async function createContactInteraction(
+  contactoId: string,
+  content: string,
+  attachment?: File,
+) {
+  try {
+    const formData = new FormData();
+    formData.append("contactoId", contactoId);
+    formData.append("content", content);
+
+    if (attachment) {
+      formData.append("attachment", attachment);
+    }
+
+    const response = await createInteraction(formData);
+  } catch (error) {
+    console.error("Error creating interaction:", error);
+    throw new Error("Error al crear la interacción");
+  }
+}
+
+// Función para obtener el historial de interacciones
+async function getContactInteractions(contactoId: string) {
+  try {
+    // Datos de ejemplo
+    const interactionsDemo: ContactInteractionWithRelations[] =
+      await getAllContactInteractionsByContactId(contactoId);
+
+    return interactionsDemo;
+  } catch (error) {
+    console.error("Error fetching interactions:", error);
+    throw new Error("Error al obtener las interacciones");
+  }
 }
 
 export const ContactoCard = ({ contacto }: ContactoCardProps) => {
+  console.log({ contacto });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
+  const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -105,6 +176,13 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                 <Trash2 />
                 <span>Eliminar</span>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setOpenSeguimiento(true)}
+                className="text-blue-500 cursor-pointer "
+              >
+                <GalleryHorizontalEnd />
+                <span>Seguimiento</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
@@ -119,6 +197,13 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
           </div>
         </CardContent>
       </Card>
+
+      <SeguimientoContacto
+        initialInteractions={contacto.interactions ?? []}
+        onOpenChange={setOpenSeguimiento}
+        open={openSeguimiento}
+        contacto={contacto}
+      />
 
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent>
@@ -184,5 +269,231 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
         </DialogContent>
       </Dialog>
     </>
+  );
+};
+
+interface SeguimientoContactoProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  contacto: Person;
+  initialInteractions: ContactInteractionWithRelations[];
+}
+
+export const SeguimientoContacto = ({
+  open,
+  onOpenChange,
+  contacto,
+  initialInteractions,
+}: SeguimientoContactoProps) => {
+  const [interactions, setInteractions] =
+    useState<ContactInteractionWithRelations[]>(initialInteractions);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [newContent, setNewContent] = useState<string>("");
+  const [attachment, setAttachment] = useState<File | null>(null);
+
+  // Manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!newContent.trim()) {
+      toast.error("El contenido no puede estar vacío");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const newInteraction = await createContactInteraction(
+        contacto.id,
+        newContent,
+        attachment || undefined,
+      );
+
+      setNewContent("");
+      setAttachment(null);
+      toast.success("Interacción registrada con éxito");
+    } catch (error) {
+      toast.error("Error al registrar la interacción");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Manejar selección de archivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachment(e.target.files[0]);
+    }
+  };
+
+  // Formatear fecha
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            Seguimiento de contacto: {contacto.name}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4">
+          {/* Formulario para agregar nueva interacción */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="content">Nueva interacción</Label>
+              <Textarea
+                id="content"
+                placeholder="Describe la interacción con este contacto..."
+                rows={3}
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                disabled={submitting}
+                required
+                className="resize-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Label htmlFor="attachment" className="cursor-pointer">
+                <div className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-md text-sm">
+                  <PaperclipIcon className="h-4 w-4" />
+                  {attachment ? "Cambiar archivo" : "Adjuntar archivo"}
+                </div>
+                <input
+                  type="file"
+                  id="attachment"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  disabled={submitting}
+                />
+              </Label>
+
+              {attachment && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                  <FileText className="h-4 w-4" />
+                  <span className="truncate max-w-xs">{attachment.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={() => setAttachment(null)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
+              <div className="ml-auto">
+                <Button
+                  type="submit"
+                  disabled={submitting || !newContent.trim()}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Registrar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </form>
+
+          <Separator />
+
+          {/* Historial de interacciones */}
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium mb-6">
+              Historial de interacciones
+            </h3>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : interactions?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No hay interacciones registradas con este contacto.</p>
+                <p className="text-sm">
+                  Registra la primera interacción arriba.
+                </p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[calc(50vh-200px)] pr-4">
+                <div className="space-y-4">
+                  {interactions.map((interaction) => (
+                    <Card
+                      key={interaction.id}
+                      className="border-l-2 border-l-primary"
+                    >
+                      <CardHeader className="py-3 px-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7 rounded-full overflow-hidden">
+                              <AvatarImage
+                                src={interaction.autor.image || ""}
+                                className="rounded-full object-cover"
+                              />
+                              <AvatarFallback>
+                                {interaction.autor.name
+                                  .substring(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-sm font-medium">
+                                {interaction.autor.name}
+                              </CardTitle>
+                              <CardDescription className="text-xs">
+                                {formatDate(interaction.createdAt)}
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="py-2 px-4">
+                        <p className="text-sm whitespace-pre-wrap">
+                          {interaction.content}
+                        </p>
+                      </CardContent>
+                      {interaction.attachmentUrl && (
+                        <CardFooter className="py-2 px-4">
+                          <a
+                            href={interaction.attachmentUrl}
+                            download={interaction.attachmentName || true}
+                            className="flex items-center gap-2 text-xs text-primary hover:underline"
+                          >
+                            <Download className="h-3 w-3" />
+                            {interaction.attachmentName || "Archivo adjunto"}
+                          </a>
+                        </CardFooter>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

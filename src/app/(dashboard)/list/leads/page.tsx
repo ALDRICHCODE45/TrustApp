@@ -22,7 +22,16 @@ const fetchData = async (): Promise<{
   const leads = await prisma.lead.findMany({
     include: {
       generadorLeads: true,
-      contactos: true,
+      contactos: {
+        include: {
+          interactions: {
+            include: {
+              contacto: true,
+              autor: true,
+            },
+          },
+        },
+      },
       sector: true,
       origen: true,
       statusHistory: {

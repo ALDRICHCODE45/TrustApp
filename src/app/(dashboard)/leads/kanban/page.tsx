@@ -13,7 +13,16 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
     sector: true;
     origen: true;
     generadorLeads: true;
-    contactos: true;
+    contactos: {
+      include: {
+        interactions: {
+          include: {
+            contacto: true;
+            autor: true;
+          };
+        };
+      };
+    };
     statusHistory: {
       include: {
         changedBy: true;
@@ -27,7 +36,16 @@ const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
     const leads = await prisma.lead.findMany({
       include: {
         generadorLeads: true,
-        contactos: true,
+        contactos: {
+          include: {
+            interactions: {
+              include: {
+                autor: true,
+                contacto: true,
+              },
+            },
+          },
+        },
         sector: true,
         origen: true,
         statusHistory: {

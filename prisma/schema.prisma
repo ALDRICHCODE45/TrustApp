@@ -2,7 +2,6 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -42,15 +41,14 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role      @default(reclutador) // Valor por defecto
-
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Lead      Lead[]
   Comment   Comment[]
   Task      Task[]
   LeadStatusHistory   LeadStatusHistory[] // Nueva relación
+  ContactInteraction  ContactInteraction[] // Nueva relación para las interacciones con contactos
 }
-
 
 // Modelo para registrar historial de cambios de estado de leads
 model LeadStatusHistory {
@@ -63,10 +61,8 @@ model LeadStatusHistory {
   // Para auditoría
   changedBy User       @relation(fields: [changedById], references: [id])
   changedById String
-
   @@index([leadId, changedAt]) // Índice para optimizar consultas por lead y fecha
 }
-
 
 model Sector {
   id    String @id @default(cuid())
@@ -91,7 +87,6 @@ enum LeadStatus {
   StandBy
 }
 
-
 model Lead {
   id               String     @id @default(cuid())
   empresa          String
@@ -100,20 +95,16 @@ model Lead {
   contactos        Person[]
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-
   // Relaciones con Sector y Origen
   sectorId         String
   sector           Sector      @relation(fields: [sectorId], references: [id])
-
   origenId         String
   origen           LeadOrigen  @relation(fields: [origenId], references: [id])
-
   // Relaciones -> Generador de leads
   generadorId      String
   generadorLeads   User        @relation(fields: [generadorId], references: [id])
   statusHistory    LeadStatusHistory[]
 }
-
 
 //modelo de contacto para todos los moodulos
 model Person {
@@ -123,15 +114,16 @@ model Person {
   phone    String?
   position String?
   cv       String? // solo para candidatos
-
   //relaciones -> contacto de leads
-  Lead   Lead?   @relation(fields: [leadId], references: [id])
-  leadId String?
+  Lead     Lead?   @relation(fields: [leadId], references: [id])
+  leadId   String?
+  
+  // Nueva relación para las interacciones/conversaciones
+  interactions ContactInteraction[]
 }
 
 model Vacancy {
   id String @id @default(uuid())
-
   Comment Comment[]
 }
 
@@ -164,4 +156,24 @@ model Task {
   status       TaskStatus @default(Pending)
   dueDate      DateTime
   createdAt    DateTime   @default(now())
+}
+
+
+// Nuevo modelo para las interacciones con contactos
+model ContactInteraction {
+  id          String   @id @default(cuid())
+  content     String   // Contenido del comentario o estado de la negociación
+  contacto    Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
+  contactoId  String
+  autor       User     @relation(fields: [autorId], references: [id])
+  autorId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Campo opcional para adjuntar un archivo
+  attachmentUrl String?
+  attachmentName String?
+  attachmentType String?
+  
+  @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
 }

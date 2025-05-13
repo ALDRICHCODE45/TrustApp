@@ -20,7 +20,16 @@ const fetchData = async (): Promise<{
       generadorLeads: true,
       origen: true,
       sector: true,
-      contactos: true,
+      contactos: {
+        include: {
+          interactions: {
+            include: {
+              autor: true,
+              contacto: true,
+            },
+          },
+        },
+      },
       statusHistory: {
         include: {
           changedBy: true,
