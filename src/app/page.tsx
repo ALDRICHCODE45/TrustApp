@@ -7,20 +7,23 @@ const Homepage = async () => {
   noStore();
 
   const session = await auth();
-  const user = session?.user;
-
-  switch (user?.role) {
-    case Role.reclutador:
-      redirect("/reclutador?ok=true");
-    case Role.GL:
-      redirect("/leads?ok=true");
-    case Role.MK:
-      redirect("/leads?ok=true");
-    case Role.Admin:
-      redirect("/admin?ok=true");
+  if (!session) {
+    redirect("/sign-in"); // 👈 Redirige directamente si no hay sesión
   }
 
-  return redirect("/sign-in");
+  const user = session.user;
+
+  switch (user.role) {
+    case Role.reclutador:
+      redirect("/reclutador");
+    case Role.GL:
+    case Role.MK:
+      redirect("/leads");
+    case Role.Admin:
+      redirect("/admin");
+    default:
+      redirect("/sign-in");
+  }
 };
 
 export default Homepage;
