@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useActionState } from "react";
-import { useRouter } from "next/navigation";
 
 export function LoginForm() {
-  const router = useRouter();
-
   const credentialsAction = async (prevState: any, formData: FormData) => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -24,7 +21,7 @@ export function LoginForm() {
       if (result?.error) {
         return { error: "Error al iniciar sesión" };
       } else if (result?.ok) {
-        router.push("/");
+        window.location.href = "/";
         return;
       }
     } catch (err) {
