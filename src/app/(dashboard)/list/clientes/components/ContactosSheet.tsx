@@ -91,7 +91,7 @@ export function ContactosSheet({
                         />
                       </div>
                       <div className="flex-1 space-y-2">
-                        <Label htmlFor={`jsakdjfk-telefono`}>Puesto</Label>
+                        <Label>Posicion</Label>
                         <Input
                           id={`jj-telefono`}
                           placeholder="Dr General"

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Mail,
   MoreVertical,
@@ -8,7 +8,6 @@ import {
   Loader2,
   GalleryHorizontalEnd,
   MessageSquare,
-  Download,
   PaperclipIcon,
   FileText,
   X,
@@ -18,7 +17,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -31,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ContactInteraction, Person, Prisma } from "@prisma/client";
+import { Person, Prisma } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +39,6 @@ import {
 import { toast } from "sonner";
 import { deleteContactById, editLeadPerson } from "@/actions/person/actions";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -49,6 +46,7 @@ import {
   createInteraction,
   getAllContactInteractionsByContactId,
 } from "@/actions/leadSeguimiento/ations";
+import { InteractionCard } from "./InteractionCard";
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -82,6 +80,8 @@ async function createContactInteraction(
     }
 
     const response = await createInteraction(formData);
+
+    return response;
   } catch (error) {
     console.error("Error creating interaction:", error);
     throw new Error("Error al crear la interacción");
@@ -103,7 +103,6 @@ async function getContactInteractions(contactoId: string) {
 }
 
 export const ContactoCard = ({ contacto }: ContactoCardProps) => {
-  console.log({ contacto });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
@@ -311,6 +310,7 @@ export const SeguimientoContacto = ({
         attachment || undefined,
       );
 
+      setInteractions((prev) => [...prev, newInteraction]);
       setNewContent("");
       setAttachment(null);
       toast.success("Interacción registrada con éxito");
@@ -326,17 +326,6 @@ export const SeguimientoContacto = ({
     if (e.target.files && e.target.files[0]) {
       setAttachment(e.target.files[0]);
     }
-  };
-
-  // Formatear fecha
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(date));
   };
 
   return (
@@ -440,53 +429,11 @@ export const SeguimientoContacto = ({
               <ScrollArea className="h-[calc(50vh-200px)] pr-4">
                 <div className="space-y-4">
                   {interactions.map((interaction) => (
-                    <Card
+                    <InteractionCard
                       key={interaction.id}
-                      className="border-l-2 border-l-primary"
-                    >
-                      <CardHeader className="py-3 px-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7 rounded-full overflow-hidden">
-                              <AvatarImage
-                                src={interaction.autor.image || ""}
-                                className="rounded-full object-cover"
-                              />
-                              <AvatarFallback>
-                                {interaction.autor.name
-                                  .substring(0, 2)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <CardTitle className="text-sm font-medium">
-                                {interaction.autor.name}
-                              </CardTitle>
-                              <CardDescription className="text-xs">
-                                {formatDate(interaction.createdAt)}
-                              </CardDescription>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="py-2 px-4">
-                        <p className="text-sm whitespace-pre-wrap">
-                          {interaction.content}
-                        </p>
-                      </CardContent>
-                      {interaction.attachmentUrl && (
-                        <CardFooter className="py-2 px-4">
-                          <a
-                            href={interaction.attachmentUrl}
-                            download={interaction.attachmentName || true}
-                            className="flex items-center gap-2 text-xs text-primary hover:underline"
-                          >
-                            <Download className="h-3 w-3" />
-                            {interaction.attachmentName || "Archivo adjunto"}
-                          </a>
-                        </CardFooter>
-                      )}
-                    </Card>
+                      interaction={interaction}
+                      setInteractions={setInteractions}
+                    />
                   ))}
                 </div>
               </ScrollArea>
