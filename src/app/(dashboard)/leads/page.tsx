@@ -8,6 +8,7 @@ import { ToastAlerts } from "@/components/ToastAlerts";
 import prisma from "@/lib/db";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
+import { unstable_noStore as noStore } from "next/cache";
 
 export interface pageProps {}
 
@@ -15,6 +16,8 @@ const fetchData = async (): Promise<{
   data: LeadWithRelations[];
   columns: typeof leadsColumns;
 }> => {
+  noStore();
+
   const leads = await prisma.lead.findMany({
     include: {
       generadorLeads: true,
@@ -47,6 +50,7 @@ const fetchData = async (): Promise<{
 };
 
 const fetchGeneradores = async () => {
+  noStore();
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -62,6 +66,7 @@ const fetchGeneradores = async () => {
   }
 };
 const fetchSectores = async () => {
+  noStore();
   try {
     const sectores = await prisma.sector.findMany({
       select: { id: true, nombre: true },
@@ -73,6 +78,8 @@ const fetchSectores = async () => {
 };
 
 const fetchOrigenes = async () => {
+  noStore();
+
   try {
     const origenes = await prisma.leadOrigen.findMany({
       select: { id: true, nombre: true },

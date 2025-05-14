@@ -7,6 +7,7 @@ import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 interface pageProps {}
 
@@ -30,6 +31,9 @@ const fetchUsers = async () => {
 export default async function ClientesList({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchUsers();
   const session = await auth();
+  if (!session) {
+    redirect("/sign-in");
+  }
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
 
   return (

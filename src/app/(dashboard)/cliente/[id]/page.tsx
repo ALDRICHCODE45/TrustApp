@@ -26,6 +26,7 @@ import { CardCommercialInformation } from "./components/CardCommercialInformatio
 import Loading from "./loading";
 import { useEffect, useState } from "react";
 import { NuevoComentarioForm } from "../../list/reclutamiento/components/CommentSheet";
+import { unstable_noStore as noStore } from "next/cache";
 
 const fetchClient = async (clientId: number): Promise<Cliente | undefined> => {
   return new Promise((resolve) => {

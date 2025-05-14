@@ -6,12 +6,15 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
 import { ToastAlerts } from "@/components/ToastAlerts";
+import { unstable_noStore as noStore } from "next/cache";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const getUser = async (userEmail: string) => {
+  noStore();
+
   const user = await prisma.user.findUnique({
     where: {
       email: userEmail,
@@ -21,6 +24,7 @@ const getUser = async (userEmail: string) => {
 };
 
 const getTasks = async (userId: string) => {
+  noStore();
   try {
     const result = await prisma.task.findMany({
       where: {

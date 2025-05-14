@@ -15,10 +15,10 @@ import { Prisma, Role, TaskStatus } from "@prisma/client";
 import { Metadata } from "next";
 import { AttendanceChart } from "@/components/AttendanceChart";
 import { LeadPerformanceChart } from "../components/PerformanceChart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TaskKanbanBoard } from "./components/kanban/KanbanUserTask";
+import { unstable_noStore as noStore } from "next/cache";
 
 const fetchDoneTasksByUserId = async (userId: string) => {
+  noStore();
   try {
     const tasks = await prisma.task.findMany({
       where: {
@@ -33,6 +33,8 @@ const fetchDoneTasksByUserId = async (userId: string) => {
 };
 
 const fetchUser = async (userId: string) => {
+  noStore();
+
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -55,6 +57,7 @@ export type TasksWithRelations = Prisma.TaskGetPayload<{
 const fetchTasksById = async (
   userId: string,
 ): Promise<TasksWithRelations[]> => {
+  noStore();
   try {
     const tasks = await prisma.task.findMany({
       where: {

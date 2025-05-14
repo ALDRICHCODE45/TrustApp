@@ -4,13 +4,19 @@ import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";
 import prisma from "@/lib/db";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Trust | Dashboard",
 };
 
 export default async function Dashboardpage() {
+  noStore();
   const session = await auth();
+  if (!session?.user) {
+    redirect("sign/in");
+  }
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
   const userCount = await prisma.user.count();
 
