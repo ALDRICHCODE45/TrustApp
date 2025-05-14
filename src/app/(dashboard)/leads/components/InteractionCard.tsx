@@ -96,7 +96,8 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
 
     // Si hay un adjunto y ha sido cambiado, añadir la info del adjunto al formData
     if (attachmentInfo && isAttachmentChanged) {
-      formData.append("attachment", JSON.stringify(attachmentInfo));
+      // formData.append("attachment", JSON.stringify(attachmentInfo));
+      //TODO: cambiar esto depues
     }
 
     try {
