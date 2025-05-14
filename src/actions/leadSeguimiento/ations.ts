@@ -1,4 +1,5 @@
 "use server";
+import { Attachment } from "@/app/(dashboard)/leads/components/ContactCard";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -75,29 +76,56 @@ export const createInteraction = async (
 ): Promise<ContactInteractionWithRelations> => {
   const content = formData.get("content") as string;
   const contactoId = formData.get("contactoId") as string;
-  const attachment = formData.get("attachment");
-  const session = await auth();
+  const rawAttachment = formData.get("attachment");
 
+  const session = await auth();
   if (!session) {
     throw new Error("No se pudo crear la interaction");
+  }
+
+  // Datos opcionales del archivo
+  let attachmentUrl: string | undefined;
+  let attachmentName: string | undefined;
+  let attachmentType: string | undefined;
+
+  // Solo si el campo existe y no es una cadena vacía
+  if (
+    rawAttachment &&
+    typeof rawAttachment === "string" &&
+    rawAttachment !== ""
+  ) {
+    try {
+      const attachment = JSON.parse(rawAttachment) as Attachment;
+      attachmentUrl = attachment.attachmentUrl;
+      attachmentName = attachment.attachmentName;
+      attachmentType = attachment.attachmentType;
+    } catch (error) {
+      console.error("Error parsing attachment JSON:", error);
+    }
   }
 
   try {
     const interaction = await prisma.contactInteraction.create({
       data: {
-        content: content,
-        contactoId: contactoId,
+        content,
+        contactoId,
         autorId: session.user.id,
+        attachmentUrl,
+        attachmentName,
+        attachmentType,
       },
       include: {
         autor: true,
         contacto: true,
       },
     });
+
     revalidatePath("/list/leads");
     revalidatePath("/leads");
+
     return interaction;
   } catch (err) {
+    console.error(err);
     throw new Error("No se puede crear la interaccion");
   }
 };

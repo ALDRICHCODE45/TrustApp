@@ -12,6 +12,7 @@ import {
   FileText,
   X,
   Plus,
+  History,
 } from "lucide-react";
 import {
   Card,
@@ -47,6 +48,7 @@ import {
   getAllContactInteractionsByContactId,
 } from "@/actions/leadSeguimiento/ations";
 import { InteractionCard } from "./InteractionCard";
+import { uploadFile } from "@/actions/files/actions";
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -68,7 +70,7 @@ export type ContactWithRelations = Prisma.PersonGetPayload<{
 async function createContactInteraction(
   contactoId: string,
   content: string,
-  attachment?: File,
+  attachment?: Attachment,
 ) {
   try {
     const formData = new FormData();
@@ -76,7 +78,7 @@ async function createContactInteraction(
     formData.append("content", content);
 
     if (attachment) {
-      formData.append("attachment", attachment);
+      formData.append("attachment", JSON.stringify(attachment));
     }
 
     const response = await createInteraction(formData);
@@ -278,6 +280,12 @@ interface SeguimientoContactoProps {
   initialInteractions: ContactInteractionWithRelations[];
 }
 
+export interface Attachment {
+  attachmentUrl: string;
+  attachmentName: string;
+  attachmentType: string;
+}
+
 export const SeguimientoContacto = ({
   open,
   onOpenChange,
@@ -290,7 +298,7 @@ export const SeguimientoContacto = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [newContent, setNewContent] = useState<string>("");
-  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachment, setAttachment] = useState<Attachment | null>(null);
 
   // Manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -322,9 +330,22 @@ export const SeguimientoContacto = ({
   };
 
   // Manejar selección de archivo
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAttachment(e.target.files[0]);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Crear el FormData y agregar el archivo
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const attachment = await uploadFile(formData);
+
+    if (attachment.success) {
+      setAttachment({
+        attachmentName: attachment.fileName,
+        attachmentType: attachment.fileType,
+        attachmentUrl: attachment.url,
+      });
     }
   };
 
@@ -373,7 +394,9 @@ export const SeguimientoContacto = ({
               {attachment && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
                   <FileText className="h-4 w-4" />
-                  <span className="truncate max-w-xs">{attachment.name}</span>
+                  <span className="truncate max-w-xs">
+                    {attachment.attachmentName}
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -411,9 +434,12 @@ export const SeguimientoContacto = ({
 
           {/* Historial de interacciones */}
           <div className="space-y-1">
-            <h3 className="text-sm font-medium mb-6">
-              Historial de interacciones
-            </h3>
+            <div className="flex  gap-2">
+              <History size={17} className="items-center" />
+              <h3 className="text-sm font-medium mb-6 items-center">
+                Historial de interacciones
+              </h3>
+            </div>
             {loading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
