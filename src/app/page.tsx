@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
+import { unstable_noStore as noStore } from "next/cache";
 
 const Homepage = async () => {
+  noStore();
+
   const session = await auth();
   const user = session?.user;
 
