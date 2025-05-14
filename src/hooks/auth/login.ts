@@ -4,14 +4,14 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState<string | null>(null);
-const router = useRouter();
-
 export const useCredentialsAction = async (
   prevState: any,
   formData: FormData,
 ) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
   setLoading(true);
   setError(null);
   console.log(loading);

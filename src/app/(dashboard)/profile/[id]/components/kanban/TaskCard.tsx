@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { format } from "date-fns";
 import { ClipboardCheck, Clock, CalendarClock } from "lucide-react";
 import { TasksWithRelations } from "../../page";
+import Image from "next/image";
 
 interface TaskCardProps {
   task: TasksWithRelations;
@@ -87,7 +88,7 @@ export const TaskCard = ({ task, isActive }: TaskCardProps) => {
         <div className="flex items-center pt-2">
           <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
             {task.assignedTo.image ? (
-              <img
+              <Image
                 src={task.assignedTo.image}
                 alt={task.assignedTo.name}
                 className="h-full w-full object-cover"
