@@ -59,7 +59,7 @@ export const GeneradorDropdownSelect = ({
         loadRecruiters();
       }
     };
-  }, [loadRecruiters, recruiters]);
+  }, [loadRecruiters, loading]);
 
   const handleUserChange = async (newUser: User) => {
     if (newUser.id === currentGeneratorId) return;
