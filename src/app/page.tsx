@@ -11,7 +11,7 @@ const Homepage = async () => {
     redirect("/sign-in"); // 👈 Redirige directamente si no hay sesión
   }
 
-  const user = session.user;
+  const user = session?.user;
 
   switch (user.role) {
     case Role.reclutador:
