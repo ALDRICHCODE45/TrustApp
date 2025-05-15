@@ -84,7 +84,11 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     accessorKey: "link",
     header: "Web",
     cell: ({ row }) => {
-      const link = row.getValue("link") as string;
+      let link = row.getValue("link") as string;
+      // Asegúrate de que empiece con "http" o "https"
+      if (!/^https?:\/\//i.test(link)) {
+        link = `https://${link}`;
+      }
       return (
         <div className="flex gap-2 items-center">
           <a href={link} target="_blank" className="underline">

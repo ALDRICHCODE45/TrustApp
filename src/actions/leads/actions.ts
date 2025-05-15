@@ -96,7 +96,8 @@ export async function createLead(prevState: any, formData: FormData) {
     });
 
     // Create the new lead
-    await prisma.lead.create({
+
+    const leadCreated = await prisma.lead.create({
       data: {
         empresa: submission.value.empresa,
         link: submission.value.link,
@@ -104,10 +105,20 @@ export async function createLead(prevState: any, formData: FormData) {
         sectorId: sector!.id,
         status: submission.value.status,
         generadorId: submission.value.generadorId,
+        createdAt: submission.value.createdAt,
       },
       // Optionally include the generador relationship for a more complete response
       include: {
         generadorLeads: true,
+      },
+    });
+
+    //crear la trazabilidad para Contacto
+    await prisma.leadStatusHistory.create({
+      data: {
+        leadId: leadCreated.id,
+        status: leadCreated.status,
+        changedById: submission.value.generadorId,
       },
     });
 

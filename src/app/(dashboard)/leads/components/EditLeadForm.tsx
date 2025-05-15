@@ -31,9 +31,10 @@ import { toast } from "sonner"; // Import toast from sonner or your preferred to
 
 interface EditLeadFormProps {
   leadData: LeadWithRelations;
+  closeDialog: (close: boolean) => void;
 }
 
-export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
+export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,6 +102,7 @@ export const EditLeadForm = ({ leadData }: EditLeadFormProps) => {
       toast.error(errorMessage);
     } finally {
       setIsPending(false);
+      closeDialog(false);
     }
   };
 

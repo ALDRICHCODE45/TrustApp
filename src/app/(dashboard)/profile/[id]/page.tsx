@@ -122,6 +122,7 @@ export default async function UserProfile({
       <div className="container mx-auto p-4 md:p-6">
         {/* Header - User Basic Info */}
         <UserProfileHeader
+          activeUserId={session.user.id}
           user={user}
           isAdmin={session?.user.role === Role.Admin}
           tasks={tasks}

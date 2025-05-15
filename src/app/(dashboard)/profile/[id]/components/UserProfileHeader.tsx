@@ -20,10 +20,12 @@ export const UserProfileHeader = ({
   tasks,
   user,
   isAdmin,
+  activeUserId,
 }: {
   user: User;
   isAdmin: boolean;
   tasks: Task[];
+  activeUserId: string;
 }) => {
   const [index, setIndex] = useState<number>();
 
@@ -43,7 +45,7 @@ export const UserProfileHeader = ({
             </div>
 
             <div>
-              <EditUserProfile user={user} />
+              <EditUserProfile user={user} activeUserId={activeUserId} />
             </div>
           </div>
         )}

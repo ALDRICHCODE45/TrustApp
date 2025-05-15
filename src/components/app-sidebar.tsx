@@ -70,24 +70,24 @@ const data: {
     },
   ],
   navMain: [
-    {
-      title: "Reclutamiento",
-      url: "#",
-      icon: UserSearch,
-      roles: [Role.reclutador],
-      items: [
-        {
-          title: "Vacantes",
-          url: "/reclutador",
-          roles: [Role.reclutador],
-        },
-        {
-          title: "Kanban",
-          url: "/reclutador/kanban",
-          roles: [Role.reclutador],
-        },
-      ],
-    },
+    // {
+    //   title: "Reclutamiento",
+    //   url: "#",
+    //   icon: UserSearch,
+    //   roles: [Role.reclutador],
+    //   items: [
+    //     {
+    //       title: "Vacantes",
+    //       url: "/reclutador",
+    //       roles: [Role.reclutador],
+    //     },
+    //     {
+    //       title: "Kanban",
+    //       url: "/reclutador/kanban",
+    //       roles: [Role.reclutador],
+    //     },
+    //   ],
+    // },
     {
       title: "Generacion de Leads",
       url: "#",
@@ -118,11 +118,11 @@ const data: {
           url: "/list/users",
           roles: [Role.Admin], // Solo visible para administradores
         },
-        {
-          title: "Clientes",
-          url: "/list/clientes",
-          roles: [Role.Admin],
-        },
+        // {
+        //   title: "Clientes",
+        //   url: "/list/clientes",
+        //   roles: [Role.Admin],
+        // },
         {
           title: "Leads",
           url: "/list/leads",
@@ -142,54 +142,54 @@ const data: {
           url: "/admin",
           roles: [Role.Admin],
         },
-        {
-          title: "Reclutamiento",
-          url: "/list/reclutamiento",
-          roles: [Role.Admin],
-        },
+        // {
+        //   title: "Reclutamiento",
+        //   url: "/list/reclutamiento",
+        //   roles: [Role.Admin],
+        // },
         {
           title: "kanban Board - Leads",
           url: "/leads/kanban",
           roles: [Role.Admin],
         },
-        {
-          title: "kanban Board - Reclutamiento",
-          url: "/reclutador/kanban",
-          roles: [Role.Admin],
-        },
+        // {
+        //   title: "kanban Board - Reclutamiento",
+        //   url: "/reclutador/kanban",
+        //   roles: [Role.Admin],
+        // },
       ],
     },
-    {
-      title: "Sistema",
-      url: "",
-      icon: UserRoundCog,
-      roles: [Role.Admin],
-      items: [
-        {
-          title: "Logs",
-          url: "/sistema/logs",
-          roles: [Role.Admin],
-        },
-      ],
-    },
-    {
-      title: "Finanzas",
-      url: "",
-      icon: Landmark,
-      roles: [Role.Admin],
-      items: [
-        {
-          title: "CXP",
-          url: "/list/cuentas",
-          roles: [Role.Admin],
-        },
-        {
-          title: "CXC",
-          url: "/list/facturas",
-          roles: [Role.Admin],
-        },
-      ],
-    },
+    // {
+    //   title: "Sistema",
+    //   url: "",
+    //   icon: UserRoundCog,
+    //   roles: [Role.Admin],
+    //   items: [
+    //     {
+    //       title: "Logs",
+    //       url: "/sistema/logs",
+    //       roles: [Role.Admin],
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Finanzas",
+    //   url: "",
+    //   icon: Landmark,
+    //   roles: [Role.Admin],
+    //   items: [
+    //     {
+    //       title: "CXP",
+    //       url: "/list/cuentas",
+    //       roles: [Role.Admin],
+    //     },
+    //     {
+    //       title: "CXC",
+    //       url: "/list/facturas",
+    //       roles: [Role.Admin],
+    //     },
+    //   ],
+    // },
   ],
 };
 

@@ -29,6 +29,7 @@ export const ChangePassword = ({ userId }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState<StateResponse | null>(null);
   const [showPassword, setShowPassword] = useState(false); // Estado para mostrar u ocultar contraseña
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,11 +47,12 @@ export const ChangePassword = ({ userId }: Props) => {
       setState({ ok: false, message: "Error al cambiar la contraseña" });
     } finally {
       setIsLoading(false);
+      setOpenDialog(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <LockKeyhole className="mr-2" />

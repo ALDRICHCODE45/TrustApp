@@ -23,15 +23,32 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Pencil } from "lucide-react";
 import { User } from "@prisma/client";
 import { editUser } from "@/actions/users/create-user";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { editUserSchema } from "@/zod/editUserSchema";
 import { toast } from "sonner";
 
-export function EditUserProfile({ user }: { user: User }) {
+export function EditUserProfile({
+  user,
+  activeUserId,
+}: {
+  user: User;
+  activeUserId: string;
+}) {
   const { id } = useParams();
+  const [canEditEmail, setCanEditEmail] = useState<boolean>(true);
+
+  // Use useEffect to set canEditEmail based on user id comparison
+  useEffect(() => {
+    if (user.id === activeUserId) {
+      setCanEditEmail(false);
+    }
+    console.log({ user, id });
+  }, []);
+
+  const [open, setOpen] = useState<boolean>(false);
 
   const wrapEditUser = (userId: string) => {
     return async (_prevState: any, formData: FormData) => {
@@ -48,7 +65,8 @@ export function EditUserProfile({ user }: { user: User }) {
     lastResult,
     onSubmit(event, context) {
       if (context.submission?.status === "success") {
-        toast.success("Usuario editado correctamente");
+        toast.success("Lead creado correctamente");
+        setOpen(false);
       }
     },
     onValidate({ formData }) {
@@ -59,7 +77,7 @@ export function EditUserProfile({ user }: { user: User }) {
   });
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="icon">
           <Pencil />
@@ -110,6 +128,7 @@ export function EditUserProfile({ user }: { user: User }) {
                     defaultValue={user.email}
                     placeholder="correo@ejemplo.com"
                     type="email"
+                    disabled={!canEditEmail}
                   />
                   <p className="text-sm text-red-500">{fields.email.errors}</p>
                 </div>

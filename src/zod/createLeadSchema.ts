@@ -4,7 +4,7 @@ import { LeadStatus } from "@prisma/client";
 export const createLeadSchema = z.object({
   empresa: z.string().min(1, "El nombre de la empresa es requerido"),
   sector: z.string().min(1, "El sector es requerido"),
-  link: z.string().url("Debe ser un enlace válido"),
+  link: z.string().min(1, "El link debe tener por lo menos 1 character"),
   origen: z.string().min(1, "El origen es requerido"),
   status: z
     .enum([
@@ -20,4 +20,5 @@ export const createLeadSchema = z.object({
     .optional(),
 
   generadorId: z.string().cuid(),
+  createdAt: z.date().optional(),
 });

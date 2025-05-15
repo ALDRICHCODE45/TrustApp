@@ -119,7 +119,7 @@ export const ActionsCell = ({ row }: { row: Row<LeadWithRelations> }) => {
           </DialogDescription>
 
           {/* Using the extracted form component here */}
-          <EditLeadForm leadData={row.original} />
+          <EditLeadForm leadData={row.original} closeDialog={setIsDialogOpen} />
         </DialogContent>
       </Dialog>
     </>

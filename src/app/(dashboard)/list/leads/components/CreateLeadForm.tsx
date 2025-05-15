@@ -8,11 +8,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { CalendarIcon, Loader2, Plus, User as UserIcon } from "lucide-react";
+import { Loader2, Plus, User as UserIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
-import { AvatarFallback } from "@/components/ui/avatar";
+import { AvatarFallback, Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,17 +27,17 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { createLeadSchema } from "@/zod/createLeadSchema";
 import { User } from "@prisma/client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Sector, LeadOrigen } from "@prisma/client";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { es } from "date-fns/locale";
 import { format } from "date-fns";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { Sector, LeadOrigen } from "@prisma/client";
+import { es } from "date-fns/locale";
 
 export const CreateLeadForm = ({
   generadores,
@@ -53,22 +52,24 @@ export const CreateLeadForm = ({
   isAdmin: boolean;
   activeUser: { name: string; id: string };
 }) => {
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   return (
     <>
-      <Dialog>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger asChild>
           <Button variant="outline">
             <Plus />
             Crear Lead
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px] z-[200]">
+        <DialogContent className="sm:max-w-[600px] z-[400]">
           <DialogHeader>
             <DialogTitle>Nuevo Lead</DialogTitle>
             <Separator />
           </DialogHeader>
           {/* Envolver el formulario con FormProvider */}
           <NuevoLeadForm
+            setOpenDialog={setOpenDialog}
             activeUser={activeUser}
             isAdmin={isAdmin}
             generadores={generadores}
@@ -87,15 +88,19 @@ function NuevoLeadForm({
   origenes,
   isAdmin,
   activeUser,
+  setOpenDialog,
 }: {
   generadores: User[];
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
   activeUser: { name: string; id: string };
+  setOpenDialog: (newState: boolean) => void;
 }) {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<User>();
@@ -120,6 +125,13 @@ function NuevoLeadForm({
         schema: createLeadSchema,
       });
     },
+    onSubmit(event, context) {
+      if (context.submission?.status === "success") {
+        toast.success("Usuario editado correctamente");
+        setOpenDialog(false);
+      }
+    },
+
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
@@ -168,6 +180,15 @@ function NuevoLeadForm({
             name={fields.generadorId.name}
             key={fields.generadorId.key}
             value={selectedUser?.id || ""}
+          />
+        )}
+
+        {selectedDate && (
+          <input
+            type="hidden"
+            name={fields.createdAt.name}
+            key={fields.createdAt.key}
+            value={selectedDate.toISOString()}
           />
         )}
 
@@ -312,40 +333,68 @@ function NuevoLeadForm({
             </div>
           </div>
         </div>
-        {/* Grupo 2: Fecha de Prospección y Enlace */}
-        <div className="w-1/2 space-y-1">
-          <div className="flex flex-col gap-2">
-            <Label>Origen</Label>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {selectedOrigen?.nombre || "Selecciona un origen"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-scroll">
-                <DropdownMenuLabel>Origenes</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {origenes.map((origen) => (
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    key={origen.nombre}
-                    onSelect={() => handleSelecteOrigen(origen)}
-                  >
-                    {origen.nombre}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {selectedOrigen && (
-              <Input
-                name={fields.origen.name}
-                key={fields.origen.key}
-                value={selectedOrigen.id}
-                type="hidden"
-              />
-            )}
-            <p className="text-sm text-red-500">{fields.origen.errors}</p>
+        {/* Grupo 2: Fecha de Prospección y Origen */}
+        <div className="flex gap-4">
+          <div className="w-1/2 space-y-1 ">
+            <div className="flex flex-col gap-2 ">
+              <Label>Fecha de creacion - Opcional</Label>
+
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline">
+                    {selectedDate ? (
+                      format(selectedDate, "eee dd/MM/yyyy", {
+                        locale: es,
+                      })
+                    ) : (
+                      <span>Seleccionar fecha</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="top" className="z-[999999]">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <div className="w-1/2 space-y-1">
+            <div className="flex flex-col gap-2">
+              <Label>Origen</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    {selectedOrigen?.nombre || "Selecciona un origen"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="z-[9999] w-full max-h-[300px] overflow-y-scroll">
+                  <DropdownMenuLabel>Origenes</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {origenes.map((origen) => (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      key={origen.nombre}
+                      onSelect={() => handleSelecteOrigen(origen)}
+                    >
+                      {origen.nombre}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {selectedOrigen && (
+                <Input
+                  name={fields.origen.name}
+                  key={fields.origen.key}
+                  value={selectedOrigen.id}
+                  type="hidden"
+                />
+              )}
+              <p className="text-sm text-red-500">{fields.origen.errors}</p>
+            </div>
           </div>
         </div>
 
