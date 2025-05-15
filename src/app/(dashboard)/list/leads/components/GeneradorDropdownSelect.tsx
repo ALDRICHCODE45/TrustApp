@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
@@ -30,6 +30,17 @@ export const GeneradorDropdownSelect = ({
 
   const currentGeneratorId = row.original.generadorId;
   const currentGenerator = row.original.generadorLeads;
+
+  // Usamos refs para tener acceso al estado más actual
+  const loadingRef = useRef(loading);
+  const recruitersRef = useRef(recruiters);
+  const retryCountRef = useRef(retryCount);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+    recruitersRef.current = recruiters;
+    retryCountRef.current = retryCount;
+  }, [loading, recruiters, retryCount]);
 
   const loadRecruiters = useCallback(async () => {
     setLoading(true);
@@ -54,21 +65,29 @@ export const GeneradorDropdownSelect = ({
 
   // Cargar reclutadores al montar el componente con un sistema de reintentos limitados
   useEffect(() => {
-    loadRecruiters();
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Sistema de reintentos automáticos (máximo 3)
-    if (retryCount < 3) {
-      const retryTimer = setTimeout(() => {
-        if (loading && !recruiters) {
-          console.log(`Retry attempt ${retryCount + 1} loading recruiters`);
-          loadRecruiters();
-          setRetryCount((prev) => prev + 1);
+    const attemptLoad = async () => {
+      if (retryCountRef.current >= 3) return;
+
+      try {
+        await loadRecruiters();
+      } finally {
+        if (loadingRef.current && !recruitersRef.current) {
+          retryTimer = setTimeout(() => {
+            setRetryCount((prev) => prev + 1);
+            attemptLoad(); // Reintenta
+          }, 2000);
         }
-      }, 2000); // Esperar 2 segundos antes de reintentar
+      }
+    };
 
-      return () => clearTimeout(retryTimer);
-    }
-  }, [loadRecruiters, retryCount]);
+    attemptLoad();
+
+    return () => {
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [loadRecruiters]);
 
   const handleUserChange = async (newUser: User) => {
     if (newUser.id === currentGeneratorId) return;
