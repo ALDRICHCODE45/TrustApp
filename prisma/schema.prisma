@@ -59,7 +59,7 @@ model LeadStatusHistory {
   changedAt DateTime   @default(now())
   
   // Para auditoría
-  changedBy User       @relation(fields: [changedById], references: [id])
+  changedBy User       @relation(fields: [changedById], references: [id], onDelete: Cascade)
   changedById String
   @@index([leadId, changedAt]) // Índice para optimizar consultas por lead y fecha
 }
@@ -102,7 +102,7 @@ model Lead {
   origen           LeadOrigen  @relation(fields: [origenId], references: [id])
   // Relaciones -> Generador de leads
   generadorId      String
-  generadorLeads   User        @relation(fields: [generadorId], references: [id])
+  generadorLeads   User        @relation(fields: [generadorId], references: [id], onDelete: Cascade)
   statusHistory    LeadStatusHistory[]
 }
 
@@ -135,7 +135,7 @@ model Comment {
   taskId    String?  @unique
   vacancy   Vacancy  @relation(fields: [vacancyId], references: [id])
   vacancyId String
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete:Cascade)
   authorId  String
   createdAt DateTime @default(now())
 }
@@ -149,7 +149,7 @@ model Task {
   id           String     @id @default(uuid())
   title        String
   description  String
-  assignedTo   User       @relation(fields: [assignedToId], references: [id])
+  assignedTo   User       @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
   assignedToId String
   comment      Comment?   @relation
   commentId    String?
@@ -165,7 +165,7 @@ model ContactInteraction {
   content     String   // Contenido del comentario o estado de la negociación
   contacto    Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
   contactoId  String
-  autor       User     @relation(fields: [autorId], references: [id])
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
   autorId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

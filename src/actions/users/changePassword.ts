@@ -2,6 +2,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { hash } from "bcryptjs";
+import { revalidatePath } from "next/cache";
 
 export const changePasswordAction = async (
   userId: string,
@@ -39,6 +40,7 @@ export const changePasswordAction = async (
       },
     });
 
+    revalidatePath(`/profile/${userId}`);
     return { ok: true, message: "Contraseña actualizada correctamente" };
   } catch (error) {
     console.error("Error al cambiar la contraseña:", error);
