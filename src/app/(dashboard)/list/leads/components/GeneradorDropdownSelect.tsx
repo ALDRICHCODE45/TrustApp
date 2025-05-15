@@ -9,7 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lead, Person, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 import { editLeadById, getRecruiters } from "@/actions/leads/actions";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ export const GeneradorDropdownSelect = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const currentGeneratorId = row.original.generadorId;
   const currentGenerator = row.original.generadorLeads;
@@ -33,8 +34,10 @@ export const GeneradorDropdownSelect = ({
   const loadRecruiters = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
       const recruitersData = await getRecruiters();
+
       if (Array.isArray(recruitersData) && recruitersData.length > 0) {
         setRecruiters(recruitersData);
       } else {
@@ -49,20 +52,27 @@ export const GeneradorDropdownSelect = ({
     }
   }, []);
 
-  // Cargar reclutadores al montar el componente
+  // Cargar reclutadores al montar el componente con un sistema de reintentos limitados
   useEffect(() => {
     loadRecruiters();
 
-    const checkInterval = () => {
-      if (loading && !recruiters) {
-        console.log("Retry loading recruiters after timeout");
-        loadRecruiters();
-      }
-    };
-  }, [loadRecruiters, loading]);
+    // Sistema de reintentos automáticos (máximo 3)
+    if (retryCount < 3) {
+      const retryTimer = setTimeout(() => {
+        if (loading && !recruiters) {
+          console.log(`Retry attempt ${retryCount + 1} loading recruiters`);
+          loadRecruiters();
+          setRetryCount((prev) => prev + 1);
+        }
+      }, 2000); // Esperar 2 segundos antes de reintentar
+
+      return () => clearTimeout(retryTimer);
+    }
+  }, [loadRecruiters, retryCount]);
 
   const handleUserChange = async (newUser: User) => {
     if (newUser.id === currentGeneratorId) return;
+
     setIsUpdating(true);
     try {
       const formData = new FormData();
@@ -83,7 +93,28 @@ export const GeneradorDropdownSelect = ({
   };
 
   const retryLoading = () => {
+    setRetryCount(0); // Resetear contador de reintentos
     loadRecruiters();
+  };
+
+  // Renderizar nombre del generador actual
+  const renderCurrentGeneratorName = () => {
+    if (currentGenerator?.name) {
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar className="h-5 w-5 shrink-0">
+            <AvatarImage
+              src={currentGenerator.image ?? undefined}
+              alt={currentGenerator.name}
+              className="object-cover"
+            />
+            <AvatarFallback>{currentGenerator.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <span className="truncate max-w-[90px]">{currentGenerator.name}</span>
+        </div>
+      );
+    }
+    return "Sin asignar";
   };
 
   return (
@@ -92,36 +123,36 @@ export const GeneradorDropdownSelect = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-2 w-full"
+          className="flex items-center gap-2 w-full justify-between"
           disabled={isUpdating}
-          onClick={loading && !recruiters ? retryLoading : undefined}
         >
           {isUpdating ? (
-            "Actualizando..."
+            <div className="flex items-center gap-2">
+              <span>Actualizando...</span>
+              <Loader2 className="h-3 w-3 animate-spin" />
+            </div>
           ) : loading ? (
             <div className="flex items-center gap-2">
               <span>Cargando...</span>
-              {loading && !recruiters && (
-                <RotateCw className="h-3 w-3 animate-spin" />
-              )}
+              <Loader2 className="h-3 w-3 animate-spin" />
             </div>
           ) : error ? (
             <div
-              className="flex items-center gap-2 text-red-500"
-              onClick={retryLoading}
+              className="flex items-center gap-2 text-red-500 w-full justify-between"
+              onClick={(e) => {
+                e.stopPropagation();
+                retryLoading();
+              }}
             >
               <span className="truncate max-w-[100px]">Error</span>
               <RotateCw className="h-3 w-3" />
             </div>
           ) : (
-            <>
-              <span className="truncate max-w-[120px]">
-                {currentGenerator?.name || "Sin asignar"}
-              </span>
-            </>
+            renderCurrentGeneratorName()
           )}
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-72 max-h-[300px] overflow-y-auto">
         {error ? (
           <div className="p-3 text-center">
