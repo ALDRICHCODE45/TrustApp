@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { EditUserProfile } from "@/app/(dashboard)/list/users/components/EditUserDropDown";
 import { ActivityProfileSheet } from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
+import { ChangePassword } from "@/app/(dashboard)/list/users/components/ChangePassword";
 
 const oficinaMapper = {
   Oficina1: "Oficina 1",
@@ -36,8 +37,14 @@ export const UserProfileHeader = ({
         {/* Opciones de edición para admin posicionadas en el banner */}
 
         {isAdmin && (
-          <div className="absolute top-4 right-4">
-            <EditUserProfile user={user} />
+          <div className="absolute top-4 right-4 flex gap-4">
+            <div>
+              <ChangePassword userId={user.id} />
+            </div>
+
+            <div>
+              <EditUserProfile user={user} />
+            </div>
           </div>
         )}
       </div>

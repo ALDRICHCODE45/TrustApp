@@ -20,7 +20,6 @@ export default function Error({
       <Card className="w-full max-w-md p-6 text-center">
         <CardTitle className="mb-2">Algo salió mal</CardTitle>
         <CardDescription>
-          <pre>{error?.message}</pre>
           Ocurrió un error al cargar el Dashboard Administrativo.
         </CardDescription>
         <CardFooter className="justify-center mt-6">

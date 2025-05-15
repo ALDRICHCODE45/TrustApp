@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Pencil } from "lucide-react";
 import { User } from "@prisma/client";
 import { editUser } from "@/actions/users/create-user";
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { useParams } from "next/navigation";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";

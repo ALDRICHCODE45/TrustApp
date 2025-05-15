@@ -5,7 +5,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import "yet-another-react-lightbox-lite/styles.css";
 import { UserProfileHeader } from "./components/UserProfileHeader";
 import { EventCalendar } from "@/components/EventCalendar";
@@ -83,6 +83,9 @@ export default async function UserProfile({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
+  if (!session) {
+    redirect("/sign-in");
+  }
   const { id } = await params;
 
   const loadTasks = async () => {
