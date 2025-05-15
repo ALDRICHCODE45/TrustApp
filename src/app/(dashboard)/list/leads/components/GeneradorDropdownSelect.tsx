@@ -127,7 +127,9 @@ export const GeneradorDropdownSelect = ({
               alt={currentGenerator.name}
               className="object-cover"
             />
-            <AvatarFallback>{currentGenerator.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-xs text-slate-700">
+              {currentGenerator.name.charAt(0)}
+            </AvatarFallback>
           </Avatar>
           <span className="truncate max-w-[90px]">{currentGenerator.name}</span>
         </div>
