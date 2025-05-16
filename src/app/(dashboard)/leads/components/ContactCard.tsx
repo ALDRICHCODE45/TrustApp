@@ -49,6 +49,17 @@ import {
 } from "@/actions/leadSeguimiento/ations";
 import { InteractionCard } from "./InteractionCard";
 import { uploadFile } from "@/actions/files/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -94,6 +105,7 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
+  const [openDelete, setIsOpenDelete] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -156,13 +168,37 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                 <Edit />
                 <span>Editar</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => deleteContact(contacto.id)}
-                className="text-red-500 cursor-pointer "
-              >
-                <Trash2 />
-                <span>Eliminar</span>
-              </DropdownMenuItem>
+              <AlertDialog open={openDelete} onOpenChange={setIsOpenDelete}>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer text-red-500"
+                  >
+                    <Trash2 className=" h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer. Se eliminará
+                      permanentemente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setIsOpenDelete(false)}>
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteContact(contacto.id)}
+                    >
+                      Sí, eliminar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <DropdownMenuItem
                 onClick={() => setOpenSeguimiento(true)}
                 className="text-blue-500 cursor-pointer "
