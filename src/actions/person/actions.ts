@@ -26,6 +26,7 @@ export const createLeadPerson = async (prevSate: any, formData: FormData) => {
         email: submission.value.email,
         position: submission.value.position,
         leadId: submission.value.leadId,
+        phone: submission.value.phone,
       },
     });
 

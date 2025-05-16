@@ -16,5 +16,5 @@ export const editLeadPersonSchema = z.object({
   email: z.string().email().optional(),
   position: z.string().min(3, "Posicion requerida").optional(),
   leadId: z.string().optional(),
-  phone: z.string().min(5, "El numero del contacto obligatorio").optional(),
+  phone: z.string().optional(),
 });
