@@ -13,6 +13,7 @@ import {
   X,
   Plus,
   History,
+  Phone,
 } from "lucide-react";
 import {
   Card,
@@ -45,7 +46,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ContactInteractionWithRelations,
   createInteraction,
-  getAllContactInteractionsByContactId,
 } from "@/actions/leadSeguimiento/ations";
 import { InteractionCard } from "./InteractionCard";
 import { uploadFile } from "@/actions/files/actions";
@@ -87,20 +87,6 @@ async function createContactInteraction(
   } catch (error) {
     console.error("Error creating interaction:", error);
     throw new Error("Error al crear la interacción");
-  }
-}
-
-// Función para obtener el historial de interacciones
-async function getContactInteractions(contactoId: string) {
-  try {
-    // Datos de ejemplo
-    const interactionsDemo: ContactInteractionWithRelations[] =
-      await getAllContactInteractionsByContactId(contactoId);
-
-    return interactionsDemo;
-  } catch (error) {
-    console.error("Error fetching interactions:", error);
-    throw new Error("Error al obtener las interacciones");
   }
 }
 
@@ -189,11 +175,19 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
         </CardHeader>
         <CardContent className="p-3 pt-1 space-y-2">
           <div className="flex items-center gap-2 justify-between">
-            <div className="flex gap-1 items-center">
-              <Mail size={14} className="text-gray-400" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {contacto.email}
-              </p>
+            <div className="flex flex-col gap-1 items-start">
+              <div className="flex gap-1 items-center">
+                <Mail size={14} className="text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {contacto.email ? contacto.email : "Sin email"}
+                </p>
+              </div>
+              <div className="flex gap-1 items-center">
+                <Phone size={14} className="text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {contacto.phone ? contacto.phone : "Sin celular"}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -236,16 +230,30 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="correo">Correo electrónico</Label>
-              <Input
-                id="email"
-                name="email"
-                defaultValue={contacto.email}
-                placeholder="candidato@ejemplo.com"
-                type="email"
-                required
-              />
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="correo">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  defaultValue={contacto.email ?? ""}
+                  placeholder="@ejemplo.com"
+                  type="email"
+                  required={false}
+                />
+              </div>
+
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="phone">Celular</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  defaultValue={contacto.phone ?? ""}
+                  placeholder="+52 5532.."
+                  type="tel"
+                  required={false}
+                />
+              </div>
             </div>
             <div className="flex gap-3">
               <Button

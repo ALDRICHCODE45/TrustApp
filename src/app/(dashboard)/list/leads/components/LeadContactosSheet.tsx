@@ -132,19 +132,36 @@ export function LeadContactosSheet({
           )}
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor={fields.email.id}>Correo electrónico</Label>
-        <Input
-          id={fields.email.id}
-          name={fields.email.name}
-          placeholder="candidato@ejemplo.com"
-          type="email"
-          required
-          autoComplete="email"
-        />
-        {fields.email.errors && (
-          <p className="text-sm text-red-500">{fields.email.errors}</p>
-        )}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex-1 space-y-2">
+          <Label htmlFor={fields.email.id}>Correo electrónico</Label>
+          <Input
+            id={fields.email.id}
+            name={fields.email.name}
+            placeholder="candidato@ejemplo.com"
+            type="email"
+            required
+            autoComplete="email"
+          />
+          {fields.email.errors && (
+            <p className="text-sm text-red-500">{fields.email.errors}</p>
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <Label htmlFor={fields.phone.id}>Número telefónico</Label>
+
+          <Input
+            id={fields.phone.id}
+            name={fields.phone.name}
+            placeholder="+52553.."
+            type="number"
+            required
+          />
+
+          {fields.phone.errors && (
+            <p className="text-sm text-red-500">{fields.phone.errors}</p>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3">

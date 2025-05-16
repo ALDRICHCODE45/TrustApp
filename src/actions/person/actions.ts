@@ -56,14 +56,18 @@ export const editLeadPerson = async (contactId: string, formData: FormData) => {
       throw Error("Contacto no encontrado");
     }
 
+    const email =
+      submission.value.email === undefined ? null : submission.value.email;
+    const phone =
+      submission.value.phone === undefined ? null : submission.value.phone;
+
     await prisma.person.update({
       where: { id: contactId },
       data: {
         name: submission.value.name || existingContact.name,
-        email: submission.value.email || existingContact.email,
         position: submission.value.position || existingContact.position,
-        cv: submission.value.cv || existingContact.cv,
-        phone: submission.value.phone || existingContact.phone,
+        email,
+        phone,
       },
     });
 

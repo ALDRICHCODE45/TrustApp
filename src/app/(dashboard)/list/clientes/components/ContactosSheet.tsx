@@ -25,7 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Cliente } from "@/lib/data";
-import { Mail, PlusIcon, UploadIcon, Users } from "lucide-react";
+import { Mail, PlusIcon, Users } from "lucide-react";
 
 export function ContactosSheet({
   contactos,
