@@ -307,8 +307,8 @@ function TableFilters<TData extends { id: string }, TValue>({
                   <SelectLabel>Generador</SelectLabel>
                   <SelectItem value="all">Todos</SelectItem>
                   {generadores.map((user) => (
-                    <SelectItem value={user.name} key={user.id}>
-                      {user.name}
+                    <SelectItem value={user.id} key={user.id}>
+                      {user.name} ({user.role})
                     </SelectItem>
                   ))}
                 </SelectGroup>

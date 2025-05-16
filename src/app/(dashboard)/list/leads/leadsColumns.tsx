@@ -75,7 +75,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     cell: ({ row }) => {
       return <GeneradorDropdownSelect row={row} />;
     },
-    accessorFn: (row) => row.generadorLeads.name,
+    accessorFn: (row) => row.generadorLeads.id,
   },
   {
     accessorKey: "link",
