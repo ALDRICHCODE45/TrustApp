@@ -154,6 +154,8 @@ function TableFilters<TData extends { id: string }, TValue>({
     table.setPageIndex(0);
   };
 
+  const statusOptions = Object.values(LeadStatus);
+
   return (
     <Card className="mb-6 mt-6 shadow-sm">
       <CardContent className="p-5">
@@ -179,6 +181,7 @@ function TableFilters<TData extends { id: string }, TValue>({
             <Label htmlFor="status-filter" className="text-sm font-medium ">
               Estado
             </Label>
+
             <Select
               value={currentStatus}
               onValueChange={(value) => {
@@ -201,27 +204,13 @@ function TableFilters<TData extends { id: string }, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Estado</SelectLabel>
+
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value={LeadStatus.SocialSelling}>
-                    Social Selling
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.Contacto}>Contacto</SelectItem>
-                  <SelectItem value={LeadStatus.ContactoCalido}>
-                    Contacto Calido
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.Prospecto}>
-                    Prospecto
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.CitaAgendada}>
-                    Cita Agendada
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.CitaValidada}>
-                    Cita Validada
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.Asignadas}>
-                    Asignadas
-                  </SelectItem>
-                  <SelectItem value={LeadStatus.StandBy}>StandBy</SelectItem>
+                  {statusOptions.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.replace(/([A-Z])/g, " $1").trim()}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
