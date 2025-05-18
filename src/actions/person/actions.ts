@@ -7,6 +7,7 @@ import {
 } from "@/zod/createLeadPersonSchema";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { deleteFile } from "../files/actions";
 
 export const createLeadPerson = async (prevSate: any, formData: FormData) => {
   try {
@@ -84,11 +85,40 @@ export const deleteContactById = async (contactId: string) => {
 
   //TODO: eliminar archivos si existen dentro del seguimiento
   try {
+    const contactToDelete = await prisma.person.findUnique({
+      where: {
+        id: contactId,
+      },
+      include: {
+        interactions: {
+          select: {
+            attachmentUrl: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (contactToDelete?.interactions) {
+      for (const interaction of contactToDelete?.interactions) {
+        if (interaction.attachmentUrl) {
+          const fileKey = interaction.attachmentUrl.split("/").pop();
+          if (!fileKey) {
+            throw new Error(
+              "No se puede generar el fileKey mientras se elimina el contacto",
+            );
+          }
+          await deleteFile(fileKey, interaction.id);
+        }
+      }
+    }
+
     await prisma.person.delete({
       where: {
         id: contactId,
       },
     });
+
     revalidatePath("/leads");
     revalidatePath("/list/leads");
   } catch (error) {
