@@ -81,6 +81,25 @@ export const createUser = async (prevState: any, formData: FormData) => {
   }
 
   try {
+    // Check if username already exists (exact match, case insensitive)
+    const userExists = await prisma.user.findFirst({
+      where: {
+        name: {
+          equals: submission.value.name, // Usamos equals para coincidencia exacta
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (userExists) {
+      return submission.reply({
+        fieldErrors: {
+          name: ["Ya existe un usuario con este nombre exacto"],
+        },
+        formErrors: ["error"],
+      });
+    }
+
     await prisma.user.create({
       data: {
         age: submission.value.age,
@@ -97,8 +116,11 @@ export const createUser = async (prevState: any, formData: FormData) => {
     });
 
     revalidatePath("/list/users");
+    return submission.reply();
   } catch (error) {
-    console.log(error);
-    throw new Error("Error creando el usuario");
+    console.error(error);
+    return submission.reply({
+      formErrors: ["Ocurrió un error al crear el usuario"],
+    });
   }
 };

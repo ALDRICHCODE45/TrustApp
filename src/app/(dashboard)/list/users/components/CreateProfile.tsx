@@ -29,6 +29,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { createUserSchema } from "@/zod/createUserSchema";
 import { UserState, Role, Oficina } from "@prisma/client";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function CreateProfile() {
   const [open, setOpen] = useState(false);
@@ -44,22 +45,26 @@ export default function CreateProfile() {
         schema: createUserSchema,
       });
     },
-    onSubmit(event, context) {
-      if (!isPending) {
-        setTimeout(() => {
-          setOpen(false);
-        }, 400);
-      }
+    onSubmit: () => {
+      setOpen(false);
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
 
   useEffect(() => {
-    if (lastResult && lastResult.status === "success") {
-      setTimeout(() => setOpen(false), 100); // Pequeño delay para asegurar que el estado se actualice correctamente
+    if (!lastResult) return;
+
+    if (lastResult.status === "error" && lastResult.error) {
+      toast("Error", { description: "Ocurrio un error" });
     }
-  }, [lastResult]);
+
+    if (lastResult.status === "success" && !lastResult.error) {
+      toast("Operacion Exitosa", {
+        description: "Usuario creado correctamente",
+      });
+    }
+  }, [lastResult, toast]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
