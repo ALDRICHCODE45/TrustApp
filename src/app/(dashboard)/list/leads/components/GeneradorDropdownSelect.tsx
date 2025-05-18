@@ -13,7 +13,7 @@ import { User } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 import { editLeadById, getRecruiters } from "@/actions/leads/actions";
 import { toast } from "sonner";
-import { Loader2, RotateCw } from "lucide-react";
+import { ExternalLink, Loader2, RotateCw } from "lucide-react";
 import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
 
 export const GeneradorDropdownSelect = ({
@@ -27,6 +27,7 @@ export const GeneradorDropdownSelect = ({
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const currentGeneratorId = row.original.generadorId;
   const currentGenerator = row.original.generadorLeads;
@@ -104,14 +105,22 @@ export const GeneradorDropdownSelect = ({
       console.error(error);
     } finally {
       setIsUpdating(false);
+      setIsDropdownOpen(false); // Cerrar dropdown después de actualizar
     }
   };
 
-  const navigateToProfile = (id: string) => {
+  const navigateToProfile = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevenir que se cierre el dropdown
+    e.preventDefault();
     router.push(`/profile/${id}`);
+    setIsDropdownOpen(false);
   };
 
-  const retryLoading = () => {
+  const retryLoading = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setRetryCount(0); // Resetear contador de reintentos
     loadRecruiters();
   };
@@ -127,8 +136,8 @@ export const GeneradorDropdownSelect = ({
               alt={currentGenerator.name}
               className="object-cover"
             />
-            <AvatarFallback className="text-xs text-slate-700">
-              {currentGenerator.name.charAt(0)}
+            <AvatarFallback className="text-xs text-slate-700 dark:text-white">
+              {currentGenerator.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <span className="truncate max-w-[90px]">{currentGenerator.name}</span>
@@ -139,7 +148,7 @@ export const GeneradorDropdownSelect = ({
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -174,7 +183,11 @@ export const GeneradorDropdownSelect = ({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-72 max-h-[300px] overflow-y-auto">
+      <DropdownMenuContent
+        className="w-72 max-h-[300px] overflow-y-auto"
+        align="start"
+        side="bottom"
+      >
         {error ? (
           <div className="p-3 text-center">
             <p className="text-sm text-red-500 mb-2">{error}</p>
@@ -193,38 +206,40 @@ export const GeneradorDropdownSelect = ({
           recruiters.map((recruiter) => (
             <DropdownMenuItem
               key={recruiter.id}
-              className={`flex items-center gap-3 p-2 cursor-pointer ${
+              className={`p-2 cursor-pointer ${
                 recruiter.id === currentGeneratorId ? "bg-muted" : ""
               }`}
               onClick={() => handleUserChange(recruiter)}
             >
-              <div className="flex items-center gap-3 flex-1">
-                <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage
-                    src={recruiter.image ?? undefined}
-                    alt={recruiter.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{recruiter.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {recruiter.email}
-                  </span>
+              <div className="flex items-center w-full">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarImage
+                      src={recruiter.image ?? undefined}
+                      alt={recruiter.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium truncate">
+                      {recruiter.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {recruiter.email}
+                    </span>
+                  </div>
                 </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 shrink-0 ml-2"
+                  onClick={(e) => navigateToProfile(e, recruiter.id)}
+                  title="Ver perfil"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
               </div>
-              <Button
-                size="sm"
-                variant="link"
-                className="ml-auto h-8 w-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent dropdown from closing
-                  navigateToProfile(recruiter.id);
-                }}
-              >
-                Ver
-              </Button>
             </DropdownMenuItem>
           ))
         ) : (

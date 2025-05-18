@@ -35,7 +35,7 @@ export const ConfirmDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="z-[99999]">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>

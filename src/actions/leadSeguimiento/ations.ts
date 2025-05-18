@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { deleteFile } from "../files/actions";
 
 export type ContactInteractionWithRelations =
   Prisma.ContactInteractionGetPayload<{
@@ -19,11 +20,26 @@ export const deleteInteractionById = async (interactionId: string) => {
       throw new Error("El id de la interaccion es necesario");
     }
 
-    await prisma.contactInteraction.delete({
+    const fileToDelete = await prisma.contactInteraction.delete({
       where: {
         id: interactionId,
       },
+      select: {
+        attachmentUrl: true,
+      },
     });
+    console.log({ fileToDelete });
+    //TODO: al eliminar la interaccion, se deben eliminar tambien los archivos de digital ocean
+    if (fileToDelete.attachmentUrl) {
+      const fileKey = fileToDelete.attachmentUrl.split("/").pop();
+      if (!fileKey) {
+        throw new Error(
+          "Error al obtener el fileKey en deleteInteraccionById action",
+        );
+      }
+      const fileDeleted = await deleteFile(fileKey, interactionId);
+    }
+
     return { ok: true };
   } catch (err) {
     throw new Error("Error al eliminar la interaccion");

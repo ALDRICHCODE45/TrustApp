@@ -22,43 +22,49 @@ export interface propsReplaceFile {
   file: File;
 }
 
-export const replaceFile = async (fileKey: string, props: propsReplaceFile) => {
+export const deleteFile = async (fileKey: string, interactionId: string) => {
   try {
-    //eliminar el archivo a remplazar
+    //eliminar el archivo
     const command = new DeleteObjectCommand({
       Bucket: process.env.DO_SPACES_BUCKET!,
       Key: fileKey,
     });
     await s3.send(command);
 
-    //crear otro file en digital ocean
-    const formData = new FormData();
-    formData.append("file", props.file);
-    const response = await uploadFile(formData);
+    //eliminar el file de la base de datos (filename, fileurl, fileType)
+    const interactionExists = await prisma.contactInteraction.findUnique({
+      where: {
+        id: interactionId,
+      },
+    });
 
-    if (!response.success) {
-      throw new Error("Erorr al subir el archivo para remplazarlo");
+    if (!interactionExists) {
+      return {
+        ok: false,
+        message: "interaction not found",
+      };
     }
 
-    await prisma.contactInteraction.update({
+    const interactionUpdated = await prisma.contactInteraction.update({
       where: {
-        id: props.interactionId,
+        id: interactionId,
       },
       data: {
-        attachmentName: response.fileName,
-        attachmentType: response.fileType,
-        attachmentUrl: response.url,
+        attachmentName: null,
+        attachmentType: null,
+        attachmentUrl: null,
       },
     });
 
     return {
-      success: true,
-      url: response.url,
-      fileName: response.fileName,
-      fileType: response.fileType,
+      ok: true,
+      message: "Archivo eliminado correctamente",
     };
   } catch (err) {
-    throw new Error("Error al remplazar el archivo");
+    return {
+      ok: false,
+      message: "No se puede eliminar el archivo",
+    };
   }
 };
 
