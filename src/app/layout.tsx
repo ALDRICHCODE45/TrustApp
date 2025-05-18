@@ -25,7 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" />
 
         <ThemeProvider
           attribute="class"

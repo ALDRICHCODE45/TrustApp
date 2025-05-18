@@ -17,5 +17,20 @@ export async function desactivateUsers(ids: string[]) {
     },
   });
 
-  revalidatePath("/list/users"); // o la ruta que estés usando
+  revalidatePath("/list/users");
 }
+
+//funcion para eliminar permanentemente ususarios y sus relaciones
+export const removeUsers = async (ids: string[]) => {
+  if (!ids || ids.length === 0) return;
+
+  await prisma.user.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  });
+
+  revalidatePath("/list/users"); // o la ruta que estés usando
+};

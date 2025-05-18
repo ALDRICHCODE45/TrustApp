@@ -45,13 +45,15 @@ import {
   Layers,
   Trash2,
   Loader2,
+  ShieldMinus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Oficina, Role, User, UserState } from "@prisma/client";
 import CreateProfile from "../components/CreateProfile";
 import { toast } from "sonner";
-import { desactivateUsers } from "@/actions/users/delete-users";
+import { desactivateUsers, removeUsers } from "@/actions/users/delete-users";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export interface TableProps {}
 interface DataTableProps<TData, TValue> {
@@ -80,6 +82,7 @@ export function UsersTable<TData extends User, TValue>({
   const [currentUserState, setCurrentUserState] = useState("all");
 
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [usersRemove, setUsersRemove] = useState(false);
 
   const table = useReactTable({
     data,
@@ -137,6 +140,21 @@ export function UsersTable<TData extends User, TValue>({
     }
   };
 
+  const handleRemoveUsers = async () => {
+    setUsersRemove(true);
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const ids = selectedRows.map((row) => row.original.id);
+
+    try {
+      await removeUsers(ids);
+      toast.success("Usuarios eliminados correctamente");
+    } catch (error) {
+      toast.error("Error al desactivar usuarios");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
 
   return (
@@ -177,25 +195,50 @@ export function UsersTable<TData extends User, TValue>({
           </div>
 
           {/* Acciones */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {hasSelectedRows && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDelete()}
-                className="flex items-center gap-1 cursor-pointer"
-                disabled={deleteLoading}
-              >
-                {deleteLoading ? (
-                  <Loader2 className="animate-spin size-4" />
-                ) : (
-                  <Trash2 className="size-4" />
-                )}
-                Desactivar {table.getFilteredSelectedRowModel().rows.length}{" "}
-                {table.getFilteredSelectedRowModel().rows.length === 1
-                  ? "usuario"
-                  : "usuarios"}
-              </Button>
+              <>
+                <ConfirmDialog
+                  title="Estas seguro?"
+                  description="Esta accion no se puede deshacer y se eliminaran todas sus relaciones"
+                  trigger={
+                    <Button
+                      className="flex items-center gap-1 cursor-pointer"
+                      variant="destructive"
+                      size="sm"
+                    >
+                      <Trash2 className="size-4" />
+                      <span>Eliminar usuarios</span>
+                    </Button>
+                  }
+                  onConfirm={async () => handleRemoveUsers()}
+                />
+
+                <ConfirmDialog
+                  title="Estas seguro?"
+                  description="Esta accion no se puede deshacer y los usuarios seleccionados no podran acceder a los sistemas de nuevo."
+                  trigger={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 cursor-pointer"
+                      disabled={deleteLoading}
+                    >
+                      {deleteLoading ? (
+                        <Loader2 className="animate-spin size-4" />
+                      ) : (
+                        <ShieldMinus className="size-4" />
+                      )}
+                      Desactivar{" "}
+                      {table.getFilteredSelectedRowModel().rows.length}{" "}
+                      {table.getFilteredSelectedRowModel().rows.length === 1
+                        ? "usuario"
+                        : "usuarios"}
+                    </Button>
+                  }
+                  onConfirm={async () => handleDelete()}
+                />
+              </>
             )}
 
             <CreateProfile />

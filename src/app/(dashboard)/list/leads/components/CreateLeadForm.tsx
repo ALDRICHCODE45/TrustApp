@@ -127,7 +127,7 @@ function NuevoLeadForm({
     },
     onSubmit(event, context) {
       if (context.submission?.status === "success") {
-        toast.success("Usuario editado correctamente");
+        toast.success("Lead creado correctamente");
         setOpenDialog(false);
       }
     },

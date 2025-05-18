@@ -60,6 +60,9 @@ export function LeadContactosSheet({
         schema: createLeadPersonSchema,
       });
     },
+    onSubmit: () => {
+      setOpen(false);
+    },
     shouldValidate: "onSubmit",
   });
 
@@ -68,6 +71,7 @@ export function LeadContactosSheet({
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 640);
     };
+
     // Ejecutar en el cliente
     checkMobile();
 

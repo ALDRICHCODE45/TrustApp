@@ -82,6 +82,7 @@ export const editLeadPerson = async (contactId: string, formData: FormData) => {
 export const deleteContactById = async (contactId: string) => {
   await checkSession();
 
+  //TODO: eliminar archivos si existen dentro del seguimiento
   try {
     await prisma.person.delete({
       where: {
