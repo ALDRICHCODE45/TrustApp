@@ -10,7 +10,11 @@ import { Metadata } from "next";
 export interface pageProps {}
 
 const fetchUsers = async () => {
-  const users = await prisma.user.findMany();
+  const users = await prisma.user.findMany({
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
   return {
     columns: UserColumns,
     data: users,
