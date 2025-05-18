@@ -45,6 +45,7 @@ interface PerformanceData {
   citasAgendadas: number;
   citasValidadas: number;
   clientes: number;
+  citasAtendidas: number;
 }
 
 export const LeadPerformanceChart: React.FC = () => {
@@ -61,6 +62,7 @@ export const LeadPerformanceChart: React.FC = () => {
     prospectos: { label: "Prospectos", color: "#10b981" },
     citasAgendadas: { label: "C.A", color: "#ec4899" },
     citasValidadas: { label: "C.V", color: "#8b5cf6" },
+    citasAtendidas: { label: "C.At", color: "#94a3b8" },
     clientes: { label: "Clientes", color: "#3b82f6" },
   };
 
@@ -198,6 +200,16 @@ export const LeadPerformanceChart: React.FC = () => {
                     stroke={chartConfig.citasAgendadas.color}
                     stackId="a"
                     name={chartConfig.citasAgendadas.label}
+                  />
+
+                  <Area
+                    dataKey="citasAtendidas"
+                    type="natural"
+                    fill={chartConfig.citasAtendidas.color}
+                    fillOpacity={0.4}
+                    stroke={chartConfig.citasAtendidas.color}
+                    stackId="a"
+                    name={chartConfig.citasAtendidas.label}
                   />
 
                   <Area

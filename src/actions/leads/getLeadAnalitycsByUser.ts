@@ -12,6 +12,7 @@ interface Mes {
   citasAgendadas: number;
   citasValidadas: number;
   clientes: number;
+  citasAtendidas: number;
 }
 
 export const getAnalitycsByUserAction = async (userId: string) => {
@@ -120,6 +121,18 @@ const createDataByMonth = async (userId: string) => {
     },
   });
 
+  //contar las citas validadas en el mes seleccionado
+  const statusCitasAtendidas = await prisma.leadStatusHistory.findMany({
+    where: {
+      changedById: userId,
+      status: LeadStatus.CitaAtendida,
+      changedAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+
   // Crear array con datos para cada mes
 
   const dataByMes: Mes[] = Array.from({ length: 12 }, (_, monthIndex) => {
@@ -162,6 +175,10 @@ const createDataByMonth = async (userId: string) => {
       (lead) => lead.changedAt.getMonth() === monthIndex,
     ).length;
 
+    const citasAtendidas = statusCitasAtendidas.filter(
+      (lead) => lead.changedAt.getMonth() === monthIndex,
+    ).length;
+
     //contar Eliminados
 
     return {
@@ -172,6 +189,7 @@ const createDataByMonth = async (userId: string) => {
       prospectos: proscpectos,
       citasAgendadas: citasAgendadas,
       citasValidadas: citasValidadas,
+      citasAtendidas: citasAtendidas,
       clientes: clientes,
     };
   });

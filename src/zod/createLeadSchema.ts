@@ -16,6 +16,7 @@ export const createLeadSchema = z.object({
       LeadStatus.CitaValidada,
       LeadStatus.Asignadas,
       LeadStatus.StandBy,
+      LeadStatus.CitaAtendida,
     ])
     .optional(),
 

@@ -39,6 +39,7 @@ export function LeadCard({ leadId, lead }: LeadCardProps) {
       [LeadStatus.CitaValidada]: "bg-pink-500 hover:bg-pink-600",
       [LeadStatus.Asignadas]: "bg-green-500 hover:bg-green-600",
       [LeadStatus.StandBy]: "bg-red-500 hover:bg-red-600",
+      [LeadStatus.CitaAtendida]: "bg-gray-500",
     };
     return statusColors[status] || "bg-gray-500";
   };
