@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Lead, LeadStatus, Person, User } from "@prisma/client";
+import { LeadStatus } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 import {
   Award,
@@ -13,6 +13,7 @@ import {
   CalendarClock,
   CircleX,
   Contact,
+  UserCheck,
   UserRound,
   UserSearch,
 } from "lucide-react";
@@ -70,6 +71,15 @@ const allowLeadStatus = [
     status: "Social Selling",
     icon: UserRound,
   },
+
+  {
+    title: "¿Estás seguro?",
+    description: "¿Quieres cambiar el status a Cita Atendida?",
+    onConfirmValule: LeadStatus.CitaAtendida,
+    oficeNumber: "Cita Atendida",
+    status: "Cita Atendida",
+    icon: UserCheck,
+  },
   {
     title: "¿Estás seguro?",
     description: "¿Quieres cambiar el status a Cliente?",
@@ -78,7 +88,6 @@ const allowLeadStatus = [
     status: "Cliente",
     icon: Award,
   },
-
   {
     title: "¿Estás seguro?",
     description: "¿Quieres cambiar el status a StandBy este Lead?",
@@ -98,6 +107,7 @@ export const leadStatusMap: Record<LeadStatus, string> = {
   Contacto: "Contacto",
   Prospecto: "Prospecto",
   StandBy: "StandBy",
+  CitaAtendida: "Cita Atendida",
 };
 
 export const LeadChangeStatus = ({ row }: { row: Row<LeadWithRelations> }) => {
@@ -108,6 +118,7 @@ export const LeadChangeStatus = ({ row }: { row: Row<LeadWithRelations> }) => {
     const leadId: string = row.original.id;
     const formData: FormData = new FormData();
     formData.append("status", newStatus);
+    console.log({ formData });
 
     try {
       await editLeadById(leadId, formData);

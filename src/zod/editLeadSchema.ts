@@ -21,6 +21,7 @@ export const editLeadZodSchema = z.object({
       LeadStatus.CitaValidada,
       LeadStatus.Asignadas,
       LeadStatus.StandBy,
+      LeadStatus.CitaAtendida,
     ])
     .optional(),
 

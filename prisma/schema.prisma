@@ -82,6 +82,7 @@ enum LeadStatus {
   ContactoCalido
   Prospecto
   CitaAgendada
+  CitaAtendida
   CitaValidada
   Asignadas
   StandBy

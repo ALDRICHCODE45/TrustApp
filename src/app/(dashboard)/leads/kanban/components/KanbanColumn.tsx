@@ -11,6 +11,7 @@ import {
   HandshakeIcon,
   BriefcaseIcon,
   CircleX,
+  UserCheck,
 } from "lucide-react";
 import { User, Lead, LeadStatus } from "@prisma/client";
 import { LeadWithRelations } from "../page";
@@ -50,6 +51,7 @@ const getColumnIcon = (status: string) => {
     [LeadStatus.StandBy]: (
       <CircleX className="h-5 w-5 text-red-500 dark:text-red-400" />
     ),
+    [LeadStatus.CitaAtendida]: <UserCheck className="size-5 text-green-300 " />,
   };
   return (
     icons[status as LeadStatus] || (
@@ -77,6 +79,8 @@ const getBadgeColor = (status: string) => {
       "bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300",
     [LeadStatus.StandBy]:
       "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300",
+    [LeadStatus.CitaAtendida]:
+      "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300",
   };
   return (
     colorMap[status as LeadStatus] ||

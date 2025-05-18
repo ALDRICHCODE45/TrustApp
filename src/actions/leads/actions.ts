@@ -161,7 +161,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     });
 
     if (!existingLead) {
-      throw Error("User does not exists");
+      throw Error("Lead does not exists");
     }
 
     // Modificado: Si NO es admin Y además no es el creador del lead, entonces no puede modificarlo

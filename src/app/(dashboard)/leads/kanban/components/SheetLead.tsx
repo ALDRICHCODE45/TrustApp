@@ -25,6 +25,7 @@ export const getStatusColor = (status: LeadStatus) => {
     [LeadStatus.CitaAgendada]: "bg-indigo-100 text-indigo-800",
     [LeadStatus.Asignadas]: "bg-emerald-100 text-emerald-800",
     [LeadStatus.StandBy]: "bg-red-100 text-red-800",
+    [LeadStatus.CitaAtendida]: "bg-purple-100 text-purple-800",
   };
   return statusColors[status];
 };
