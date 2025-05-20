@@ -45,7 +45,7 @@ export const deleteFile = async (fileKey: string, interactionId: string) => {
       };
     }
 
-    const interactionUpdated = await prisma.contactInteraction.update({
+    await prisma.contactInteraction.update({
       where: {
         id: interactionId,
       },
