@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -121,16 +121,6 @@ function TableFilters<TData extends { id: string }, TValue>({
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  useEffect(() => {
-    if (!currentDateCreation) {
-      table.getColumn("createdAt")?.setFilterValue(undefined);
-      return;
-    }
-
-    table.getColumn("createdAt")?.setFilterValue(currentDateCreation);
-    table.setPageIndex(0);
-  }, [currentDateCreation, table]);
-
   const handleDelete = async () => {
     setDeleteLoading(true);
     const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -148,11 +138,11 @@ function TableFilters<TData extends { id: string }, TValue>({
 
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
 
-  const handleClearDateFilter = () => {
+  const handleClearDateFilter = useCallback(() => {
     setCurrentDateCreation(undefined);
     table.getColumn("createdAt")?.setFilterValue(undefined);
     table.setPageIndex(0);
-  };
+  }, [setCurrentDateCreation, table]);
 
   const statusOptions = Object.values(LeadStatus);
 
@@ -162,15 +152,15 @@ function TableFilters<TData extends { id: string }, TValue>({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Buscador global */}
           <div className="space-y-2">
-            <Label htmlFor="global-filter" className="text-sm font-medium ">
+            <Label htmlFor="global-filter" className="text-sm font-medium">
               Búsqueda global
             </Label>
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 " />
+              <Search className="absolute left-3 top-2.5 h-4 w-4" />
               <Input
                 id="global-filter"
                 placeholder={filterPlaceholder}
-                className="pl-9 "
+                className="pl-9"
                 onChange={(e) => onGlobalFilterChange?.(e.target.value)}
               />
             </div>
@@ -178,22 +168,12 @@ function TableFilters<TData extends { id: string }, TValue>({
 
           {/* Filtro por estado */}
           <div className="space-y-2">
-            <Label htmlFor="status-filter" className="text-sm font-medium ">
+            <Label htmlFor="status-filter" className="text-sm font-medium">
               Estado
             </Label>
-
             <Select
               value={currentStatus}
-              onValueChange={(value) => {
-                if (value === "all") {
-                  table.getColumn("status")?.setFilterValue(undefined);
-                  setCurrentStatus("all");
-                  return;
-                }
-                setCurrentStatus(value as LeadStatus);
-                table.getColumn("status")?.setFilterValue(value);
-                table.setPageIndex(0);
-              }}
+              onValueChange={setCurrentStatus}
             >
               <SelectTrigger id="status-filter" className="w-full">
                 <div className="flex items-center gap-2">
@@ -204,7 +184,6 @@ function TableFilters<TData extends { id: string }, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Estado</SelectLabel>
-
                   <SelectItem value="all">Todos</SelectItem>
                   {statusOptions.map((status) => (
                     <SelectItem key={status} value={status}>
@@ -250,7 +229,6 @@ function TableFilters<TData extends { id: string }, TValue>({
                 </PopoverContent>
               </Popover>
 
-              {/* Badge to show active date filter with clear option */}
               {currentDateCreation && (
                 <Badge variant="outline" className="w-fit gap-1">
                   {format(currentDateCreation, "dd/MM/yyyy", { locale: es })}
@@ -274,20 +252,11 @@ function TableFilters<TData extends { id: string }, TValue>({
             </Label>
             <Select
               value={currentGl}
-              onValueChange={(value) => {
-                if (value === "all") {
-                  table.getColumn("generadorLeads")?.setFilterValue(undefined);
-                  setCurrentGl("all");
-                  return;
-                }
-                setCurrentGl(value);
-                table.getColumn("generadorLeads")?.setFilterValue(value);
-                table.setPageIndex(0);
-              }}
+              onValueChange={setCurrentGl}
             >
-              <SelectTrigger id="generador-filter" className="w-full ">
+              <SelectTrigger id="generador-filter" className="w-full">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 " />
+                  <Filter className="h-4 w-4" />
                   <SelectValue placeholder="Seleccionar generador" />
                 </div>
               </SelectTrigger>
@@ -310,7 +279,7 @@ function TableFilters<TData extends { id: string }, TValue>({
             {hasSelectedRows ? (
               <Button
                 variant="destructive"
-                onClick={() => handleDelete()}
+                onClick={handleDelete}
                 className="flex items-center justify-center gap-2 h-10 w-full"
                 disabled={deleteLoading}
               >
@@ -545,20 +514,55 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
-  const [currentDateCreation, setCurrentDateCreation] = useState<
-    Date | undefined
-  >(undefined);
+  const [currentDateCreation, setCurrentDateCreation] = useState<Date | undefined>(undefined);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: defaultPageSize,
   });
 
-  // Use a mounted ref to prevent state updates before mounting
-  const [isMounted, setIsMounted] = useState(false);
+  // Memoize handlers to prevent unnecessary re-renders
+  const handlePageSizeChange = useCallback((value: string) => {
+    const newSize = parseInt(value, 10);
+    setPageSize(newSize);
+    table.setPageSize(newSize);
+  }, []);
 
-  useEffect(() => {
-    setIsMounted(true);
+  const handleGlobalFilterChange = useCallback((value: string) => {
+    setGlobalFilter(value);
+    table.setPageIndex(0);
+  }, []);
+
+  const handleStatusChange = useCallback((value: string) => {
+    if (value === "all") {
+      table.getColumn("status")?.setFilterValue(undefined);
+      setCurrentStatus("all");
+      return;
+    }
+    setCurrentStatus(value as LeadStatus);
+    table.getColumn("status")?.setFilterValue(value);
+    table.setPageIndex(0);
+  }, []);
+
+  const handleGlChange = useCallback((value: string) => {
+    if (value === "all") {
+      table.getColumn("generadorLeads")?.setFilterValue(undefined);
+      setCurrentGl("all");
+      return;
+    }
+    setCurrentGl(value);
+    table.getColumn("generadorLeads")?.setFilterValue(value);
+    table.setPageIndex(0);
+  }, []);
+
+  const handleDateChange = useCallback((date: Date | undefined) => {
+    setCurrentDateCreation(date);
+    if (!date) {
+      table.getColumn("createdAt")?.setFilterValue(undefined);
+      return;
+    }
+    table.getColumn("createdAt")?.setFilterValue(date);
+    table.setPageIndex(0);
   }, []);
 
   // Configuración de la tabla
@@ -588,41 +592,19 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     },
   });
 
-  // Manejadores
-  const handlePageSizeChange = (value: string) => {
-    if (!isMounted) return; // Prevent updates before mounting
-    const newSize = parseInt(value, 10);
-    setPageSize(newSize);
-    table.setPageSize(newSize);
-  };
-
-  const handleGlobalFilterChange = (value: string) => {
-    if (!isMounted) return; // Prevent updates before mounting
-    setGlobalFilter(value);
-    table.setPageIndex(0); // Reset a primera página al filtrar
-  };
-
-  if (!isMounted) {
-    return (
-      <div className="flex items-center justify-center w-full h-full">
-        <LoaderCircle className="h-8 w-8 text-blue-600 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <TableFilters
-        setCurrentDateCreation={setCurrentDateCreation}
+        setCurrentDateCreation={handleDateChange}
         currentDateCreation={currentDateCreation}
         generadores={generadores}
         table={table}
         filterPlaceholder={filterPlaceholder}
         onGlobalFilterChange={handleGlobalFilterChange}
         currentStatus={currentStatus}
-        setCurrentStatus={setCurrentStatus}
+        setCurrentStatus={handleStatusChange}
         currentGl={currentGl}
-        setCurrentGl={setCurrentGl}
+        setCurrentGl={handleGlChange}
       />
       <DataGrid table={table} columns={columns} />
       <TablePagination

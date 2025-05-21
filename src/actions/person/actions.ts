@@ -11,7 +11,6 @@ import { deleteFile } from "../files/actions";
 
 export const createLeadPerson = async (prevSate: any, formData: FormData) => {
   try {
-    await checkSession();
 
     const submission = parseWithZod(formData, {
       schema: createLeadPersonSchema,

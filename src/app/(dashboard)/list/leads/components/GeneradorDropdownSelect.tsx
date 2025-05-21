@@ -26,69 +26,38 @@ export const GeneradorDropdownSelect = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const currentGeneratorId = row.original.generadorId;
   const currentGenerator = row.original.generadorLeads;
 
-  // Usamos refs para tener acceso al estado más actual
-  const loadingRef = useRef(loading);
-  const recruitersRef = useRef(recruiters);
-  const retryCountRef = useRef(retryCount);
-
-  useEffect(() => {
-    loadingRef.current = loading;
-    recruitersRef.current = recruiters;
-    retryCountRef.current = retryCount;
-  }, [loading, recruiters, retryCount]);
-
+  // Memoize the loadRecruiters function
   const loadRecruiters = useCallback(async () => {
+    if (recruiters) return; // Si ya tenemos los datos, no los cargamos de nuevo
+    
     setLoading(true);
     setError(null);
 
     try {
       const recruitersData = await getRecruiters();
-
       if (Array.isArray(recruitersData) && recruitersData.length > 0) {
         setRecruiters(recruitersData);
       } else {
         setError("No se pudieron cargar los reclutadores");
-        console.warn("Recruiters data is empty or invalid:", recruitersData);
       }
     } catch (error) {
       setError("Error al cargar reclutadores");
-      console.error("Error loading recruiters:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [recruiters]);
 
-  // Cargar reclutadores al montar el componente con un sistema de reintentos limitados
+  // Cargar reclutadores solo cuando se abre el dropdown
   useEffect(() => {
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const attemptLoad = async () => {
-      if (retryCountRef.current >= 3) return;
-
-      try {
-        await loadRecruiters();
-      } finally {
-        if (loadingRef.current && !recruitersRef.current) {
-          retryTimer = setTimeout(() => {
-            setRetryCount((prev) => prev + 1);
-            attemptLoad(); // Reintenta
-          }, 2000);
-        }
-      }
-    };
-
-    attemptLoad();
-
-    return () => {
-      if (retryTimer) clearTimeout(retryTimer);
-    };
-  }, [loadRecruiters]);
+    if (isDropdownOpen) {
+      loadRecruiters();
+    }
+  }, [isDropdownOpen, loadRecruiters]);
 
   const handleUserChange = async (newUser: User) => {
     if (newUser.id === currentGeneratorId) return;
@@ -99,30 +68,20 @@ export const GeneradorDropdownSelect = ({
       formData.append("generadorId", newUser.id);
       await editLeadById(row.original.id, formData);
       toast.success("Lead reasignado con éxito");
-      router.refresh(); // Refresh to update all components with new data
+      router.refresh();
     } catch (error) {
       toast.error("Error al reasignar lead");
-      console.error(error);
     } finally {
       setIsUpdating(false);
-      setIsDropdownOpen(false); // Cerrar dropdown después de actualizar
+      setIsDropdownOpen(false);
     }
   };
 
   const navigateToProfile = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevenir que se cierre el dropdown
+    e.stopPropagation();
     e.preventDefault();
     router.push(`/profile/${id}`);
     setIsDropdownOpen(false);
-  };
-
-  const retryLoading = (e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    setRetryCount(0); // Resetear contador de reintentos
-    loadRecruiters();
   };
 
   // Renderizar nombre del generador actual
@@ -161,22 +120,6 @@ export const GeneradorDropdownSelect = ({
               <span>Actualizando...</span>
               <Loader2 className="h-3 w-3 animate-spin" />
             </div>
-          ) : loading ? (
-            <div className="flex items-center gap-2">
-              <span>Cargando...</span>
-              <Loader2 className="h-3 w-3 animate-spin" />
-            </div>
-          ) : error ? (
-            <div
-              className="flex items-center gap-2 text-red-500 w-full justify-between"
-              onClick={(e) => {
-                e.stopPropagation();
-                retryLoading();
-              }}
-            >
-              <span className="truncate max-w-[100px]">Error</span>
-              <RotateCw className="h-3 w-3" />
-            </div>
           ) : (
             renderCurrentGeneratorName()
           )}
@@ -191,7 +134,7 @@ export const GeneradorDropdownSelect = ({
         {error ? (
           <div className="p-3 text-center">
             <p className="text-sm text-red-500 mb-2">{error}</p>
-            <Button size="sm" onClick={retryLoading}>
+            <Button size="sm" onClick={() => loadRecruiters()}>
               Reintentar
             </Button>
           </div>
@@ -247,9 +190,6 @@ export const GeneradorDropdownSelect = ({
             <p className="text-sm text-muted-foreground">
               No hay reclutadores disponibles
             </p>
-            <Button size="sm" onClick={retryLoading} className="mt-2">
-              Reintentar
-            </Button>
           </div>
         )}
       </DropdownMenuContent>

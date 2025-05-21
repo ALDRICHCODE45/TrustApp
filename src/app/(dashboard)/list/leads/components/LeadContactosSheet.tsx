@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useActionState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,21 +20,16 @@ import {
 } from "@/components/ui/sheet";
 import { Loader2, PlusIcon, Users, UserX } from "lucide-react";
 import { createLeadPerson } from "@/actions/person/actions";
-import { useForm } from "@conform-to/react";
-import { parseWithZod } from "@conform-to/zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createLeadPersonSchema } from "@/zod/createLeadPersonSchema";
+import type { z } from "zod";
 import {
   ContactoCard,
   ContactWithRelations,
 } from "@/app/(dashboard)/leads/components/ContactCard";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+
+type FormData = z.infer<typeof createLeadPersonSchema>;
 
 export function LeadContactosSheet({
   contactos,
@@ -44,126 +38,93 @@ export function LeadContactosSheet({
   contactos: ContactWithRelations[];
   leadId: string;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
   const [open, setOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [lastResult, formAction, isPending] = useActionState(
-    createLeadPerson,
-    undefined,
-  );
-
-  const [form, fields] = useForm({
-    lastResult,
-    onValidate({ formData }) {
-      return parseWithZod(formData, {
-        schema: createLeadPersonSchema,
-      });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(createLeadPersonSchema),
+    defaultValues: {
+      leadId,
     },
-    onSubmit: () => {
-      setOpen(false);
-    },
-    shouldValidate: "onSubmit",
   });
 
-  // Detectar si el dispositivo es móvil
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 640);
-    };
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
 
-    // Ejecutar en el cliente
-    checkMobile();
-
-    const handleResize = () => {
-      checkMobile();
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Manejar el resultado de la acción
-  useEffect(() => {
-    if (lastResult && !lastResult.error) {
+      await createLeadPerson(null, formData);
       setOpen(false);
+      reset();
+    } catch (error) {
+      console.error("Error al crear el contacto:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [lastResult]);
+  };
 
   // Formulario de contacto
   const ContactForm = () => (
-    <form
-      className="space-y-4"
-      id={form.id}
-      action={formAction}
-      onSubmit={form.onSubmit}
-      noValidate
-    >
-      <input
-        type="hidden"
-        value={leadId}
-        name={fields.leadId.name}
-        id={fields.leadId.id}
-      />
-
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
-          <Label htmlFor={fields.name.id}>Nombre completo</Label>
+          <Label htmlFor="name">Nombre completo</Label>
           <Input
-            name={fields.name.name}
-            id={fields.name.id}
+            {...register("name")}
             placeholder="Juan Pérez"
             type="text"
-            required
             autoComplete="name"
           />
-          {fields.name.errors && (
-            <p className="text-sm text-red-500">{fields.name.errors}</p>
+          {errors.name && (
+            <p className="text-sm text-red-500">{errors.name.message}</p>
           )}
         </div>
         <div className="flex-1 space-y-2">
-          <Label htmlFor={fields.position.id}>Posición</Label>
+          <Label htmlFor="position">Posición</Label>
           <Input
-            id={fields.position.id}
-            name={fields.position.name}
+            {...register("position")}
             placeholder="Gerente de producto"
             type="text"
-            required
             autoComplete="organization-title"
           />
-          {fields.position.errors && (
-            <p className="text-sm text-red-500">{fields.position.errors}</p>
+          {errors.position && (
+            <p className="text-sm text-red-500">{errors.position.message}</p>
           )}
         </div>
       </div>
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
-          <Label htmlFor={fields.email.id}>Correo electrónico</Label>
+          <Label htmlFor="email">Correo electrónico</Label>
           <Input
-            id={fields.email.id}
-            name={fields.email.name}
+            {...register("email", {required:false})}
             placeholder="candidato@ejemplo.com"
             type="email"
-            required
             autoComplete="email"
           />
-          {fields.email.errors && (
-            <p className="text-sm text-red-500">{fields.email.errors}</p>
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
         <div className="flex-1 space-y-2">
-          <Label htmlFor={fields.phone.id}>Número telefónico</Label>
-
+          <Label htmlFor="phone">Número telefónico</Label>
           <Input
-            id={fields.phone.id}
-            name={fields.phone.name}
+            {...register("phone", {required:false})}
             placeholder="+52553.."
-            type="number"
-            required
+            type="tel"
           />
-
-          {fields.phone.errors && (
-            <p className="text-sm text-red-500">{fields.phone.errors}</p>
+          {errors.phone && (
+            <p className="text-sm text-red-500">{errors.phone.message}</p>
           )}
         </div>
       </div>
@@ -172,8 +133,8 @@ export function LeadContactosSheet({
         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? (
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
             <>
               <Loader2 className="size-4 mr-2 animate-spin" />
               Cargando...
@@ -186,60 +147,26 @@ export function LeadContactosSheet({
     </form>
   );
 
-  // Botón para abrir el formulario
-  const AddContactTrigger = () => (
-    <Button
-      size="sm"
-      className="gap-1"
-      variant="outline"
-      onClick={(e) => {
-        e.stopPropagation();
-        setOpen(true);
-      }}
-    >
-      <PlusIcon size={16} />
-      <span>Agregar</span>
-    </Button>
-  );
-
   return (
     <>
-      {/* Drawer/Dialog fuera del Sheet */}
-      {isMobile ? (
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Agregar contacto</DrawerTitle>
-              <DrawerDescription>
-                Completar la información del nuevo candidato.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-4 pb-4">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+          <DialogHeader className="contents space-y-0 text-left">
+            <DialogTitle className="border-b px-6 py-4 text-base">
+              Agregar contacto
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="sr-only">
+            Completar la información del nuevo candidato.
+          </DialogDescription>
+          <div className="overflow-y-auto">
+            <div className="px-6 pt-4 pb-6">
               <ContactForm />
             </div>
-            <DrawerFooter />
-          </DrawerContent>
-        </Drawer>
-      ) : (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
-            <DialogHeader className="contents space-y-0 text-left">
-              <DialogTitle className="border-b px-6 py-4 text-base">
-                Agregar contacto
-              </DialogTitle>
-            </DialogHeader>
-            <DialogDescription className="sr-only">
-              Completar la información del nuevo candidato.
-            </DialogDescription>
-            <div className="overflow-y-auto">
-              <div className="px-6 pt-4 pb-6">
-                <ContactForm />
-              </div>
-            </div>
-            <DialogFooter className="border-t px-6 py-4" />
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+          <DialogFooter className="border-t px-6 py-4" />
+        </DialogContent>
+      </Dialog>
 
       {/* Sheet con botón y listado */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -252,24 +179,37 @@ export function LeadContactosSheet({
           <SheetHeader className="mt-5">
             <div className="flex items-center justify-between">
               <SheetTitle>Contactos</SheetTitle>
-              <AddContactTrigger />
+              <Button
+                size="sm"
+                className="gap-1"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(true);
+                }}
+              >
+                <PlusIcon size={16} />
+                <span>Agregar</span>
+              </Button>
             </div>
           </SheetHeader>
 
           {/* Lista de contactos */}
-          <div className="space-y-4 mt-4">
-            {contactos && contactos.length > 0 ? (
-              contactos.map((contacto) => (
-                <ContactoCard key={contacto.id} contacto={contacto} />
-              ))
-            ) : (
-              <div className="flex flex-col justify-center items-center gap-2 py-8">
-                <UserX size={40} className="text-gray-400" />
-                <p className="text-sm text-gray-400 text-center">
-                  No hay contactos disponibles.
-                </p>
-              </div>
-            )}
+          <div className="max-h-[600px] overflow-y-auto mt-4">
+            <div className="space-y-4">
+              {contactos && contactos.length > 0 ? (
+                contactos.map((contacto) => (
+                  <ContactoCard key={contacto.id} contacto={contacto} />
+                ))
+              ) : (
+                <div className="flex flex-col justify-center items-center gap-2 py-8">
+                  <UserX size={40} className="text-gray-400" />
+                  <p className="text-sm text-gray-400 text-center">
+                    No hay contactos disponibles.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
