@@ -1,10 +1,8 @@
 import { auth } from "@/lib/auth";
 import { LoginForm } from "../../components/login/login-form";
 import { redirect } from "next/navigation";
-import { unstable_noStore } from "next/cache";
 
 export default async function LoginPage() {
-  unstable_noStore();
   const session = await auth();
 
   if (session?.user) {

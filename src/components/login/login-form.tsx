@@ -5,11 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
+
+type FormState = {
+  error?: string;
+  success?: boolean;
+} | undefined;
 
 export function LoginForm() {
-  const credentialsAction = async (prevState: any, formData: FormData) => {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const credentialsAction = async (prevState: FormState, formData: FormData) => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+
+    if (!validateEmail(email)) {
+      return { error: "Por favor ingresa un email válido" };
+    }
+
+    if (password.length < 6) {
+      return { error: "La contraseña debe tener al menos 6 caracteres" };
+    }
 
     try {
       const result = await signIn("credentials", {
@@ -19,19 +43,20 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        return { error: "Error al iniciar sesión" };
+        return { error: "Credenciales inválidas. Por favor intenta nuevamente" };
       } else if (result?.ok) {
-        window.location.href = "/";
-        return;
+        router.push("/");
+        router.refresh();
+        return { success: true };
       }
     } catch (err) {
-      return { error: "Error al iniciar sesión" };
+      return { error: "Error al iniciar sesión. Por favor intenta más tarde" };
     }
   };
 
   const [state, formAction, isPending] = useActionState(
     credentialsAction,
-    undefined,
+    undefined
   );
 
   return (
@@ -44,7 +69,9 @@ export function LoginForm() {
       </div>
       <div className="grid gap-6">
         {state?.error && (
-          <p className="text-red-500 text-sm text-center">{state.error}</p>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm text-center">{state.error}</p>
+          </div>
         )}
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
@@ -54,11 +81,23 @@ export function LoginForm() {
             name="email"
             placeholder="m@ejemplo.com"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={!validateEmail(email) && email ? "border-red-500" : ""}
           />
+          {!validateEmail(email) && email && (
+            <p className="text-red-500 text-xs">Email inválido</p>
+          )}
         </div>
         <div className="grid gap-2">
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <Label htmlFor="password">Contraseña</Label>
+            {/* <Link 
+              href="/recuperar-contraseña" 
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link> */}
           </div>
           <Input
             id="password"
@@ -66,9 +105,16 @@ export function LoginForm() {
             name="password"
             placeholder="*********"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={6}
           />
         </div>
-        <Button className="w-full" disabled={isPending} type="submit">
+        <Button 
+          className="w-full" 
+          disabled={isPending || !validateEmail(email) || password.length < 6} 
+          type="submit"
+        >
           {isPending ? (
             <>
               <Loader2 className="mr-2 w-4 h-4 animate-spin" />
