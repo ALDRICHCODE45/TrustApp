@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,7 +35,7 @@ export const GeneradorDropdownSelect = ({
   // Memoize the loadRecruiters function
   const loadRecruiters = useCallback(async () => {
     if (recruiters) return; // Si ya tenemos los datos, no los cargamos de nuevo
-    
+
     setLoading(true);
     setError(null);
 
