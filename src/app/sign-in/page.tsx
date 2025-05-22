@@ -2,6 +2,11 @@ import { auth } from "@/lib/auth";
 import { LoginForm } from "../../components/login/login-form";
 import { redirect } from "next/navigation";
 
+export const metadata = {
+  title: "Trust | Login",
+  description: "Login to your account",
+};
+
 export default async function LoginPage() {
   const session = await auth();
 
