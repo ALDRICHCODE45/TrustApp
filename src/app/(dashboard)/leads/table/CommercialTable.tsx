@@ -51,6 +51,7 @@ import {
   LoaderCircle,
   CalendarIcon,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,6 +67,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay } from "date-fns";
 import { LeadWithRelations } from "../kanban/page";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 const filterAnything: FilterFn<LeadWithRelations> = (
   row: Row<LeadWithRelations>,
@@ -516,37 +518,38 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [currentGl, setCurrentGl] = useState("all");
   const [currentDateCreation, setCurrentDateCreation] = useState<Date | undefined>(undefined);
   const [tableData, setTableData] = useState<LeadWithRelations[]>(data);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Memoizar los datos de la tabla para evitar re-renderizaciones innecesarias
   const memoizedData = useMemo(() => tableData, [tableData]);
 
-  // Efecto para actualizar los datos de la tabla cada 5 segundos
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/leads');
-        const newData = await response.json();
-        if (isMounted) {
-          setTableData(newData);
-        }
-      } catch (error) {
-        console.error('Error al actualizar los datos:', error);
-      }
-    };
-
-    const interval = setInterval(fetchData, 5000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []);
-
   const [pagination, setPagination] = useState({
-    pageIndex: 0,
+    pageIndex: currentPage,
     pageSize: defaultPageSize,
   });
+
+  const router = useRouter();
+
+  // Función para actualizar los datos
+  const refreshData = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      const response = await fetch('/api/leads');
+      const newData = await response.json();
+      setTableData(newData);
+    } catch (error) {
+      console.error('Error al actualizar los datos:', error);
+      toast.error('Error al actualizar los datos');
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  // Efecto para actualizar los datos cuando cambia la prop data
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   // Memoize handlers to prevent unnecessary re-renders
   const handlePageSizeChange = useCallback((value: string) => {
@@ -605,7 +608,16 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newState = updater(pagination);
+        setCurrentPage(newState.pageIndex);
+        setPagination(newState);
+      } else {
+        setCurrentPage(updater.pageIndex);
+        setPagination(updater);
+      }
+    },
     filterFns: {
       filterAnything,
     },
@@ -621,6 +633,29 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Lista de Leads</h2>
+            <Badge variant="outline" className="text-xs">
+              {table.getFilteredRowModel().rows.length} leads
+            </Badge>
+          </div>
+          <Button
+            variant="outline"
+            onClick={refreshData}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            {isRefreshing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {isRefreshing ? "Actualizando..." : "Actualizar datos"}
+          </Button>
+        </div>
+      </div>
       <TableFilters
         setCurrentDateCreation={handleDateChange}
         currentDateCreation={currentDateCreation}

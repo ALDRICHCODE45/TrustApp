@@ -125,10 +125,10 @@ export async function createLead(prevState: any, formData: FormData) {
       },
     });
 
-    // Revalidate necessary paths
-    // revalidatePath("/leads");
-    // revalidatePath("/list/leads");
-    // revalidatePath("/leads/kanban");
+    //Revalidate necessary paths
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+    revalidatePath("/leads/kanban");
 
     // Return success with the newly created lead data
   } catch (error) {

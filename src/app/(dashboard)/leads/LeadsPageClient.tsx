@@ -5,11 +5,11 @@ import { CommercialTable } from "./table/CommercialTable";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
 import { ToastAlerts } from "@/components/ToastAlerts";
-import { useAutoRefresh } from "@/hooks/useAutoRefresh"; // El hook que creamos arriba
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface LeadsPageClientProps {
   initialData: LeadWithRelations[];
@@ -31,36 +31,23 @@ export function LeadsPageClient({
   activeUser,
 }: LeadsPageClientProps) {
   const router = useRouter();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Auto-refresh cada 30 segundos
-  const { refreshData } = useAutoRefresh(5000);
-
-  // Función para refrescar manualmente
-  const handleManualRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      router.refresh();
-      // Esperar un poco para la animación
-      setTimeout(() => setIsRefreshing(false), 1000);
-    } catch (error) {
-      setIsRefreshing(false);
-    }
-  }, [router]);
 
   // Callback cuando se crea un nuevo lead
   const handleLeadCreated = useCallback(() => {
-    // Forzar actualización inmediata
-    refreshData();
-  }, [refreshData]);
+    router.refresh();
+  }, [router]);
 
   return (
     <>
       <ToastAlerts />
 
       {/* Header con botones de acción */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold tracking-tight">Gestión de Leads</h1>
+        </div>
+
+        <div className="flex items-center gap-2">
           <CreateLeadForm
             isAdmin={isAdmin}
             activeUser={activeUser}
@@ -69,23 +56,6 @@ export function LeadsPageClient({
             origenes={origenes}
             onLeadCreated={handleLeadCreated}
           />
-
-          <Button
-            variant="outline"
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            {isRefreshing ? "Actualizando..." : "Actualizar"}
-          </Button>
-        </div>
-
-        {/* Indicador de última actualización */}
-        <div className="text-sm text-muted-foreground">
-          Actualización automática cada 30 segundos
         </div>
       </div>
 

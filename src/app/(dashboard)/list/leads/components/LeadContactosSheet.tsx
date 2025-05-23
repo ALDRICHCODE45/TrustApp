@@ -46,31 +46,17 @@ export function LeadContactosSheet({
   const [isCreatingContact, setIsCreatingContact] = useState(false);
   const router = useRouter();
 
-  // Referencias para mantener el estado entre re-renderizaciones
-  const selectedLeadIdRef = useRef<string>(leadId);
-  const isSheetOpenRef = useRef<boolean>(false);
+  // Usar useRef para mantener el leadId consistente
+  const leadIdRef = useRef<string>(leadId);
   const [displayedContacts, setDisplayedContacts] = useState<ContactWithRelations[]>(contactos);
 
-  // Efecto para manejar el estado inicial y cambios del leadId
-  useEffect(() => {
-    // Solo actualizar el leadId si el sheet está cerrado o si es el mismo lead
-    if (!isSheetOpenRef.current || leadId === selectedLeadIdRef.current) {
-      selectedLeadIdRef.current = leadId;
-      setDisplayedContacts(contactos);
-    }
-  }, [leadId, contactos]);
-
-  // Efecto para sincronizar el estado del sheet
-  useEffect(() => {
-    isSheetOpenRef.current = sheetOpen;
-  }, [sheetOpen]);
-
-  // Efecto para limpiar el estado cuando se cierra el sheet
+  // Efecto para actualizar el leadId solo cuando el sheet está cerrado
   useEffect(() => {
     if (!sheetOpen) {
-      setIsCreatingContact(false);
+      leadIdRef.current = leadId;
+      setDisplayedContacts(contactos);
     }
-  }, [sheetOpen]);
+  }, [leadId, contactos, sheetOpen]);
 
   const {
     register,
@@ -81,14 +67,19 @@ export function LeadContactosSheet({
   } = useForm<FormData>({
     resolver: zodResolver(createLeadPersonSchema),
     defaultValues: {
-      leadId: selectedLeadIdRef.current,
+      leadId: leadIdRef.current,
+      name: '',
+      position: '',
+      email: '',
+      phone: '',
     },
+    mode: 'onSubmit',
   });
 
-  // Asegurarnos de que el leadId siempre esté actualizado
+  // Asegurarnos de que el leadId siempre esté actualizado en el formulario
   useEffect(() => {
-    setValue('leadId', selectedLeadIdRef.current);
-  }, [selectedLeadIdRef.current, setValue]);
+    setValue('leadId', leadIdRef.current);
+  }, [setValue]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -96,7 +87,8 @@ export function LeadContactosSheet({
       setIsCreatingContact(true);
       const formData = new FormData();
       
-      formData.append('leadId', selectedLeadIdRef.current);
+      // Usar el leadId del ref para asegurar consistencia
+      formData.append('leadId', leadIdRef.current);
       
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && key !== 'leadId') {
@@ -106,24 +98,28 @@ export function LeadContactosSheet({
 
       const result = await createLeadPerson(null, formData);
       
-      if (result?.status === 'success') {
+      if (result?.status === 'success' && result.data) {
         toast.success('Contacto creado exitosamente');
         setOpen(false);
         reset();
         
-        if (result.data) {
-          setDisplayedContacts(prev => [...prev, result.data]);
-        }
+        // Actualizar la lista de contactos con el nuevo contacto
+        setDisplayedContacts(prev => [...prev, result.data]);
         
         // Actualizar solo los contactos del lead actual
-        const response = await fetch('/api/leads');
-        const newData = await response.json();
-        const updatedLead = newData.find((lead: any) => lead.id === selectedLeadIdRef.current);
-        if (updatedLead) {
-          setDisplayedContacts(updatedLead.contactos);
+        try {
+          const response = await fetch(`/api/leads/${leadIdRef.current}/contactos`);
+          if (!response.ok) {
+            throw new Error('Error al actualizar los contactos');
+          }
+          const updatedContacts = await response.json();
+          setDisplayedContacts(updatedContacts);
+        } catch (error) {
+          console.error("Error al actualizar los contactos:", error);
         }
       } else {
-        toast.error('Error al crear el contacto');
+        const errorMessage = result?.message || 'Error al crear el contacto';
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error al crear el contacto:", error);
@@ -137,7 +133,7 @@ export function LeadContactosSheet({
   // Formulario de contacto
   const ContactForm = () => (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <input type="hidden" {...register('leadId')} value={selectedLeadIdRef.current} />
+      <input type="hidden" {...register('leadId')} value={leadIdRef.current} />
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
           <Label htmlFor="name">Nombre completo</Label>
@@ -227,6 +223,7 @@ export function LeadContactosSheet({
         setOpen(newOpen);
         if (!newOpen) {
           setIsCreatingContact(false);
+          reset();
         }
       }}>
         <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">

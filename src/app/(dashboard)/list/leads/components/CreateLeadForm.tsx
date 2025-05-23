@@ -131,7 +131,6 @@ function NuevoLeadForm({
     },
     onSubmit(event, context) {
       if (context.submission?.status === "success") {
-        toast.success("Lead creado correctamente");
         setOpenDialog(false);
 
         // Limpiar el formulario
@@ -147,31 +146,29 @@ function NuevoLeadForm({
         if (onLeadCreated) {
           onLeadCreated();
         }
-
-        // Mostrar un toast con instrucciones adicionales
-        setTimeout(() => {
-          toast.info(
-            "Datos actualizados. Si continúas experimentando problemas, por favor actualiza la página.",
-            {
-              duration: 5000,
-            },
-          );
-        }, 1000);
       }
     },
-
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
 
   useEffect(() => {
-    if (lastResult?.status === "error") {
-      toast.error("Error al crear el Lead");
+    if (!lastResult) return;
+
+    if (lastResult.status === "error") {
+      const errorMessage = lastResult.error?.formErrors?.[0] || "Error al crear el lead";
+      toast.error(errorMessage, {
+        description: "Por favor, verifica los datos e intenta nuevamente",
+        duration: 5000,
+      });
       return;
     }
 
-    if (lastResult?.status === "success") {
-      toast.success("Lead creado exitosamente");
+    if (lastResult.status === "success") {
+      toast.success("Lead creado exitosamente", {
+        description: "El lead ha sido creado y agregado a la lista",
+        duration: 3000,
+      });
 
       // Actualización inmediata después de crear el lead
       router.refresh();
