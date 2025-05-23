@@ -110,6 +110,9 @@ export async function createLead(prevState: any, formData: FormData) {
       // Optionally include the generador relationship for a more complete response
       include: {
         generadorLeads: true,
+        contactos: true,
+        sector: true,
+        origen: true,
       },
     });
 
@@ -123,9 +126,9 @@ export async function createLead(prevState: any, formData: FormData) {
     });
 
     // Revalidate necessary paths
-    revalidatePath("/leads");
-    revalidatePath("/list/leads");
-    revalidatePath("/leads/kanban");
+    // revalidatePath("/leads");
+    // revalidatePath("/list/leads");
+    // revalidatePath("/leads/kanban");
 
     // Return success with the newly created lead data
   } catch (error) {

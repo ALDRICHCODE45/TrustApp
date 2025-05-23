@@ -1,14 +1,12 @@
 import { type ReactElement } from "react";
 import { leadsColumns } from "../list/leads/leadsColumns";
-import { CommercialTable } from "./table/CommercialTable";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
-import { ToastAlerts } from "@/components/ToastAlerts";
 import prisma from "@/lib/db";
-import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
 import { unstable_noStore as noStore } from "next/cache";
+import { LeadsPageClient } from "./LeadsPageClient";
 
 export interface pageProps {}
 
@@ -39,9 +37,14 @@ const fetchData = async (): Promise<{
         },
       },
     },
-    orderBy: {
-      updatedAt: "desc",
-    },
+    orderBy: [
+      {
+        createdAt: "desc",
+      },
+      {
+        updatedAt: "desc",
+      },
+    ],
   });
   return {
     columns: leadsColumns,
@@ -113,19 +116,14 @@ export default async function page({}: pageProps): Promise<ReactElement> {
 
   return (
     <>
-      {/* LIST */}
-      <ToastAlerts />
-      <CreateLeadForm
+      <LeadsPageClient
+        initialData={data}
+        columns={columns}
+        generadores={generadores}
+        sectores={sectores}
+        origenes={origenes}
         isAdmin={isAdmin}
         activeUser={activeUser}
-        sectores={sectores}
-        generadores={generadores}
-        origenes={origenes}
-      />
-      <CommercialTable
-        columns={columns}
-        data={data}
-        generadores={generadores}
       />
     </>
   );

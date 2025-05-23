@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -515,6 +515,33 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
   const [currentDateCreation, setCurrentDateCreation] = useState<Date | undefined>(undefined);
+  const [tableData, setTableData] = useState<LeadWithRelations[]>(data);
+
+  // Memoizar los datos de la tabla para evitar re-renderizaciones innecesarias
+  const memoizedData = useMemo(() => tableData, [tableData]);
+
+  // Efecto para actualizar los datos de la tabla cada 5 segundos
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/leads');
+        const newData = await response.json();
+        if (isMounted) {
+          setTableData(newData);
+        }
+      } catch (error) {
+        console.error('Error al actualizar los datos:', error);
+      }
+    };
+
+    const interval = setInterval(fetchData, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -567,8 +594,8 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
 
   // Configuración de la tabla
   const table = useReactTable({
-    data,
-    columns,
+    data: memoizedData,
+    columns: columns as ColumnDef<LeadWithRelations>[],
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -606,7 +633,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         currentGl={currentGl}
         setCurrentGl={handleGlChange}
       />
-      <DataGrid table={table} columns={columns} />
+      <DataGrid table={table} columns={columns as ColumnDef<LeadWithRelations>[]} />
       <TablePagination
         table={table}
         pageSize={pageSize}

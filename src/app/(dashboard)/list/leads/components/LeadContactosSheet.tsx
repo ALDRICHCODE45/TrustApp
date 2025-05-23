@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,6 +28,8 @@ import {
   ContactoCard,
   ContactWithRelations,
 } from "@/app/(dashboard)/leads/components/ContactCard";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type FormData = z.infer<typeof createLeadPersonSchema>;
 
@@ -41,42 +43,101 @@ export function LeadContactosSheet({
   const [open, setOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingContact, setIsCreatingContact] = useState(false);
+  const router = useRouter();
+
+  // Referencias para mantener el estado entre re-renderizaciones
+  const selectedLeadIdRef = useRef<string>(leadId);
+  const isSheetOpenRef = useRef<boolean>(false);
+  const [displayedContacts, setDisplayedContacts] = useState<ContactWithRelations[]>(contactos);
+
+  // Efecto para manejar el estado inicial y cambios del leadId
+  useEffect(() => {
+    // Solo actualizar el leadId si el sheet está cerrado o si es el mismo lead
+    if (!isSheetOpenRef.current || leadId === selectedLeadIdRef.current) {
+      selectedLeadIdRef.current = leadId;
+      setDisplayedContacts(contactos);
+    }
+  }, [leadId, contactos]);
+
+  // Efecto para sincronizar el estado del sheet
+  useEffect(() => {
+    isSheetOpenRef.current = sheetOpen;
+  }, [sheetOpen]);
+
+  // Efecto para limpiar el estado cuando se cierra el sheet
+  useEffect(() => {
+    if (!sheetOpen) {
+      setIsCreatingContact(false);
+    }
+  }, [sheetOpen]);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(createLeadPersonSchema),
     defaultValues: {
-      leadId,
+      leadId: selectedLeadIdRef.current,
     },
   });
+
+  // Asegurarnos de que el leadId siempre esté actualizado
+  useEffect(() => {
+    setValue('leadId', selectedLeadIdRef.current);
+  }, [selectedLeadIdRef.current, setValue]);
 
   const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
+      setIsCreatingContact(true);
       const formData = new FormData();
+      
+      formData.append('leadId', selectedLeadIdRef.current);
+      
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined) {
+        if (value !== undefined && key !== 'leadId') {
           formData.append(key, value.toString());
         }
       });
 
-      await createLeadPerson(null, formData);
-      setOpen(false);
-      reset();
+      const result = await createLeadPerson(null, formData);
+      
+      if (result?.status === 'success') {
+        toast.success('Contacto creado exitosamente');
+        setOpen(false);
+        reset();
+        
+        if (result.data) {
+          setDisplayedContacts(prev => [...prev, result.data]);
+        }
+        
+        // Actualizar solo los contactos del lead actual
+        const response = await fetch('/api/leads');
+        const newData = await response.json();
+        const updatedLead = newData.find((lead: any) => lead.id === selectedLeadIdRef.current);
+        if (updatedLead) {
+          setDisplayedContacts(updatedLead.contactos);
+        }
+      } else {
+        toast.error('Error al crear el contacto');
+      }
     } catch (error) {
       console.error("Error al crear el contacto:", error);
+      toast.error('Error al crear el contacto');
     } finally {
       setIsSubmitting(false);
+      setIsCreatingContact(false);
     }
   };
 
   // Formulario de contacto
   const ContactForm = () => (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <input type="hidden" {...register('leadId')} value={selectedLeadIdRef.current} />
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-2">
           <Label htmlFor="name">Nombre completo</Label>
@@ -85,6 +146,7 @@ export function LeadContactosSheet({
             placeholder="Juan Pérez"
             type="text"
             autoComplete="name"
+            disabled={isSubmitting}
           />
           {errors.name && (
             <p className="text-sm text-red-500">{errors.name.message}</p>
@@ -97,6 +159,7 @@ export function LeadContactosSheet({
             placeholder="Gerente de producto"
             type="text"
             autoComplete="organization-title"
+            disabled={isSubmitting}
           />
           {errors.position && (
             <p className="text-sm text-red-500">{errors.position.message}</p>
@@ -111,6 +174,7 @@ export function LeadContactosSheet({
             placeholder="candidato@ejemplo.com"
             type="email"
             autoComplete="email"
+            disabled={isSubmitting}
           />
           {errors.email && (
             <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -122,6 +186,7 @@ export function LeadContactosSheet({
             {...register("phone", {required:false})}
             placeholder="+52553.."
             type="tel"
+            disabled={isSubmitting}
           />
           {errors.phone && (
             <p className="text-sm text-red-500">{errors.phone.message}</p>
@@ -130,7 +195,16 @@ export function LeadContactosSheet({
       </div>
 
       <div className="flex gap-3">
-        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => {
+            setOpen(false);
+            reset();
+            setIsCreatingContact(false);
+          }}
+          disabled={isSubmitting}
+        >
           Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
@@ -149,15 +223,20 @@ export function LeadContactosSheet({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        if (!newOpen) {
+          setIsCreatingContact(false);
+        }
+      }}>
         <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
           <DialogHeader className="contents space-y-0 text-left">
             <DialogTitle className="border-b px-6 py-4 text-base">
-              Agregar contacto
+              Agregar contacto a este lead
             </DialogTitle>
           </DialogHeader>
           <DialogDescription className="sr-only">
-            Completar la información del nuevo candidato.
+            Completar la información del nuevo contacto.
           </DialogDescription>
           <div className="overflow-y-auto">
             <div className="px-6 pt-4 pb-6">
@@ -168,8 +247,12 @@ export function LeadContactosSheet({
         </DialogContent>
       </Dialog>
 
-      {/* Sheet con botón y listado */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      <Sheet open={sheetOpen} onOpenChange={(newOpen) => {
+        setSheetOpen(newOpen);
+        if (!newOpen) {
+          setIsCreatingContact(false);
+        }
+      }}>
         <SheetTrigger asChild>
           <Button variant="outline">
             <Users />
@@ -185,6 +268,7 @@ export function LeadContactosSheet({
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
+                  setIsCreatingContact(true);
                   setOpen(true);
                 }}
               >
@@ -194,11 +278,10 @@ export function LeadContactosSheet({
             </div>
           </SheetHeader>
 
-          {/* Lista de contactos */}
           <div className="max-h-[600px] overflow-y-auto mt-4">
             <div className="space-y-4">
-              {contactos && contactos.length > 0 ? (
-                contactos.map((contacto) => (
+              {displayedContacts && displayedContacts.length > 0 ? (
+                displayedContacts.map((contacto) => (
                   <ContactoCard key={contacto.id} contacto={contacto} />
                 ))
               ) : (

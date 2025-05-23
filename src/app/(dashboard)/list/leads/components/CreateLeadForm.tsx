@@ -45,12 +45,14 @@ export const CreateLeadForm = ({
   isAdmin,
   origenes,
   activeUser,
+  onLeadCreated, //  prop para notificar cuando se crea un lead
 }: {
   generadores: User[];
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
   activeUser: { name: string; id: string };
+  onLeadCreated?: () => void; // Callback opcional para actualizar la tabla
 }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   return (
@@ -67,7 +69,6 @@ export const CreateLeadForm = ({
             <DialogTitle>Nuevo Lead</DialogTitle>
             <Separator />
           </DialogHeader>
-          {/* Envolver el formulario con FormProvider */}
           <NuevoLeadForm
             setOpenDialog={setOpenDialog}
             activeUser={activeUser}
@@ -75,6 +76,7 @@ export const CreateLeadForm = ({
             generadores={generadores}
             sectores={sectores}
             origenes={origenes}
+            onLeadCreated={onLeadCreated}
           />
         </DialogContent>
       </Dialog>
@@ -89,6 +91,7 @@ function NuevoLeadForm({
   isAdmin,
   activeUser,
   setOpenDialog,
+  onLeadCreated,
 }: {
   generadores: User[];
   sectores: Sector[];
@@ -96,6 +99,7 @@ function NuevoLeadForm({
   isAdmin: boolean;
   activeUser: { name: string; id: string };
   setOpenDialog: (newState: boolean) => void;
+  onLeadCreated?: () => void;
 }) {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(null);
@@ -129,6 +133,30 @@ function NuevoLeadForm({
       if (context.submission?.status === "success") {
         toast.success("Lead creado correctamente");
         setOpenDialog(false);
+
+        // Limpiar el formulario
+        setSelectedSector(null);
+        setSelectedOrigen(null);
+        setSelectedDate(undefined);
+        setSelectedUser(undefined);
+
+        // Forzar actualización inmediata de los datos
+        router.refresh();
+
+        // Notificar al componente padre si se proporciona el callback
+        if (onLeadCreated) {
+          onLeadCreated();
+        }
+
+        // Mostrar un toast con instrucciones adicionales
+        setTimeout(() => {
+          toast.info(
+            "Datos actualizados. Si continúas experimentando problemas, por favor actualiza la página.",
+            {
+              duration: 5000,
+            },
+          );
+        }, 1000);
       }
     },
 
@@ -144,8 +172,15 @@ function NuevoLeadForm({
 
     if (lastResult?.status === "success") {
       toast.success("Lead creado exitosamente");
-      // Reset form (optional)
+
+      // Actualización inmediata después de crear el lead
+      router.refresh();
+
+      // Reset form
       setSelectedUser(undefined);
+      setSelectedSector(null);
+      setSelectedOrigen(null);
+      setSelectedDate(undefined);
     }
   }, [lastResult, router]);
 

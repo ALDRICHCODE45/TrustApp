@@ -9,31 +9,73 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { deleteFile } from "../files/actions";
 
-export const createLeadPerson = async (prevSate: any, formData: FormData) => {
+export const createLeadPerson = async (prevState: any, formData: FormData) => {
   try {
+    await checkSession();
 
     const submission = parseWithZod(formData, {
       schema: createLeadPersonSchema,
     });
 
     if (submission.status !== "success") {
-      return submission.reply();
+      return {
+        status: "error",
+        message: "Error en la validación del formulario",
+        errors: submission.reply().error?.formErrors || [],
+      };
     }
 
-    await prisma.person.create({
-      data: {
-        name: submission.value.name,
-        email: submission.value.email,
-        position: submission.value.position,
-        leadId: submission.value.leadId,
-        phone: submission.value.phone,
+    // Verificar que el lead existe y pertenece al usuario correcto
+    const lead = await prisma.lead.findUnique({
+      where: {
+        id: submission.value.leadId,
+      },
+      include: {
+        generadorLeads: true,
       },
     });
 
+    if (!lead) {
+      return {
+        status: "error",
+        message: "El lead no existe",
+      };
+    }
+
+    // Crear el contacto
+    const contact = await prisma.person.create({
+      data: {
+        name: submission.value.name,
+        position: submission.value.position,
+        email: submission.value.email || null,
+        phone: submission.value.phone || null,
+        leadId: submission.value.leadId,
+      },
+      include: {
+        interactions: {
+          include: {
+            autor: true,
+            contacto: true,
+          },
+        },
+      },
+    });
+
+    // Revalidar las rutas necesarias
     revalidatePath("/leads");
     revalidatePath("/list/leads");
+    revalidatePath(`/leads/${submission.value.leadId}`);
+
+    return {
+      status: "success",
+      data: contact,
+    };
   } catch (error) {
-    throw Error("Error creando el lead");
+    console.error("Error creating contact:", error);
+    return {
+      status: "error",
+      message: "Error al crear el contacto",
+    };
   }
 };
 
