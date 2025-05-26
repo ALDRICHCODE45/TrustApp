@@ -80,7 +80,7 @@ enum LeadStatus {
   Contacto
   SocialSelling
   ContactoCalido
-  Prospecto
+  //Se quita prospecciones
   CitaAgendada
   CitaAtendida
   CitaValidada

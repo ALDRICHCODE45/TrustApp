@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getAllOrigenes, getAllSectores } from "@/actions/sectores/actions";
-import { toast } from "sonner"; // Import toast from sonner or your preferred toast library
+import { toast } from "sonner";
 
 interface EditLeadFormProps {
   leadData: LeadWithRelations;
@@ -194,9 +194,6 @@ export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
                       </SelectItem>
                       <SelectItem value={LeadStatus.CitaValidada}>
                         C.V
-                      </SelectItem>
-                      <SelectItem value={LeadStatus.Prospecto}>
-                        Prospecto
                       </SelectItem>
                       <SelectItem value={LeadStatus.Asignadas}>
                         Asignadas

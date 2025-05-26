@@ -54,7 +54,6 @@ export function LeadsPageClient({
             sectores={sectores}
             generadores={generadores}
             origenes={origenes}
-            onLeadCreated={handleLeadCreated}
           />
         </div>
       </div>

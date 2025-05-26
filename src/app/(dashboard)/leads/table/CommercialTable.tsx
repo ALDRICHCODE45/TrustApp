@@ -173,10 +173,7 @@ function TableFilters<TData extends { id: string }, TValue>({
             <Label htmlFor="status-filter" className="text-sm font-medium">
               Estado
             </Label>
-            <Select
-              value={currentStatus}
-              onValueChange={setCurrentStatus}
-            >
+            <Select value={currentStatus} onValueChange={setCurrentStatus}>
               <SelectTrigger id="status-filter" className="w-full">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
@@ -252,10 +249,7 @@ function TableFilters<TData extends { id: string }, TValue>({
             <Label htmlFor="generador-filter" className="text-sm font-medium">
               Generador
             </Label>
-            <Select
-              value={currentGl}
-              onValueChange={setCurrentGl}
-            >
+            <Select value={currentGl} onValueChange={setCurrentGl}>
               <SelectTrigger id="generador-filter" className="w-full">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
@@ -516,7 +510,9 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
-  const [currentDateCreation, setCurrentDateCreation] = useState<Date | undefined>(undefined);
+  const [currentDateCreation, setCurrentDateCreation] = useState<
+    Date | undefined
+  >(undefined);
   const [tableData, setTableData] = useState<LeadWithRelations[]>(data);
   const [currentPage, setCurrentPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -535,12 +531,12 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const refreshData = useCallback(async () => {
     try {
       setIsRefreshing(true);
-      const response = await fetch('/api/leads');
+      const response = await fetch("/api/leads");
       const newData = await response.json();
       setTableData(newData);
     } catch (error) {
-      console.error('Error al actualizar los datos:', error);
-      toast.error('Error al actualizar los datos');
+      console.error("Error al actualizar los datos:", error);
+      toast.error("Error al actualizar los datos");
     } finally {
       setIsRefreshing(false);
     }
@@ -609,7 +605,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
+      if (typeof updater === "function") {
         const newState = updater(pagination);
         setCurrentPage(newState.pageIndex);
         setPagination(newState);
@@ -635,12 +631,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Lista de Leads</h2>
-            <Badge variant="outline" className="text-xs">
-              {table.getFilteredRowModel().rows.length} leads
-            </Badge>
-          </div>
+          <div className="flex items-center gap-2"></div>
           <Button
             variant="outline"
             onClick={refreshData}
@@ -668,7 +659,16 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         currentGl={currentGl}
         setCurrentGl={handleGlChange}
       />
-      <DataGrid table={table} columns={columns as ColumnDef<LeadWithRelations>[]} />
+
+      <div className="mb-5">
+        <Badge variant="outline" className="text-xs">
+          {table.getFilteredRowModel().rows.length} leads
+        </Badge>
+      </div>
+      <DataGrid
+        table={table}
+        columns={columns as ColumnDef<LeadWithRelations>[]}
+      />
       <TablePagination
         table={table}
         pageSize={pageSize}

@@ -45,14 +45,12 @@ export const CreateLeadForm = ({
   isAdmin,
   origenes,
   activeUser,
-  onLeadCreated, //  prop para notificar cuando se crea un lead
 }: {
   generadores: User[];
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
   activeUser: { name: string; id: string };
-  onLeadCreated?: () => void; // Callback opcional para actualizar la tabla
 }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   return (
@@ -76,7 +74,6 @@ export const CreateLeadForm = ({
             generadores={generadores}
             sectores={sectores}
             origenes={origenes}
-            onLeadCreated={onLeadCreated}
           />
         </DialogContent>
       </Dialog>
@@ -91,7 +88,6 @@ function NuevoLeadForm({
   isAdmin,
   activeUser,
   setOpenDialog,
-  onLeadCreated,
 }: {
   generadores: User[];
   sectores: Sector[];
@@ -99,7 +95,6 @@ function NuevoLeadForm({
   isAdmin: boolean;
   activeUser: { name: string; id: string };
   setOpenDialog: (newState: boolean) => void;
-  onLeadCreated?: () => void;
 }) {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(null);
@@ -129,23 +124,10 @@ function NuevoLeadForm({
         schema: createLeadSchema,
       });
     },
-    onSubmit(event, context) {
-      if (context.submission?.status === "success") {
+    onSubmit() {
+      if (lastResult?.status === "success") {
         setOpenDialog(false);
-
-        // Limpiar el formulario
-        setSelectedSector(null);
-        setSelectedOrigen(null);
-        setSelectedDate(undefined);
-        setSelectedUser(undefined);
-
-        // Forzar actualización inmediata de los datos
         router.refresh();
-
-        // Notificar al componente padre si se proporciona el callback
-        if (onLeadCreated) {
-          onLeadCreated();
-        }
       }
     },
     shouldValidate: "onBlur",
@@ -156,7 +138,7 @@ function NuevoLeadForm({
     if (!lastResult) return;
 
     if (lastResult.status === "error") {
-      const errorMessage = lastResult.error?.formErrors?.[0] || "Error al crear el lead";
+      const errorMessage = 'Error al Crear el Lead'
       toast.error(errorMessage, {
         description: "Por favor, verifica los datos e intenta nuevamente",
         duration: 5000,
@@ -170,16 +152,13 @@ function NuevoLeadForm({
         duration: 3000,
       });
 
-      // Actualización inmediata después de crear el lead
-      router.refresh();
-
       // Reset form
       setSelectedUser(undefined);
       setSelectedSector(null);
       setSelectedOrigen(null);
       setSelectedDate(undefined);
     }
-  }, [lastResult, router]);
+  }, [lastResult]);
 
   // Seleccionar un usuario
   const handleSelectGl = (user: User) => {

@@ -34,7 +34,6 @@ export function LeadCard({ leadId, lead }: LeadCardProps) {
       [LeadStatus.Contacto]: "bg-slate-500 hover:bg-slate-600",
       [LeadStatus.SocialSelling]: "bg-blue-500 hover:bg-blue-600",
       [LeadStatus.ContactoCalido]: "bg-yellow-500 hover:bg-yellow-600",
-      [LeadStatus.Prospecto]: "bg-orange-500 hover:bg-orange-600",
       [LeadStatus.CitaAgendada]: "bg-purple-500 hover:bg-purple-600",
       [LeadStatus.CitaValidada]: "bg-pink-500 hover:bg-pink-600",
       [LeadStatus.Asignadas]: "bg-green-500 hover:bg-green-600",

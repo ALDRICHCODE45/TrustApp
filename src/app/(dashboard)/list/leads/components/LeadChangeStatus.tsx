@@ -57,14 +57,6 @@ const allowLeadStatus = [
   },
   {
     title: "¿Estás seguro?",
-    description: "¿Quieres cambiar el status a Prospecto?",
-    onConfirmValule: LeadStatus.Prospecto,
-    oficeNumber: "Prospecto",
-    status: "Prospecto",
-    icon: CalendarCheck,
-  },
-  {
-    title: "¿Estás seguro?",
     description: "¿Quieres cambiar el status a Social Selling?",
     onConfirmValule: LeadStatus.SocialSelling,
     oficeNumber: "Social Selling",
@@ -105,7 +97,6 @@ export const leadStatusMap: Record<LeadStatus, string> = {
   CitaAgendada: "Cita Agendada",
   Asignadas: "Asignadas",
   Contacto: "Contacto",
-  Prospecto: "Prospecto",
   StandBy: "StandBy",
   CitaAtendida: "Cita Atendida",
 };

@@ -5,7 +5,6 @@ import {
   TagIcon,
   UsersIcon,
   PhoneIcon,
-  BuildingIcon,
   CalendarIcon,
   CheckCircleIcon,
   HandshakeIcon,
@@ -35,9 +34,6 @@ const getColumnIcon = (status: string) => {
     ),
     [LeadStatus.ContactoCalido]: (
       <PhoneIcon className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-    ),
-    [LeadStatus.Prospecto]: (
-      <BuildingIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
     ),
     [LeadStatus.CitaAgendada]: (
       <CalendarIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
@@ -69,8 +65,6 @@ const getBadgeColor = (status: string) => {
       "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300",
     [LeadStatus.ContactoCalido]:
       "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300",
-    [LeadStatus.Prospecto]:
-      "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300",
     [LeadStatus.CitaAgendada]:
       "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300",
     [LeadStatus.CitaValidada]:

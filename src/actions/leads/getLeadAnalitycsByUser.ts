@@ -8,7 +8,6 @@ interface Mes {
   contactos: number;
   socialSelling: number;
   contactosCalidos: number;
-  prospectos: number;
   citasAgendadas: number;
   citasValidadas: number;
   clientes: number;
@@ -85,19 +84,7 @@ const createDataByMonth = async (userId: string) => {
     },
   });
 
-  //contar los prospectos que ese usuario creo en el mes
-  const statusProspectos = await prisma.leadStatusHistory.findMany({
-    where: {
-      changedById: userId,
-      status: LeadStatus.Prospecto,
-      changedAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-  });
-
-  //contar las citas agendadas de ese mes con ese prospecto
+  //contar las citas agendadas de ese mes con ese lead
   const statusCitasAgendadas = await prisma.leadStatusHistory.findMany({
     where: {
       changedById: userId,
@@ -155,11 +142,6 @@ const createDataByMonth = async (userId: string) => {
       (lead) => lead.changedAt.getMonth() === monthIndex,
     ).length;
 
-    //contar prospectos
-    const proscpectos = statusProspectos.filter(
-      (lead) => lead.changedAt.getMonth() === monthIndex,
-    ).length;
-
     //contar contactosCalidos
     const contactosCalidos = statusContactoCalido.filter(
       (lead) => lead.changedAt.getMonth() === monthIndex,
@@ -186,7 +168,6 @@ const createDataByMonth = async (userId: string) => {
       contactos: contactos,
       socialSelling: socialSelling,
       contactosCalidos: contactosCalidos,
-      prospectos: proscpectos,
       citasAgendadas: citasAgendadas,
       citasValidadas: citasValidadas,
       citasAtendidas: citasAtendidas,

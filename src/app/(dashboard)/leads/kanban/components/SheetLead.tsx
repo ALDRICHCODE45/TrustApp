@@ -18,7 +18,6 @@ interface Props {
 export const getStatusColor = (status: LeadStatus) => {
   const statusColors = {
     [LeadStatus.Contacto]: "bg-gray-200 text-black",
-    [LeadStatus.Prospecto]: "bg-blue-100 text-blue-800",
     [LeadStatus.ContactoCalido]: "bg-yellow-100 text-yellow-800",
     [LeadStatus.SocialSelling]: "bg-green-100 text-green-800",
     [LeadStatus.CitaValidada]: "bg-purple-100 text-purple-800",

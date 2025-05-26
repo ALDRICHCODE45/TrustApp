@@ -11,7 +11,6 @@ export const createLeadSchema = z.object({
       LeadStatus.Contacto,
       LeadStatus.SocialSelling,
       LeadStatus.ContactoCalido,
-      LeadStatus.Prospecto,
       LeadStatus.CitaAgendada,
       LeadStatus.CitaValidada,
       LeadStatus.Asignadas,

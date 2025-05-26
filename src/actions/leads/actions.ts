@@ -51,10 +51,11 @@ export const getRecruiters = async (): Promise<User[]> => {
 };
 
 export async function createLead(prevState: any, formData: FormData) {
+  let submission;
   try {
     await checkSession();
 
-    const submission = parseWithZod(formData, {
+    submission = parseWithZod(formData, {
       schema: createLeadSchema,
     });
 
@@ -96,7 +97,6 @@ export async function createLead(prevState: any, formData: FormData) {
     });
 
     // Create the new lead
-
     const leadCreated = await prisma.lead.create({
       data: {
         empresa: submission.value.empresa,
@@ -107,7 +107,6 @@ export async function createLead(prevState: any, formData: FormData) {
         generadorId: submission.value.generadorId,
         createdAt: submission.value.createdAt,
       },
-      // Optionally include the generador relationship for a more complete response
       include: {
         generadorLeads: true,
         contactos: true,
@@ -131,9 +130,15 @@ export async function createLead(prevState: any, formData: FormData) {
     revalidatePath("/leads/kanban");
 
     // Return success with the newly created lead data
+    return submission.reply();
   } catch (error) {
     console.error("Error creating lead:", error);
-    throw new Error("Error en la creacion del Lead");
+    return submission?.reply({
+      formErrors: ["Error en la creacion del Lead"]
+    }) || {
+      status: "error",
+      formErrors: ["Error en la creacion del Lead"]
+    };
   }
 }
 
