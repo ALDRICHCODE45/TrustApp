@@ -368,7 +368,7 @@ function TableFilters<TData extends { id: string }, TValue>({
                     Exportar a CSV
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuSeparator />
-                  <ColumnSelector table={table} />
+              <ColumnSelector table={table} />
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -451,25 +451,25 @@ function TablePagination<TData>({
 
           {/* Selector de filas por página y navegación */}
           <div className="flex items-center gap-4">
-            {/* Selector de filas por página */}
-            <div className="flex items-center gap-2">
-              <Label htmlFor="page-size" className="text-sm">
-                Filas por página:
-              </Label>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={onPageSizeChange}
-              >
-                <SelectTrigger id="page-size" className="w-[80px]">
-                  <SelectValue placeholder={pageSize.toString()} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Selector de filas por página */}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="page-size" className="text-sm">
+              Filas por página:
+            </Label>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={onPageSizeChange}
+            >
+              <SelectTrigger id="page-size" className="w-[80px]">
+                <SelectValue placeholder={pageSize.toString()} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
             </div>
 
             {/* Navegación de páginas */}

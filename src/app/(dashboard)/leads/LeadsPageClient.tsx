@@ -1,12 +1,10 @@
 "use client";
-import { type ReactElement, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { leadsColumns } from "../list/leads/leadsColumns";
 import { CommercialTable } from "./table/CommercialTable";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
 import { ToastAlerts } from "@/components/ToastAlerts";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface LeadsPageClientProps {
@@ -48,7 +46,9 @@ export function LeadsPageClient({
       {/* Header con botones de acción */}
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">Gestión de Leads</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Gestión de Leads
+          </h1>
         </div>
 
         <div className="flex items-center gap-2">

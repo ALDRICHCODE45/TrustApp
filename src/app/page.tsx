@@ -14,18 +14,15 @@ const Homepage = async () => {
 
   const user = session.user;
 
-  switch (user.role) {
-    case Role.reclutador:
-      redirect("/reclutador");
-    case Role.GL:
-      redirect("/leads");
-    case Role.MK:
-      redirect("/leads");
-    case Role.Admin:
-      redirect("/admin");
-    default:
-      redirect("/sign-in");
-  }
+  const roleRoutes: Record<Role, string> = {
+    [Role.reclutador]: "/reclutador",
+    [Role.GL]: "/leads",
+    [Role.MK]: "/leads",
+    [Role.Admin]: "/admin",
+  };
+
+  const route = roleRoutes[user.role as Role] || "/sign-in";
+  redirect(route);
 };
 
 export default Homepage;
