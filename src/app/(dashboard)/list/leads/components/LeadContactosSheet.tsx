@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,7 +54,8 @@ export function LeadContactosSheet({
 
   // Usar useRef para mantener el leadId consistente
   const leadIdRef = useRef<string>(leadId);
-  const [displayedContacts, setDisplayedContacts] = useState<ContactWithRelations[]>(contactos);
+  const [displayedContacts, setDisplayedContacts] =
+    useState<ContactWithRelations[]>(contactos);
 
   // Efecto para actualizar el leadId solo cuando el sheet está cerrado
   useEffect(() => {
@@ -58,6 +65,18 @@ export function LeadContactosSheet({
     }
   }, [leadId, contactos, sheetOpen]);
 
+  // Configuración del formulario con valores por defecto estables
+  const defaultValues = useMemo(
+    () => ({
+      leadId: leadIdRef.current,
+      name: "",
+      position: "",
+      email: "",
+      phone: "",
+    }),
+    [leadIdRef.current],
+  );
+
   const {
     register,
     handleSubmit,
@@ -66,167 +85,200 @@ export function LeadContactosSheet({
     setValue,
   } = useForm<FormData>({
     resolver: zodResolver(createLeadPersonSchema),
-    defaultValues: {
-      leadId: leadIdRef.current,
-      name: '',
-      position: '',
-      email: '',
-      phone: '',
-    },
-    mode: 'onSubmit',
+    defaultValues,
+    mode: "onChange",
   });
 
-  // Asegurarnos de que el leadId siempre esté actualizado en el formulario
+  // Asegurar que el leadId esté actualizado sin causar re-renders innecesarios
   useEffect(() => {
-    setValue('leadId', leadIdRef.current);
-  }, [setValue]);
+    setValue("leadId", leadIdRef.current);
+  }, [setValue, leadIdRef.current]);
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      setIsSubmitting(true);
-      setIsCreatingContact(true);
-      const formData = new FormData();
-      
-      // Usar el leadId del ref para asegurar consistencia
-      formData.append('leadId', leadIdRef.current);
-      
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && key !== 'leadId') {
-          formData.append(key, value.toString());
-        }
-      });
+  // Función de submit memoizada para evitar recreaciones
+  const onSubmit = useCallback(
+    async (data: FormData) => {
+      try {
+        setIsSubmitting(true);
+        setIsCreatingContact(true);
+        const formData = new FormData();
 
-      const result = await createLeadPerson(null, formData);
-      
-      if (result?.status === 'success' && result.data) {
-        toast.success('Contacto creado exitosamente');
-        setOpen(false);
-        reset();
-        
-        // Actualizar la lista de contactos con el nuevo contacto
-        setDisplayedContacts(prev => [...prev, result.data]);
-        
-        // Actualizar solo los contactos del lead actual
-        try {
-          const response = await fetch(`/api/leads/${leadIdRef.current}/contactos`);
-          if (!response.ok) {
-            throw new Error('Error al actualizar los contactos');
+        // Usar el leadId del ref para asegurar consistencia
+        formData.append("leadId", leadIdRef.current);
+
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined && key !== "leadId") {
+            formData.append(key, value.toString());
           }
-          const updatedContacts = await response.json();
-          setDisplayedContacts(updatedContacts);
-        } catch (error) {
-          console.error("Error al actualizar los contactos:", error);
+        });
+
+        const result = await createLeadPerson(null, formData);
+
+        if (result?.status === "success" && result.data) {
+          toast.success("Contacto creado exitosamente");
+          setOpen(false);
+          reset(defaultValues); // Usar defaultValues consistentes
+
+          // Actualizar la lista de contactos con el nuevo contacto
+          setDisplayedContacts((prev) => [...prev, result.data]);
+
+          // Actualizar solo los contactos del lead actual
+          try {
+            const response = await fetch(
+              `/api/leads/${leadIdRef.current}/contactos`,
+            );
+            if (!response.ok) {
+              throw new Error("Error al actualizar los contactos");
+            }
+            const updatedContacts = await response.json();
+            setDisplayedContacts(updatedContacts);
+          } catch (error) {
+            console.error("Error al actualizar los contactos:", error);
+          }
+        } else {
+          const errorMessage = result?.message || "Error al crear el contacto";
+          toast.error(errorMessage);
         }
-      } else {
-        const errorMessage = result?.message || 'Error al crear el contacto';
-        toast.error(errorMessage);
+      } catch (error) {
+        console.error("Error al crear el contacto:", error);
+        toast.error("Error al crear el contacto");
+      } finally {
+        setIsSubmitting(false);
+        setIsCreatingContact(false);
       }
-    } catch (error) {
-      console.error("Error al crear el contacto:", error);
-      toast.error('Error al crear el contacto');
-    } finally {
-      setIsSubmitting(false);
+    },
+    [reset, defaultValues],
+  );
+
+  // Handlers memoizados para evitar recreaciones
+  const handleDialogOpenChange = useCallback(
+    (newOpen: boolean) => {
+      setOpen(newOpen);
+      if (!newOpen) {
+        setIsCreatingContact(false);
+        reset(defaultValues);
+      }
+    },
+    [reset, defaultValues],
+  );
+
+  const handleSheetOpenChange = useCallback((newOpen: boolean) => {
+    setSheetOpen(newOpen);
+    if (!newOpen) {
       setIsCreatingContact(false);
     }
-  };
+  }, []);
 
-  // Formulario de contacto
-  const ContactForm = () => (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <input type="hidden" {...register('leadId')} value={leadIdRef.current} />
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="name">Nombre completo</Label>
-          <Input
-            {...register("name")}
-            placeholder="Juan Pérez"
-            type="text"
-            autoComplete="name"
-            disabled={isSubmitting}
-          />
-          {errors.name && (
-            <p className="text-sm text-red-500">{errors.name.message}</p>
-          )}
-        </div>
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="position">Posición</Label>
-          <Input
-            {...register("position")}
-            placeholder="Gerente de producto"
-            type="text"
-            autoComplete="organization-title"
-            disabled={isSubmitting}
-          />
-          {errors.position && (
-            <p className="text-sm text-red-500">{errors.position.message}</p>
-          )}
-        </div>
-      </div>
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="email">Correo electrónico</Label>
-          <Input
-            {...register("email", {required:false})}
-            placeholder="candidato@ejemplo.com"
-            type="email"
-            autoComplete="email"
-            disabled={isSubmitting}
-          />
-          {errors.email && (
-            <p className="text-sm text-red-500">{errors.email.message}</p>
-          )}
-        </div>
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="phone">Número telefónico</Label>
-          <Input
-            {...register("phone", {required:false})}
-            placeholder="+52553.."
-            type="tel"
-            disabled={isSubmitting}
-          />
-          {errors.phone && (
-            <p className="text-sm text-red-500">{errors.phone.message}</p>
-          )}
-        </div>
-      </div>
+  const handleCancelClick = useCallback(() => {
+    setOpen(false);
+    reset(defaultValues);
+    setIsCreatingContact(false);
+  }, [reset, defaultValues]);
 
-      <div className="flex gap-3">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            setOpen(false);
-            reset();
-            setIsCreatingContact(false);
-          }}
-          disabled={isSubmitting}
-        >
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="size-4 mr-2 animate-spin" />
-              Cargando...
-            </>
-          ) : (
-            <span>Crear contacto</span>
-          )}
-        </Button>
-      </div>
-    </form>
+  const handleAddContactClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCreatingContact(true);
+    setOpen(true);
+  }, []);
+
+  // Componente del formulario memoizado para evitar re-renders
+  const ContactForm = useMemo(
+    () => (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <input
+          type="hidden"
+          {...register("leadId")}
+          value={leadIdRef.current}
+        />
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="name">Nombre completo</Label>
+            <Input
+              {...register("name")}
+              placeholder="Juan Pérez"
+              type="text"
+              disabled={isSubmitting}
+              autoComplete="off"
+            />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="position">Posición</Label>
+            <Input
+              {...register("position")}
+              placeholder="Gerente de producto"
+              type="text"
+              disabled={isSubmitting}
+              autoComplete="off"
+            />
+            {errors.position && (
+              <p className="text-sm text-red-500">{errors.position.message}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="email">Correo electrónico</Label>
+            <Input
+              {...register("email", { required: false })}
+              placeholder="candidato@ejemplo.com"
+              type="email"
+              autoComplete="email"
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="phone">Número telefónico</Label>
+            <Input
+              {...register("phone", { required: false })}
+              placeholder="+52553.."
+              type="tel"
+              disabled={isSubmitting}
+              autoComplete="off"
+            />
+            {errors.phone && (
+              <p className="text-sm text-red-500">{errors.phone.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancelClick}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 mr-2 animate-spin" />
+                Cargando...
+              </>
+            ) : (
+              <span>Crear contacto</span>
+            )}
+          </Button>
+        </div>
+      </form>
+    ),
+    [register, handleSubmit, onSubmit, errors, isSubmitting, handleCancelClick],
   );
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(newOpen) => {
-        setOpen(newOpen);
-        if (!newOpen) {
-          setIsCreatingContact(false);
-          reset();
-        }
-      }}>
-        <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+        <DialogContent
+          forceMount
+          className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5"
+        >
           <DialogHeader className="contents space-y-0 text-left">
             <DialogTitle className="border-b px-6 py-4 text-base">
               Agregar contacto a este lead
@@ -235,21 +287,12 @@ export function LeadContactosSheet({
           <DialogDescription className="sr-only">
             Completar la información del nuevo contacto.
           </DialogDescription>
-          <div className="overflow-y-auto">
-            <div className="px-6 pt-4 pb-6">
-              <ContactForm />
-            </div>
-          </div>
+          <div className="px-6 pt-4 pb-6">{ContactForm}</div>
           <DialogFooter className="border-t px-6 py-4" />
         </DialogContent>
       </Dialog>
 
-      <Sheet open={sheetOpen} onOpenChange={(newOpen) => {
-        setSheetOpen(newOpen);
-        if (!newOpen) {
-          setIsCreatingContact(false);
-        }
-      }}>
+      <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <Button variant="outline">
             <Users />
@@ -263,11 +306,10 @@ export function LeadContactosSheet({
                 size="sm"
                 className="gap-1"
                 variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsCreatingContact(true);
-                  setOpen(true);
+                onMouseDown={(e) => {
+                  e.preventDefault();
                 }}
+                onClick={handleAddContactClick}
               >
                 <PlusIcon size={16} />
                 <span>Agregar</span>
