@@ -31,7 +31,6 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
         aria-label="Select row"
       />
     ),
-    enableSorting: false,
     enableHiding: false,
   },
   {
@@ -150,8 +149,14 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   },
   {
     accessorKey: "oficina",
-    header: () => null,
-    cell: () => null,
+    header: () => <div className="text-center">Oficina</div>,
+    cell: ({ row }) => {
+      return (
+        <Button variant="outline">
+          {row.original.generadorLeads.Oficina}
+        </Button>
+      )
+    },
     accessorFn: (row) => {
       return row.generadorLeads.Oficina || null;
     },

@@ -13,6 +13,7 @@ import {
   VisibilityState,
   FilterFn,
   Row,
+  ColumnOrderState,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
@@ -52,6 +54,8 @@ import {
   CalendarIcon,
   X,
   RefreshCw,
+  Download,
+  SlidersHorizontal,
 } from "lucide-react";
 import { LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -122,6 +126,7 @@ function TableFilters<TData extends { id: string }, TValue>({
   setCurrentDateCreation,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleDelete = async () => {
     setDeleteLoading(true);
@@ -135,6 +140,58 @@ function TableFilters<TData extends { id: string }, TValue>({
       toast.error("Error al eliminar leads");
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Definir las columnas a exportar
+      const exportColumns = [
+        "empresa",
+        "origen",
+        "sector",
+        "generadorLeads",
+        "link",
+        "createdAt",
+        "status",
+        "oficina",
+      ];
+      const rows = table.getFilteredRowModel().rows;
+      // Encabezados legibles
+      const headers = exportColumns;
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row =>
+          headers.map(header => {
+            let value = (row.original as any)[header];
+            // Manejar objetos anidados
+            if (header === "origen" && value && typeof value === "object") value = value.nombre;
+            if (header === "sector" && value && typeof value === "object") value = value.nombre;
+            if (header === "generadorLeads" && value && typeof value === "object") value = value.name;
+            if (header === "createdAt" && value) value = new Date(value).toLocaleString();
+            if (header === "oficina" && (row.original as any).generadorLeads && (row.original as any).generadorLeads.Oficina) value = (row.original as any).generadorLeads.Oficina;
+            if (typeof value === 'string') return `"${value}"`;
+            return value ?? '';
+          }).join(',')
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `leads_${new Date().toISOString()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Exportación completada");
+    } catch (error) {
+      toast.error("Error al exportar los datos");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -270,7 +327,7 @@ function TableFilters<TData extends { id: string }, TValue>({
             </Select>
           </div>
 
-          {/* Selector de columnas y botón de acciones en grupo */}
+          {/* Acciones en grupo */}
           <div className="flex flex-col justify-end space-y-2">
             {hasSelectedRows ? (
               <Button
@@ -290,7 +347,30 @@ function TableFilters<TData extends { id: string }, TValue>({
                   : "leads"}
               </Button>
             ) : (
-              <ColumnSelector table={table} />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="default" className="w-full">
+                    <SlidersHorizontal size={16} className="mr-2" />
+                    Acciones
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuCheckboxItem
+                    className="flex items-center gap-2"
+                    onClick={handleExport}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    Exportar a CSV
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <ColumnSelector table={table} />
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -336,63 +416,6 @@ function ColumnSelector<TData>({ table }: ColumnSelectorProps<TData>) {
   );
 }
 
-// Componente de la tabla
-interface DataGridProps<TData, TValue> {
-  table: ReturnType<typeof useReactTable<TData>>;
-  columns: ColumnDef<TData, TValue>[];
-}
-
-function DataGrid<TData, TValue>({
-  table,
-  columns,
-}: DataGridProps<TData, TValue>) {
-  return (
-    <div className="rounded-md border dark:bg-[#0e0e0e] overflow-x-auto">
-      <Table className="downloadable-table">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="font-semibold">
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="hover:bg-muted/50 transition-colors"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No se encontraron resultados.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
 // Componente de paginación
 interface PaginationProps<TData> {
   table: ReturnType<typeof useReactTable<TData>>;
@@ -407,6 +430,8 @@ function TablePagination<TData>({
 }: PaginationProps<TData>) {
   const { pageIndex, pageSize: currentPageSize } = table.getState().pagination;
   const totalPages = table.getPageCount();
+  const totalRows = table.getFilteredRowModel().rows.length;
+  const selectedRows = table.getFilteredSelectedRowModel().rows.length;
 
   return (
     <Card className="mt-4">
@@ -419,34 +444,36 @@ function TablePagination<TData>({
                 Página {pageIndex + 1} de {totalPages || 1}
               </span>
               <span className="text-muted-foreground">
-                ({table.getFilteredSelectedRowModel().rows.length} de{" "}
-                {table.getFilteredRowModel().rows.length} filas seleccionadas)
+                ({selectedRows} de {totalRows} filas seleccionadas)
               </span>
             </div>
           </div>
 
-          {/* Selector de filas por página */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="page-size" className="text-sm">
-              Filas por página:
-            </Label>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={onPageSizeChange}
-            >
-              <SelectTrigger id="page-size" className="w-[80px]">
-                <SelectValue placeholder={pageSize.toString()} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Selector de filas por página y navegación */}
+          <div className="flex items-center gap-4">
+            {/* Selector de filas por página */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="page-size" className="text-sm">
+                Filas por página:
+              </Label>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={onPageSizeChange}
+              >
+                <SelectTrigger id="page-size" className="w-[80px]">
+                  <SelectValue placeholder={pageSize.toString()} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Botones de paginación */}
-            <div className="flex items-center space-x-2 ml-4">
+            {/* Navegación de páginas */}
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="icon"
@@ -466,6 +493,14 @@ function TablePagination<TData>({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
+              
+              {/* Indicador de página actual */}
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-sm font-medium">{pageIndex + 1}</span>
+                <span className="text-sm text-muted-foreground">/</span>
+                <span className="text-sm text-muted-foreground">{totalPages}</span>
+              </div>
+
               <Button
                 variant="outline"
                 size="icon"
@@ -493,6 +528,151 @@ function TablePagination<TData>({
   );
 }
 
+// Componente de la tabla
+interface DataGridProps<TData, TValue> {
+  table: ReturnType<typeof useReactTable<TData>>;
+  columns: ColumnDef<TData, TValue>[];
+}
+
+function DataGrid<TData, TValue>({
+  table,
+  columns,
+}: DataGridProps<TData, TValue>) {
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    setColumnOrder(table.getAllColumns().map((column) => column.id));
+  }, [table]);
+
+  // Columnas que no se pueden mover
+  const nonDraggableColumns = ["select", "actions"];
+
+  return (
+    <div className="rounded-md border dark:bg-[#0e0e0e] overflow-x-auto">
+      <Table className="downloadable-table">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id} className="bg-muted/50">
+              {headerGroup.headers.map((header) => {
+                const isDraggable = !nonDraggableColumns.includes(header.id);
+                return (
+                  <TableHead
+                    key={header.id}
+                    className={`
+                      font-semibold transition-all duration-200
+                      ${isDraggable ? 'cursor-move' : ''}
+                      ${draggedColumn === header.id ? 'opacity-50 scale-95' : ''}
+                      ${dropTarget === header.id ? 'bg-primary/20 border-2 border-primary' : ''}
+                      hover:bg-muted/70
+                    `}
+                    draggable={isDraggable}
+                    onDragStart={isDraggable ? (e) => {
+                      setDraggedColumn(header.id);
+                      e.dataTransfer.setData("text/plain", header.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    } : undefined}
+                    onDragEnd={isDraggable ? () => {
+                      setDraggedColumn(null);
+                      setDropTarget(null);
+                    } : undefined}
+                    onDragOver={isDraggable ? (e) => {
+                      e.preventDefault();
+                      if (header.id !== draggedColumn) {
+                        setDropTarget(header.id);
+                      }
+                    } : undefined}
+                    onDragLeave={isDraggable ? (e) => {
+                      e.preventDefault();
+                      if (header.id !== draggedColumn) {
+                        setDropTarget(null);
+                      }
+                    } : undefined}
+                    onDrop={isDraggable ? (e) => {
+                      e.preventDefault();
+                      setDraggedColumn(null);
+                      setDropTarget(null);
+                      const draggedColumnId = e.dataTransfer.getData("text/plain");
+                      const dropColumnId = header.id;
+                      if (draggedColumnId === dropColumnId) return;
+                      const newColumnOrder = [...columnOrder];
+                      const draggedIndex = newColumnOrder.indexOf(draggedColumnId);
+                      const dropIndex = newColumnOrder.indexOf(dropColumnId);
+                      newColumnOrder.splice(draggedIndex, 1);
+                      newColumnOrder.splice(dropIndex, 0, draggedColumnId);
+                      setColumnOrder(newColumnOrder);
+                      table.setColumnOrder(newColumnOrder);
+                    } : undefined}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isDraggable && <span className="text-muted-foreground">⋮⋮</span>}
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </div>
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className={`
+                  hover:bg-muted/50 transition-colors group
+                  ${hoveredRow === row.id ? 'bg-muted/30' : ''}
+                  ${row.getIsSelected() ? 'bg-primary/10' : ''}
+                `}
+                onMouseEnter={() => setHoveredRow(row.id)}
+                onMouseLeave={() => setHoveredRow(null)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell 
+                    key={cell.id}
+                    className={`
+                      group-hover:bg-muted/30 transition-colors
+                      ${hoveredRow === row.id ? 'bg-muted/40' : ''}
+                    `}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <p className="text-muted-foreground">No se encontraron resultados.</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      table.resetColumnFilters();
+                      table.resetGlobalFilter();
+                    }}
+                  >
+                    Limpiar filtros
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 // Componente principal
 export function CommercialTable<TData extends LeadWithRelations, TValue>({
   columns,
@@ -516,6 +696,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [tableData, setTableData] = useState<LeadWithRelations[]>(data);
   const [currentPage, setCurrentPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
 
   // Memoizar los datos de la tabla para evitar re-renderizaciones innecesarias
   const memoizedData = useMemo(() => tableData, [tableData]);
@@ -540,6 +721,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+    onColumnOrderChange: setColumnOrder,
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
         const newState = updater(pagination);
@@ -560,6 +742,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
       rowSelection,
       globalFilter,
       pagination,
+      columnOrder,
     },
   });
 
