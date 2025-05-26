@@ -45,12 +45,14 @@ export const CreateLeadForm = ({
   isAdmin,
   origenes,
   activeUser,
+  onLeadCreated,
 }: {
   generadores: User[];
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
   activeUser: { name: string; id: string };
+  onLeadCreated?: () => void;
 }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   return (
@@ -74,6 +76,7 @@ export const CreateLeadForm = ({
             generadores={generadores}
             sectores={sectores}
             origenes={origenes}
+            onLeadCreated={onLeadCreated}
           />
         </DialogContent>
       </Dialog>
@@ -88,6 +91,7 @@ function NuevoLeadForm({
   isAdmin,
   activeUser,
   setOpenDialog,
+  onLeadCreated,
 }: {
   generadores: User[];
   sectores: Sector[];
@@ -95,6 +99,7 @@ function NuevoLeadForm({
   isAdmin: boolean;
   activeUser: { name: string; id: string };
   setOpenDialog: (newState: boolean) => void;
+  onLeadCreated?: () => void;
 }) {
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(null);
@@ -157,8 +162,11 @@ function NuevoLeadForm({
       setSelectedSector(null);
       setSelectedOrigen(null);
       setSelectedDate(undefined);
+
+      // Notificar que se creó un lead
+      onLeadCreated?.();
     }
-  }, [lastResult]);
+  }, [lastResult, onLeadCreated]);
 
   // Seleccionar un usuario
   const handleSelectGl = (user: User) => {

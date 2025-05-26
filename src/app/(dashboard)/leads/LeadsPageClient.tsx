@@ -1,5 +1,5 @@
 "use client";
-import { type ReactElement, useCallback } from "react";
+import { type ReactElement, useCallback, useEffect, useState } from "react";
 import { leadsColumns } from "../list/leads/leadsColumns";
 import { CommercialTable } from "./table/CommercialTable";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
@@ -8,8 +8,6 @@ import { ToastAlerts } from "@/components/ToastAlerts";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 
 interface LeadsPageClientProps {
   initialData: LeadWithRelations[];
@@ -31,11 +29,17 @@ export function LeadsPageClient({
   activeUser,
 }: LeadsPageClientProps) {
   const router = useRouter();
+  const [data, setData] = useState(initialData);
 
   // Callback cuando se crea un nuevo lead
   const handleLeadCreated = useCallback(() => {
     router.refresh();
   }, [router]);
+
+  // Efecto para actualizar los datos cuando cambia initialData
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   return (
     <>
@@ -54,13 +58,14 @@ export function LeadsPageClient({
             sectores={sectores}
             generadores={generadores}
             origenes={origenes}
+            onLeadCreated={handleLeadCreated}
           />
         </div>
       </div>
 
       <CommercialTable
         columns={columns}
-        data={initialData}
+        data={data}
         generadores={generadores}
       />
     </>

@@ -8,6 +8,7 @@ import prisma from "@/lib/db";
 import { Metadata } from "next";
 import { ColumnDef } from "@tanstack/react-table";
 import { LeadWithRelations } from "../../leads/kanban/page";
+import { LeadsPageClient } from "../../leads/LeadsPageClient";
 
 interface pageProps {}
 
@@ -39,6 +40,9 @@ const fetchData = async (): Promise<{
           changedBy: true,
         },
       },
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 
@@ -105,21 +109,14 @@ export default async function LeadsPage({}: pageProps) {
 
   return (
     <>
-      {/* LIST */}
-
-      {/* <ToastAlerts /> */}
-
-      <CreateLeadForm
+      <LeadsPageClient
+        initialData={data}
+        columns={columns}
+        generadores={generadores}
+        sectores={sectores}
+        origenes={origenes}
         isAdmin={isAdmin}
         activeUser={activeUser}
-        sectores={sectores}
-        generadores={generadores}
-        origenes={origenes}
-      />
-      <CommercialTable
-        columns={columns}
-        data={data}
-        generadores={generadores}
       />
     </>
   );

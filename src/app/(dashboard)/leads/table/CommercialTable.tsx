@@ -527,6 +527,49 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
 
   const router = useRouter();
 
+  // Configuración de la tabla
+  const table = useReactTable({
+    data: memoizedData,
+    columns: columns as ColumnDef<LeadWithRelations>[],
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        const newState = updater(pagination);
+        setCurrentPage(newState.pageIndex);
+        setPagination(newState);
+      } else {
+        setCurrentPage(updater.pageIndex);
+        setPagination(updater);
+      }
+    },
+    filterFns: {
+      filterAnything,
+    },
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+      globalFilter,
+      pagination,
+    },
+  });
+
+  // Efecto para actualizar los datos cuando cambia la prop data
+  useEffect(() => {
+    setTableData(data);
+    // Resetear la página a la primera cuando se actualizan los datos
+    table.setPageIndex(0);
+  }, [data, table]);
+
   // Función para actualizar los datos
   const refreshData = useCallback(async () => {
     try {
@@ -541,11 +584,6 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
       setIsRefreshing(false);
     }
   }, []);
-
-  // Efecto para actualizar los datos cuando cambia la prop data
-  useEffect(() => {
-    setTableData(data);
-  }, [data]);
 
   // Memoize handlers to prevent unnecessary re-renders
   const handlePageSizeChange = useCallback((value: string) => {
@@ -590,42 +628,6 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     table.getColumn("createdAt")?.setFilterValue(date);
     table.setPageIndex(0);
   }, []);
-
-  // Configuración de la tabla
-  const table = useReactTable({
-    data: memoizedData,
-    columns: columns as ColumnDef<LeadWithRelations>[],
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    onPaginationChange: (updater) => {
-      if (typeof updater === "function") {
-        const newState = updater(pagination);
-        setCurrentPage(newState.pageIndex);
-        setPagination(newState);
-      } else {
-        setCurrentPage(updater.pageIndex);
-        setPagination(updater);
-      }
-    },
-    filterFns: {
-      filterAnything,
-    },
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-      globalFilter,
-      pagination,
-    },
-  });
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
