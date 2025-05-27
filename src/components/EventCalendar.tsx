@@ -136,11 +136,11 @@ export const EventCalendar = ({ userId }: Props) => {
                 {events.map((event) => (
                   <Card
                     key={event.id}
-                    className="bg-white border-2 border-l-blue-500 rounded-lg shadow-sm p-3 mb-2 hover:shadow-md transition-shadow"
+                    className="border-2 border-l-blue-500 rounded-lg shadow-sm p-3 mb-2 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-sm text-gray-800">
+                        <h3 className="font-semibold text-sm ">
                           {event.title}
                         </h3>
                       </div>
@@ -150,9 +150,7 @@ export const EventCalendar = ({ userId }: Props) => {
                         })}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 line-clamp-2">
-                      {event.description}
-                    </p>
+                    <p className="text-xs  line-clamp-2">{event.description}</p>
                   </Card>
                 ))}
               </div>
