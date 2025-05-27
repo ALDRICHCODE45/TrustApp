@@ -27,7 +27,7 @@ export const ClientesActions = ({ row }: { row: any }) => {
           <DropdownMenuItem asChild>
             <Link href={`/cliente/${clienteId}`} className="cursor-pointer">
               <Eye />
-              Ver mas
+              Ver más
             </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>

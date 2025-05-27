@@ -199,8 +199,8 @@ export function UsersTable<TData extends User, TValue>({
             {hasSelectedRows && (
               <>
                 <ConfirmDialog
-                  title="Estas seguro?"
-                  description="Esta accion no se puede deshacer y se eliminaran todas sus relaciones"
+                  title="¿Estás seguro?"
+                  description="Esta acción no se puede deshacer y se eliminarán todas sus relaciones."
                   trigger={
                     <Button
                       className="flex items-center gap-1 cursor-pointer"
@@ -215,8 +215,8 @@ export function UsersTable<TData extends User, TValue>({
                 />
 
                 <ConfirmDialog
-                  title="Estas seguro?"
-                  description="Esta accion no se puede deshacer y los usuarios seleccionados no podran acceder a los sistemas de nuevo."
+                  title="¿Estás seguro?"
+                  description="Esta acción no se puede deshacer y los usuarios seleccionados no podrán acceder a los sistemas nuevamente."
                   trigger={
                     <Button
                       variant="outline"

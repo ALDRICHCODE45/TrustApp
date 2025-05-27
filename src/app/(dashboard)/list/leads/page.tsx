@@ -1,6 +1,4 @@
 import { leadsColumns } from "./leadsColumns";
-import { CreateLeadForm } from "./components/CreateLeadForm";
-import { CommercialTable } from "@/app/(dashboard)/leads/table/CommercialTable";
 import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";

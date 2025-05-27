@@ -26,7 +26,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
@@ -268,8 +267,8 @@ const InteractionOptionsMenu = ({
           <span>Editar</span>
         </DropdownMenuItem>
         <ConfirmDialog
-          title="De verdad deseas eliminar la interaccion?"
-          description="La interacccion sera elimada de forma permatente y no podras reestablecerla"
+          title="¿De verdad deseas eliminar la interacción?"
+          description="La interacción será eliminada de forma permanente y no podrás restablecerla."
           trigger={
             <div className="text-red-500 cursor-pointer flex items-center p-1  text-sm  rounded-sm hover:bg-gray-100">
               <Trash2 className="h-4 w-4 ml-1" />
@@ -404,8 +403,8 @@ const EditInteractionDialog = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <ConfirmDialog
-                            title="Seguro que desea eliminar el archivo?"
-                            description="Esta accion no puede desacerce y eliminara permanentemente el archivo."
+                            title="¿Seguro que desea eliminar el archivo?"
+                            description="Esta acción no puede deshacerse y eliminará permanentemente el archivo."
                             onConfirm={async () => {
                               await handleDeleteFile(
                                 interaction.attachmentUrl!,

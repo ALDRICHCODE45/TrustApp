@@ -50,7 +50,6 @@ import {
   ChevronRight,
   Trash2,
   Loader2,
-  LoaderCircle,
   CalendarIcon,
   X,
   RefreshCw,
@@ -68,7 +67,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { LeadWithRelations } from "../kanban/page";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
@@ -161,32 +160,47 @@ function TableFilters<TData extends { id: string }, TValue>({
       // Encabezados legibles
       const headers = exportColumns;
       const csvContent = [
-        headers.join(','),
-        ...rows.map(row =>
-          headers.map(header => {
-            let value = (row.original as any)[header];
-            // Manejar objetos anidados
-            if (header === "origen" && value && typeof value === "object") value = value.nombre;
-            if (header === "sector" && value && typeof value === "object") value = value.nombre;
-            if (header === "generadorLeads" && value && typeof value === "object") value = value.name;
-            if (header === "createdAt" && value) value = new Date(value).toLocaleString();
-            if (header === "oficina" && (row.original as any).generadorLeads && (row.original as any).generadorLeads.Oficina) value = (row.original as any).generadorLeads.Oficina;
-            if (typeof value === 'string') return `"${value}"`;
-            return value ?? '';
-          }).join(',')
-        )
-      ].join('\n');
+        headers.join(","),
+        ...rows.map((row) =>
+          headers
+            .map((header) => {
+              let value = (row.original as any)[header];
+              // Manejar objetos anidados
+              if (header === "origen" && value && typeof value === "object")
+                value = value.nombre;
+              if (header === "sector" && value && typeof value === "object")
+                value = value.nombre;
+              if (
+                header === "generadorLeads" &&
+                value &&
+                typeof value === "object"
+              )
+                value = value.name;
+              if (header === "createdAt" && value)
+                value = new Date(value).toLocaleString();
+              if (
+                header === "oficina" &&
+                (row.original as any).generadorLeads &&
+                (row.original as any).generadorLeads.Oficina
+              )
+                value = (row.original as any).generadorLeads.Oficina;
+              if (typeof value === "string") return `"${value}"`;
+              return value ?? "";
+            })
+            .join(","),
+        ),
+      ].join("\n");
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `leads_${new Date().toISOString()}.csv`);
-      link.style.visibility = 'hidden';
+      link.setAttribute("href", url);
+      link.setAttribute("download", `leads_${new Date().toISOString()}.csv`);
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast.success("Exportación completada");
     } catch (error) {
       toast.error("Error al exportar los datos");
@@ -368,7 +382,7 @@ function TableFilters<TData extends { id: string }, TValue>({
                     Exportar a CSV
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuSeparator />
-              <ColumnSelector table={table} />
+                  <ColumnSelector table={table} />
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -451,25 +465,25 @@ function TablePagination<TData>({
 
           {/* Selector de filas por página y navegación */}
           <div className="flex items-center gap-4">
-          {/* Selector de filas por página */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="page-size" className="text-sm">
-              Filas por página:
-            </Label>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={onPageSizeChange}
-            >
-              <SelectTrigger id="page-size" className="w-[80px]">
-                <SelectValue placeholder={pageSize.toString()} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Selector de filas por página */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="page-size" className="text-sm">
+                Filas por página:
+              </Label>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={onPageSizeChange}
+              >
+                <SelectTrigger id="page-size" className="w-[80px]">
+                  <SelectValue placeholder={pageSize.toString()} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Navegación de páginas */}
@@ -493,12 +507,14 @@ function TablePagination<TData>({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              
+
               {/* Indicador de página actual */}
               <div className="flex items-center gap-1 px-2">
                 <span className="text-sm font-medium">{pageIndex + 1}</span>
                 <span className="text-sm text-muted-foreground">/</span>
-                <span className="text-sm text-muted-foreground">{totalPages}</span>
+                <span className="text-sm text-muted-foreground">
+                  {totalPages}
+                </span>
               </div>
 
               <Button
@@ -563,51 +579,80 @@ function DataGrid<TData, TValue>({
                     key={header.id}
                     className={`
                       font-semibold transition-all duration-200
-                      ${isDraggable ? 'cursor-move' : ''}
-                      ${draggedColumn === header.id ? 'opacity-50 scale-95' : ''}
-                      ${dropTarget === header.id ? 'bg-primary/20 border-2 border-primary' : ''}
+                      ${isDraggable ? "cursor-move" : ""}
+                      ${draggedColumn === header.id ? "opacity-50 scale-95" : ""}
+                      ${dropTarget === header.id ? "bg-primary/20 border-2 border-primary" : ""}
                       hover:bg-muted/70
                     `}
                     draggable={isDraggable}
-                    onDragStart={isDraggable ? (e) => {
-                      setDraggedColumn(header.id);
-                      e.dataTransfer.setData("text/plain", header.id);
-                      e.dataTransfer.effectAllowed = "move";
-                    } : undefined}
-                    onDragEnd={isDraggable ? () => {
-                      setDraggedColumn(null);
-                      setDropTarget(null);
-                    } : undefined}
-                    onDragOver={isDraggable ? (e) => {
-                      e.preventDefault();
-                      if (header.id !== draggedColumn) {
-                        setDropTarget(header.id);
-                      }
-                    } : undefined}
-                    onDragLeave={isDraggable ? (e) => {
-                      e.preventDefault();
-                      if (header.id !== draggedColumn) {
-                        setDropTarget(null);
-                      }
-                    } : undefined}
-                    onDrop={isDraggable ? (e) => {
-                      e.preventDefault();
-                      setDraggedColumn(null);
-                      setDropTarget(null);
-                      const draggedColumnId = e.dataTransfer.getData("text/plain");
-                      const dropColumnId = header.id;
-                      if (draggedColumnId === dropColumnId) return;
-                      const newColumnOrder = [...columnOrder];
-                      const draggedIndex = newColumnOrder.indexOf(draggedColumnId);
-                      const dropIndex = newColumnOrder.indexOf(dropColumnId);
-                      newColumnOrder.splice(draggedIndex, 1);
-                      newColumnOrder.splice(dropIndex, 0, draggedColumnId);
-                      setColumnOrder(newColumnOrder);
-                      table.setColumnOrder(newColumnOrder);
-                    } : undefined}
+                    onDragStart={
+                      isDraggable
+                        ? (e) => {
+                            setDraggedColumn(header.id);
+                            e.dataTransfer.setData("text/plain", header.id);
+                            e.dataTransfer.effectAllowed = "move";
+                          }
+                        : undefined
+                    }
+                    onDragEnd={
+                      isDraggable
+                        ? () => {
+                            setDraggedColumn(null);
+                            setDropTarget(null);
+                          }
+                        : undefined
+                    }
+                    onDragOver={
+                      isDraggable
+                        ? (e) => {
+                            e.preventDefault();
+                            if (header.id !== draggedColumn) {
+                              setDropTarget(header.id);
+                            }
+                          }
+                        : undefined
+                    }
+                    onDragLeave={
+                      isDraggable
+                        ? (e) => {
+                            e.preventDefault();
+                            if (header.id !== draggedColumn) {
+                              setDropTarget(null);
+                            }
+                          }
+                        : undefined
+                    }
+                    onDrop={
+                      isDraggable
+                        ? (e) => {
+                            e.preventDefault();
+                            setDraggedColumn(null);
+                            setDropTarget(null);
+                            const draggedColumnId =
+                              e.dataTransfer.getData("text/plain");
+                            const dropColumnId = header.id;
+                            if (draggedColumnId === dropColumnId) return;
+                            const newColumnOrder = [...columnOrder];
+                            const draggedIndex =
+                              newColumnOrder.indexOf(draggedColumnId);
+                            const dropIndex =
+                              newColumnOrder.indexOf(dropColumnId);
+                            newColumnOrder.splice(draggedIndex, 1);
+                            newColumnOrder.splice(
+                              dropIndex,
+                              0,
+                              draggedColumnId,
+                            );
+                            setColumnOrder(newColumnOrder);
+                            table.setColumnOrder(newColumnOrder);
+                          }
+                        : undefined
+                    }
                   >
                     <div className="flex items-center gap-2">
-                      {isDraggable && <span className="text-muted-foreground">⋮⋮</span>}
+                      {isDraggable && (
+                        <span className="text-muted-foreground">⋮⋮</span>
+                      )}
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -629,18 +674,18 @@ function DataGrid<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
                 className={`
                   hover:bg-muted/50 transition-colors group
-                  ${hoveredRow === row.id ? 'bg-muted/30' : ''}
-                  ${row.getIsSelected() ? 'bg-primary/10' : ''}
+                  ${hoveredRow === row.id ? "bg-muted/30" : ""}
+                  ${row.getIsSelected() ? "bg-primary/10" : ""}
                 `}
                 onMouseEnter={() => setHoveredRow(row.id)}
                 onMouseLeave={() => setHoveredRow(null)}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell 
+                  <TableCell
                     key={cell.id}
                     className={`
                       group-hover:bg-muted/30 transition-colors
-                      ${hoveredRow === row.id ? 'bg-muted/40' : ''}
+                      ${hoveredRow === row.id ? "bg-muted/40" : ""}
                     `}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -652,9 +697,11 @@ function DataGrid<TData, TValue>({
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <p className="text-muted-foreground">No se encontraron resultados.</p>
-                  <Button 
-                    variant="outline" 
+                  <p className="text-muted-foreground">
+                    No se encontraron resultados.
+                  </p>
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       table.resetColumnFilters();

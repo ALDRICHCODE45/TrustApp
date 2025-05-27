@@ -193,7 +193,7 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                     <AlertDialogAction
                       onClick={() => deleteContact(contacto.id)}
                     >
-                      Sí, eliminar
+                      Sí, eliminar.
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
