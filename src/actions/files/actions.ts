@@ -9,18 +9,13 @@ import {
 import { randomUUID } from "crypto";
 
 const s3 = new S3Client({
-  region: process.env.DO_SPACES_REGION!, // "nyc3"
-  endpoint: process.env.DO_SPACES_ENDPOINT!, // "https://nyc3.digitaloceanspaces.com"
+  region: process.env.DO_SPACES_REGION!,
+  endpoint: process.env.DO_SPACES_ENDPOINT!,
   credentials: {
     accessKeyId: process.env.DO_ACCESS_KEY!,
     secretAccessKey: process.env.DO_SECRET_KEY!,
   },
 });
-
-export interface propsReplaceFile {
-  interactionId: string; // para poner el remplazo en la interaccion correcta
-  file: File;
-}
 
 export const deleteFile = async (fileKey: string, interactionId: string) => {
   try {
