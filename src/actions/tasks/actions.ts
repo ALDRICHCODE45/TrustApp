@@ -4,6 +4,39 @@ import { checkSession } from "@/hooks/auth/checkSession";
 import { Role, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+export async function getTasksByMonth(
+  userId: string,
+  startDate: string,
+  endDate: string,
+) {
+  try {
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+        dueDate: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    });
+
+    return {
+      ok: true,
+      tasks: tasks,
+    };
+  } catch (error) {
+    console.error("Error getting tasks by month:", error);
+    return {
+      ok: false,
+      tasks: [],
+      error: "Error al obtener las tareas del mes",
+    };
+  }
+}
+
 export const createTask = async (formData: FormData) => {
   await checkSession();
 

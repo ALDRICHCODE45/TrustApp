@@ -10,6 +10,7 @@ import {
 } from "./ui/card";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
+import { useState } from "react";
 
 interface PerformanceData {
   month: string;
@@ -19,6 +20,8 @@ interface PerformanceData {
 
 /* PERFORMANCE CHART */
 export const AttendanceChart = () => {
+  const [loading] = useState(false);
+  
   const data: PerformanceData[] = [
     { month: "Lun", present: 60, absent: 39 },
     { month: "Mar", present: 99, absent: 34 },
@@ -33,7 +36,7 @@ export const AttendanceChart = () => {
   };
 
   return (
-    <Card className=" shadow-sm h-full">
+    <Card className="shadow-sm h-full">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
@@ -45,29 +48,37 @@ export const AttendanceChart = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="w-full h-[260px]">
-          <BarChart accessibilityLayer data={data}>
-            <CartesianGrid
-              vertical={false}
-              strokeDasharray="3 3"
-              opacity={0.2}
-            />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="dashed" />}
-            />
-            <Bar dataKey="present" fill="var(--color-present)" radius={4} />
-            <Bar dataKey="absent" fill="var(--color-absent)" radius={4} />
-          </BarChart>
-        </ChartContainer>
+      <CardContent className="min-h-[500px]">
+        <div className="w-full h-[500px] relative">
+          {loading ? (
+            <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ChartContainer config={chartConfig} className="w-full h-full">
+              <BarChart accessibilityLayer data={data}>
+                <CartesianGrid
+                  vertical={false}
+                  strokeDasharray="3 3"
+                  opacity={0.2}
+                />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dashed" />}
+                />
+                <Bar dataKey="present" fill="var(--color-present)" radius={4} />
+                <Bar dataKey="absent" fill="var(--color-absent)" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

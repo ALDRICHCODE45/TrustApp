@@ -124,15 +124,12 @@ export const LeadPerformanceChart: React.FC = () => {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-base">
-              Rendimiento de Leads por Mes (2025)
-            </CardTitle>
-            <CardDescription>{getUserName(selectedUser)}</CardDescription>
+            <CardTitle className="text-base">Rendimiento de Leads</CardTitle>
+            <CardDescription>Visualiza tu rendimiento y progreso</CardDescription>
           </div>
-          <div>
-            {/* Selección de usuario */}
+          <div className="w-40">
             <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar usuario" />
               </SelectTrigger>
               <SelectContent>
@@ -146,112 +143,65 @@ export const LeadPerformanceChart: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="">
-        {isLoading ? (
-          <div className="flex justify-center items-center">
-            <p>Cargando datos...</p>
-          </div>
-        ) : (
-          <div className="w-full h-full mt-4">
-            <ChartContainer config={chartConfig}>
+      <CardContent className="min-h-[500px]">
+        <div className="w-full h-[500px] relative">
+          {isLoading ? (
+            <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ChartContainer config={chartConfig} className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={data}
                   margin={{
                     top: 10,
                     right: 10,
-                    left: 10,
-                    bottom: 10,
+                    left: 0,
+                    bottom: 0,
                   }}
                 >
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <CartesianGrid 
+                    vertical={false} 
+                    strokeDasharray="3 3" 
+                    opacity={0.2}
+                  />
                   <XAxis
                     dataKey="mes"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
-                    height={60}
-                    tick={{ fontSize: 12 }}
-                    textAnchor="end"
+                    tickMargin={10}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
                   />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickMargin={8}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                  />
                   <ChartTooltip
                     cursor={false}
                     content={<ChartTooltipContent indicator="dot" />}
                   />
 
-                  <Area
-                    dataKey="citasValidadas"
-                    type="natural"
-                    fill={chartConfig.citasValidadas.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.citasValidadas.color}
-                    stackId="a"
-                    name={chartConfig.citasValidadas.label}
-                  />
-
-                  <Area
-                    dataKey="citasAgendadas"
-                    type="natural"
-                    fill={chartConfig.citasAgendadas.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.citasAgendadas.color}
-                    stackId="a"
-                    name={chartConfig.citasAgendadas.label}
-                  />
-
-                  <Area
-                    dataKey="citasAtendidas"
-                    type="natural"
-                    fill={chartConfig.citasAtendidas.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.citasAtendidas.color}
-                    stackId="a"
-                    name={chartConfig.citasAtendidas.label}
-                  />
-
-                  <Area
-                    dataKey="contactosCalidos"
-                    type="natural"
-                    fill={chartConfig.contactosCalidos.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.contactosCalidos.color}
-                    stackId="a"
-                    name={chartConfig.contactosCalidos.label}
-                  />
-
-                  <Area
-                    dataKey="socialSelling"
-                    type="natural"
-                    fill={chartConfig.socialSelling.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.socialSelling.color}
-                    stackId="a"
-                    name={chartConfig.socialSelling.label}
-                  />
-                  <Area
-                    dataKey="clientes"
-                    type="natural"
-                    fill={chartConfig.clientes.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.clientes.color}
-                    stackId="a"
-                    name={chartConfig.clientes.label}
-                  />
-                  <Area
-                    dataKey="contactos"
-                    type="natural"
-                    fill={chartConfig.contactos.color}
-                    fillOpacity={0.4}
-                    stroke={chartConfig.contactos.color}
-                    stackId="a"
-                    name={chartConfig.contactos.label}
-                  />
+                  {Object.entries(chartConfig).map(([key, config]) => (
+                    <Area
+                      key={key}
+                      dataKey={key}
+                      type="monotone"
+                      fill={config.color}
+                      fillOpacity={0.2}
+                      stroke={config.color}
+                      strokeWidth={2}
+                      stackId="a"
+                      name={config.label}
+                    />
+                  ))}
                 </AreaChart>
               </ResponsiveContainer>
             </ChartContainer>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );
