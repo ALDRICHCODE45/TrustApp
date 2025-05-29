@@ -12,6 +12,7 @@ export async function getTasksByMonth(
   try {
     const tasks = await prisma.task.findMany({
       where: {
+        status: TaskStatus.Pending,
         assignedToId: userId,
         dueDate: {
           gte: new Date(startDate),
