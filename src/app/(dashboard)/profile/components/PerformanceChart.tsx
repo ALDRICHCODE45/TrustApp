@@ -43,7 +43,7 @@ interface PerformanceData {
   contactosCalidos: number;
   citasAgendadas: number;
   citasValidadas: number;
-  clientes: number;
+  asignadas: number;
   citasAtendidas: number;
 }
 
@@ -61,7 +61,7 @@ export const LeadPerformanceChart: React.FC = () => {
     citasAgendadas: { label: "C.A", color: "#ec4899" },
     citasValidadas: { label: "C.V", color: "#8b5cf6" },
     citasAtendidas: { label: "C.At", color: "#94a3b8" },
-    clientes: { label: "Clientes", color: "#3b82f6" },
+    asignadas: { label: "Asignadas", color: "#3b82f6" },
   };
 
   // Obtener usuarios cuando el componente se monta
@@ -125,7 +125,9 @@ export const LeadPerformanceChart: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="text-base">Rendimiento de Leads</CardTitle>
-            <CardDescription>Visualiza tu rendimiento y progreso</CardDescription>
+            <CardDescription>
+              Visualiza tu rendimiento y progreso
+            </CardDescription>
           </div>
           <div className="w-40">
             <Select value={selectedUser} onValueChange={setSelectedUser}>
@@ -161,9 +163,9 @@ export const LeadPerformanceChart: React.FC = () => {
                     bottom: 0,
                   }}
                 >
-                  <CartesianGrid 
-                    vertical={false} 
-                    strokeDasharray="3 3" 
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="3 3"
                     opacity={0.2}
                   />
                   <XAxis
@@ -173,9 +175,9 @@ export const LeadPerformanceChart: React.FC = () => {
                     tickMargin={10}
                     tick={{ fontSize: 11, fill: "#64748b" }}
                   />
-                  <YAxis 
-                    tickLine={false} 
-                    axisLine={false} 
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
                     tickMargin={8}
                     tick={{ fontSize: 11, fill: "#64748b" }}
                   />

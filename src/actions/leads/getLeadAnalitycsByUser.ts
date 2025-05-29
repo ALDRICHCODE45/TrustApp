@@ -10,7 +10,7 @@ interface Mes {
   contactosCalidos: number;
   citasAgendadas: number;
   citasValidadas: number;
-  clientes: number;
+  asignadas: number;
   citasAtendidas: number;
 }
 
@@ -133,7 +133,7 @@ const createDataByMonth = async (userId: string) => {
     ).length;
 
     //contar cuantos clientes en este mes
-    const clientes = statusClientsChanges.filter(
+    const asignadas = statusClientsChanges.filter(
       (client) => client.changedAt.getMonth() === monthIndex,
     ).length;
 
@@ -161,8 +161,6 @@ const createDataByMonth = async (userId: string) => {
       (lead) => lead.changedAt.getMonth() === monthIndex,
     ).length;
 
-    //contar Eliminados
-
     return {
       mes: monthName.charAt(0).toUpperCase() + monthName.slice(1, 3),
       contactos: contactos,
@@ -171,7 +169,7 @@ const createDataByMonth = async (userId: string) => {
       citasAgendadas: citasAgendadas,
       citasValidadas: citasValidadas,
       citasAtendidas: citasAtendidas,
-      clientes: clientes,
+      asignadas,
     };
   });
 
