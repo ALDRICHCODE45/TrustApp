@@ -312,7 +312,7 @@ const ActivityActions = ({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <span className="sr-only">Abrir Menú</span>
-          <MoreVertical />
+          <MoreVertical className="text-black" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="z-[50]" align="end">
@@ -499,7 +499,7 @@ const ActivitiesList = ({
 }) => {
   return (
     <ScrollArea className="max-h-[500px] rounded-md border p-2 overflow-y-auto">
-      <div className="space-y-3">
+      <div className="space-y-3 pr-4">
         {activities.length > 0 ? (
           activities.map((activity) => (
             <ActivityCard
