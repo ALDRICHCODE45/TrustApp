@@ -69,16 +69,11 @@ export async function getTasksByMonth(
       },
     });
 
-    console.log(
-      `Found ${tasks.length} tasks for month range ${startDate} to ${endDate}`,
-    ); // Debug
-
     return {
       ok: true,
       tasks: tasks,
     };
   } catch (error) {
-    console.error("Error getting tasks by month:", error);
     return {
       ok: false,
       tasks: [],
