@@ -4,6 +4,51 @@ import { checkSession } from "@/hooks/auth/checkSession";
 import { Role, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+// getTasks by date - Para obtener tareas de un día específico
+export const getTaskByDate = async (userId: string, date: string) => {
+  if (!userId || !date) {
+    return {
+      ok: false,
+      message: "Parametros faltantes",
+    };
+  }
+
+  try {
+    // Crear fecha usando el formato YYYY-MM-DD sin problemas de zona horaria
+    const [year, month, day] = date.split("-").map(Number);
+
+    // Crear fechas en la zona horaria local del servidor
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+        dueDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: TaskStatus.Pending,
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    });
+
+    return {
+      ok: true,
+      message: "Tareas",
+      tasks,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: "Error desconocido",
+    };
+  }
+};
+
+// getTasksByMonth - Para obtener tareas del mes completo
 export async function getTasksByMonth(
   userId: string,
   startDate: string,
@@ -23,6 +68,10 @@ export async function getTasksByMonth(
         dueDate: "asc",
       },
     });
+
+    console.log(
+      `Found ${tasks.length} tasks for month range ${startDate} to ${endDate}`,
+    ); // Debug
 
     return {
       ok: true,
@@ -225,35 +274,6 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
     return {
       ok: false,
       message: "Error Editando la tarea",
-    };
-  }
-};
-
-export const getTaskByDate = async (userId: string, date: string) => {
-  if (!userId || !date) {
-    return {
-      ok: false,
-      message: "Parametros faltantes",
-    };
-  }
-
-  try {
-    const tasks = await prisma.task.findMany({
-      where: {
-        assignedToId: userId,
-        dueDate: date,
-        status: TaskStatus.Pending,
-      },
-    });
-    return {
-      ok: true,
-      message: "Tareas",
-      tasks,
-    };
-  } catch (error) {
-    return {
-      ok: false,
-      message: "Error desconocido",
     };
   }
 };
