@@ -10,6 +10,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   VisibilityState,
+  FilterFn,
 } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -103,6 +104,7 @@ export function UsersTable<TData extends User, TValue>({
       globalFilter,
     },
     onGlobalFilterChange: setGlobalFilter,
+    filterFns: {} as Record<string, FilterFn<any>>,
   });
 
   const handlePageSizeChange = (value: string) => {

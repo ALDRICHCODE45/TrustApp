@@ -10,6 +10,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   VisibilityState,
+  FilterFn,
 } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -40,10 +41,12 @@ export interface TableProps {}
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filterFns?: Record<string, FilterFn<any>>;
 }
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterFns = {},
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -61,11 +64,22 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    filterFns,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageSize,
+        pageIndex: 0
+      }
+    },
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === "function" 
+        ? updater(table.getState().pagination)
+        : updater;
+      setPageSize(newPagination.pageSize);
     },
   });
 
