@@ -91,7 +91,6 @@ export type ContactWithRelations = Prisma.PersonGetPayload<{
   };
 }>;
 
-// Función para crear una nueva interacción con un contacto
 async function createContactInteraction(
   contactoId: string,
   content: string,
