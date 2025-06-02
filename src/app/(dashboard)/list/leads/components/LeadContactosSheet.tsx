@@ -24,7 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Loader2, PlusIcon, Users, UserX } from "lucide-react";
+import { Loader2, PlusIcon, Users, UserX, MessageSquare } from "lucide-react";
 import { createLeadPerson } from "@/actions/person/actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,20 +36,24 @@ import {
 } from "@/app/(dashboard)/leads/components/ContactCard";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AllLeadInteractionsDialog } from "./AllLeadInteractionsDialog";
 
 type FormData = z.infer<typeof createLeadPersonSchema>;
 
 export function LeadContactosSheet({
   contactos,
   leadId,
+  empresaName,
 }: {
   contactos: ContactWithRelations[];
   leadId: string;
+  empresaName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingContact, setIsCreatingContact] = useState(false);
+  const [allInteractionsOpen, setAllInteractionsOpen] = useState(false);
 
   const router = useRouter();
 
@@ -180,6 +184,12 @@ export function LeadContactosSheet({
     e.stopPropagation();
     setIsCreatingContact(true);
     setOpen(true);
+  }, []);
+
+  const handleViewAllInteractionsClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAllInteractionsOpen(true);
   }, []);
 
   // Componente del formulario memoizado para evitar re-renders
@@ -317,6 +327,16 @@ export function LeadContactosSheet({
           <SheetHeader className="mt-5">
             <div className="flex items-center justify-between">
               <SheetTitle>Contactos</SheetTitle>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="gap-1"
+                  variant="outline"
+                  onClick={handleViewAllInteractionsClick}
+                >
+                  <MessageSquare size={16} />
+                  <span>Ver todas</span>
+                </Button>
               <Button
                 size="sm"
                 className="gap-1"
@@ -329,6 +349,7 @@ export function LeadContactosSheet({
                 <PlusIcon size={16} />
                 <span>Agregar</span>
               </Button>
+              </div>
             </div>
           </SheetHeader>
 
@@ -354,6 +375,13 @@ export function LeadContactosSheet({
           </div>
         </SheetContent>
       </Sheet>
+
+      <AllLeadInteractionsDialog
+        open={allInteractionsOpen}
+        onOpenChange={setAllInteractionsOpen}
+        leadId={leadIdRef.current}
+        empresaName={empresaName || "Sin nombre"}
+      />
     </>
   );
 }

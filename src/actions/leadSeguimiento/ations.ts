@@ -165,3 +165,29 @@ export const getAllContactInteractionsByContactId = async (
     throw new Error("Error al obtener las interacciones");
   }
 };
+
+// Nueva función para obtener todas las interacciones de un lead
+export const getAllInteractionsByLeadId = async (
+  leadId: string,
+): Promise<ContactInteractionWithRelations[]> => {
+  try {
+    const result = await prisma.contactInteraction.findMany({
+      where: {
+        contacto: {
+          leadId: leadId,
+        },
+      },
+      include: {
+        contacto: true,
+        autor: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return result;
+  } catch (err) {
+    throw new Error("Error al obtener las interacciones del lead");
+  }
+};

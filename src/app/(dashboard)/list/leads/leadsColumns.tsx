@@ -130,6 +130,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       <LeadContactosSheet
         contactos={row.original.contactos}
         leadId={row.original.id}
+        empresaName={row.original.empresa}
       />
     ),
   },
