@@ -256,3 +256,53 @@ export const getTaskByDate = async (userId: string, date: string) => {
     };
   }
 };
+
+// Nueva función para crear tareas desde el seguimiento de contactos
+export const createTaskFromContact = async (
+  title: string,
+  description: string,
+  dueDate: string,
+) => {
+  const session = await checkSession();
+
+  if (!title || !description || !dueDate) {
+    return {
+      ok: false,
+      message: "Todos los campos son requeridos",
+    };
+  }
+
+  try {
+    const task = await prisma.task.create({
+      data: {
+        title,
+        description,
+        dueDate: new Date(dueDate),
+        assignedToId: session.user.id,
+      },
+    });
+
+    if (!task) {
+      return {
+        ok: false,
+        message: "Error creando la tarea",
+      };
+    }
+
+    revalidatePath(`/profile/${session.user.id}`);
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+    
+    return {
+      ok: true,
+      message: "Tarea creada exitosamente",
+      task,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      ok: false,
+      message: "Error inesperado, revisa los logs",
+    };
+  }
+};

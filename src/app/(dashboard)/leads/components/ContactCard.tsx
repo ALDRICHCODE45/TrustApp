@@ -14,6 +14,8 @@ import {
   Plus,
   History,
   Phone,
+  Calendar,
+  CalendarPlus,
 } from "lucide-react";
 import {
   Card,
@@ -60,6 +62,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { createTaskFromContact } from "@/actions/tasks/actions";
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -330,6 +342,14 @@ export interface Attachment {
   attachmentType: string;
 }
 
+// Nueva interfaz para el diálogo de crear tarea
+interface CreateTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  contactName: string;
+  onTaskCreated?: () => void;
+}
+
 export const SeguimientoContacto = ({
   open,
   onOpenChange,
@@ -343,6 +363,9 @@ export const SeguimientoContacto = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [newContent, setNewContent] = useState<string>("");
   const [attachment, setAttachment] = useState<Attachment | null>(null);
+
+  // Estado para el diálogo de crear tarea
+  const [openCreateTask, setOpenCreateTask] = useState<boolean>(false);
 
   // Manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -471,6 +494,18 @@ export const SeguimientoContacto = ({
                   )}
                 </Button>
               </div>
+
+              {/* Botón para crear tarea */}
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenCreateTask(true)}
+                >
+                  <CalendarPlus className="h-4 w-4 mr-2" />
+                  Crear tarea
+                </Button>
+              </div>
             </div>
           </form>
 
@@ -510,6 +545,182 @@ export const SeguimientoContacto = ({
             )}
           </div>
         </div>
+
+        {/* Diálogo para crear tarea */}
+        <CreateTaskDialog
+          open={openCreateTask}
+          onOpenChange={setOpenCreateTask}
+          contactName={contacto.name}
+          onTaskCreated={() => {
+            toast.success("Tarea creada exitosamente");
+            setOpenCreateTask(false);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Componente para crear tareas desde el seguimiento
+const CreateTaskDialog = ({
+  open,
+  onOpenChange,
+  contactName,
+  onTaskCreated,
+}: CreateTaskDialogProps) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Función para manejar la selección de fecha
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
+  };
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error("Por favor, añade un título para la tarea");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Por favor añade una descripción para la tarea");
+      return;
+    }
+
+    if (!dueDate) {
+      toast.error("Por favor, selecciona una fecha límite");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createTaskFromContact(
+        title,
+        description,
+        dueDate.toISOString(),
+      );
+
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
+      // Limpiar el formulario
+      setTitle("");
+      setDescription("");
+      setDueDate(new Date());
+
+      // Llamar la función de callback
+      onTaskCreated?.();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error("Error al crear la tarea");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="h-5 w-5" />
+            Nueva tarea para {contactName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="task-title">Título de la tarea</Label>
+            <Input
+              id="task-title"
+              placeholder="Ej: Enviar seguimiento por WhatsApp"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-description">Descripción</Label>
+            <Textarea
+              id="task-description"
+              placeholder="Describe los detalles de la tarea..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isSubmitting}
+              required
+              className="resize-none min-h-[80px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-dueDate">Fecha límite</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal w-full",
+                    !dueDate && "text-muted-foreground",
+                  )}
+                  disabled={isSubmitting}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dueDate ? (
+                    format(dueDate, "d 'de' MMMM, yyyy", { locale: es })
+                  ) : (
+                    <span>Selecciona una fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[9999]" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={handleDateSelect}
+                  locale={es}
+                  disabled={(date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear tarea
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
