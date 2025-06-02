@@ -50,6 +50,7 @@ export function LeadContactosSheet({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingContact, setIsCreatingContact] = useState(false);
+
   const router = useRouter();
 
   // Usar useRef para mantener el leadId consistente
@@ -247,6 +248,20 @@ export function LeadContactosSheet({
           </div>
         </div>
 
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="linkedin">Perfil de Linkedin</Label>
+          <Input
+            {...register("linkedin", { required: false })}
+            placeholder="linkedin/user..."
+            type="tel"
+            disabled={isSubmitting}
+            autoComplete="off"
+          />
+          {errors.linkedin && (
+            <p className="text-sm text-red-500">{errors.linkedin.message}</p>
+          )}
+        </div>
+
         <div className="flex gap-3">
           <Button
             type="button"
@@ -321,7 +336,11 @@ export function LeadContactosSheet({
             <div className="space-y-4">
               {displayedContacts && displayedContacts.length > 0 ? (
                 displayedContacts.map((contacto) => (
-                  <ContactoCard key={contacto.id} contacto={contacto} />
+                  <ContactoCard
+                    key={contacto.id}
+                    contacto={contacto}
+                    onUpdateContacts={setDisplayedContacts}
+                  />
                 ))
               ) : (
                 <div className="flex flex-col justify-center items-center gap-2 py-8">

@@ -16,6 +16,7 @@ import {
   Phone,
   Calendar,
   CalendarPlus,
+  CircleUser,
 } from "lucide-react";
 import {
   Card,
@@ -76,6 +77,7 @@ import { createTaskFromContact } from "@/actions/tasks/actions";
 // Definición de tipos
 interface ContactoCardProps {
   contacto: ContactWithRelations;
+  onUpdateContacts: React.Dispatch<React.SetStateAction<ContactWithRelations[]>>;
 }
 
 export type ContactWithRelations = Prisma.PersonGetPayload<{
@@ -113,7 +115,10 @@ async function createContactInteraction(
   }
 }
 
-export const ContactoCard = ({ contacto }: ContactoCardProps) => {
+export const ContactoCard = ({
+  contacto,
+  onUpdateContacts,
+}: ContactoCardProps) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
@@ -128,6 +133,31 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
     try {
       await editLeadPerson(contacto.id, formData);
       toast.success("Contacto editado con exito");
+      
+      // Extraer los nuevos valores del formulario
+      const newName = formData.get("name") as string;
+      const newPosition = formData.get("position") as string;
+      const newEmail = formData.get("email") as string || null;
+      const newPhone = formData.get("phone") as string || null;
+      const newLinkedin = formData.get("linkedin") as string || null;
+
+      // Crear el contacto actualizado
+      const updatedContacto: ContactWithRelations = {
+        ...contacto,
+        name: newName,
+        position: newPosition,
+        email: newEmail,
+        phone: newPhone,
+        linkedin: newLinkedin,
+      };
+
+      // Actualizar la lista de contactos reemplazando el contacto editado
+      onUpdateContacts((prev) => 
+        prev.map((contact) => 
+          contact.id === contacto.id ? updatedContacto : contact
+        )
+      );
+      
     } catch (error) {
       toast.error("Algo salio mal..");
     } finally {
@@ -143,6 +173,10 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
       toast.promise(promise, {
         loading: "Eliminando...",
         success: () => {
+          // Actualizar la lista local eliminando el contacto
+          onUpdateContacts((prev) => 
+            prev.filter((contact) => contact.id !== id)
+          );
           return "Contacto eliminado con exito";
         },
         error: "Ah ocurrido un error",
@@ -236,6 +270,13 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                   {contacto.phone ? contacto.phone : "Sin celular"}
                 </p>
               </div>
+
+              <div className="flex gap-1 items-center">
+                <CircleUser size={14} className="text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {contacto.linkedin ? contacto.linkedin : "Sin Linkedin"}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -302,6 +343,18 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                   required={false}
                 />
               </div>
+            </div>
+
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="phone">Linkedin</Label>
+              <Input
+                id="linkedin"
+                name="linkedin"
+                defaultValue={contacto.linkedin ?? ""}
+                placeholder="linkedin/aldrich.."
+                type="text"
+                required={false}
+              />
             </div>
             <div className="flex gap-3">
               <Button

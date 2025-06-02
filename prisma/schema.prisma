@@ -111,9 +111,10 @@ model Lead {
 model Person {
   id       String  @id @default(cuid())
   name     String
-  email    String? // opcional para cuando no se tengan estos datos
+  email    String? 
   phone    String?
   position String?
+  linkedin String?
   cv       String? // solo para candidatos o en un futuro para donde se necesite
   //relaciones -> contacto de leads
   Lead     Lead?   @relation(fields: [leadId], references: [id])
