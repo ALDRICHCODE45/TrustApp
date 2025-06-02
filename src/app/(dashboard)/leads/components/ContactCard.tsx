@@ -470,7 +470,7 @@ export const SeguimientoContacto = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-w-[95vw] w-full max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -478,7 +478,7 @@ export const SeguimientoContacto = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full flex-1 min-h-0 overflow-hidden">
           {/* Formulario para agregar nueva interacción */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="space-y-2">
@@ -495,7 +495,7 @@ export const SeguimientoContacto = ({
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Label htmlFor="attachment" className="cursor-pointer">
                 <div className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-md text-sm">
                   <PaperclipIcon className="h-4 w-4" />
@@ -564,33 +564,34 @@ export const SeguimientoContacto = ({
           <Separator />
 
           {/* Historial de interacciones */}
-          <div className="space-y-1">
-            <div className="flex  gap-2">
+          <div className="space-y-1 flex-1 min-h-0 flex flex-col">
+            <div className="flex gap-2">
               <History size={17} className="items-center" />
               <h3 className="text-sm font-medium mb-6 items-center">
                 Historial de interacciones
               </h3>
             </div>
             {loading ? (
-              <div className="flex justify-center py-8">
+              <div className="flex justify-center py-8 flex-1">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : interactions?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground flex-1">
                 <p>No hay interacciones registradas con este contacto.</p>
                 <p className="text-sm">
                   Registra la primera interacción arriba.
                 </p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(50vh-200px)] pr-4">
-                <div className="space-y-4">
+              <ScrollArea className="flex-1 min-h-[200px] max-h-[400px] pr-4 overflow-y-auto">
+                <div className="space-y-4 w-full">
                   {interactions.map((interaction) => (
-                    <InteractionCard
-                      key={interaction.id}
-                      interaction={interaction}
-                      setInteractions={setInteractions}
-                    />
+                    <div key={interaction.id} className="w-full">
+                      <InteractionCard
+                        interaction={interaction}
+                        setInteractions={setInteractions}
+                      />
+                    </div>
                   ))}
                 </div>
               </ScrollArea>

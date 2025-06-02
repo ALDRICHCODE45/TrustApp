@@ -143,23 +143,27 @@ const InteractionCardView = ({
     <Card
       key={interaction.id}
       className={cn(
-        "border-l-4 relative group hover:shadow-md transition-all duration-200",
+        "border-l-4 relative group hover:shadow-md transition-all duration-200 w-full min-h-fit overflow-hidden",
         interaction.attachmentUrl ? "border-l-blue-500" : "border-l-primary",
       )}
     >
-      <CardHeader className="py-3 px-4 pb-2">
-        <div className="flex justify-between items-start">
-          <InteractionAuthorInfo interaction={interaction} />
-          <InteractionOptionsMenu
-            interactionId={interaction.id}
-            content={interaction.content}
-            setOpenDialog={setOpenDialog}
-            deleteInteraction={deleteInteraction}
-          />
+      <CardHeader className="py-3 px-4 pb-2 pr-12">
+        <div className="flex justify-between items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <InteractionAuthorInfo interaction={interaction} />
+          </div>
+          <div className="flex-shrink-0">
+            <InteractionOptionsMenu
+              interactionId={interaction.id}
+              content={interaction.content}
+              setOpenDialog={setOpenDialog}
+              deleteInteraction={deleteInteraction}
+            />
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="py-2 px-4">
-        <p className="text-sm whitespace-pre-wrap">{interaction.content}</p>
+      <CardContent className="py-2 px-4 pr-8">
+        <p className="text-sm whitespace-pre-wrap break-words hyphens-auto leading-relaxed">{interaction.content}</p>
       </CardContent>
       {interaction.attachmentUrl && (
         <AttachmentFooter
