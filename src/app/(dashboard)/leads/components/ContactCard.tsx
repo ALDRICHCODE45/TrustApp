@@ -292,7 +292,7 @@ export const ContactoCard = ({
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{contacto.linkedin}</p>
+                        <span>{contacto.linkedin}</span>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
