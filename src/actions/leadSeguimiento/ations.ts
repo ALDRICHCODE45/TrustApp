@@ -171,6 +171,48 @@ export const getAllInteractionsByLeadId = async (
   leadId: string,
 ): Promise<ContactInteractionWithRelations[]> => {
   try {
+    console.log("=== INICIO DEBUG getAllInteractionsByLeadId ===");
+    console.log("Lead ID recibido:", leadId);
+    
+    const session = await auth();
+    console.log("Session obtenida:", session?.user?.id ? `Usuario: ${session.user.id}` : "No hay sesión");
+    
+    if (!session) {
+      console.log("ERROR: No hay sesión");
+      throw new Error("No autorizado");
+    }
+
+    // Verificar que el lead existe (temporalmente sin verificar usuario para debug)
+    console.log("Buscando lead...");
+    const lead = await prisma.lead.findFirst({
+      where: {
+        id: leadId,
+      },
+      include: {
+        generadorLeads: true,
+      },
+    });
+
+    console.log("Lead encontrado:", lead ? `${lead.empresa} - Generador: ${lead.generadorLeads.name} (${lead.generadorLeads.id})` : "No encontrado");
+
+    if (!lead) {
+      console.log("ERROR: Lead no encontrado");
+      throw new Error("Lead no encontrado");
+    }
+
+    // Verificación de permisos (comentada temporalmente para debug)
+    console.log("Usuario actual:", session.user.id);
+    console.log("Generador del lead:", lead.generadorId);
+    console.log("¿Coinciden?", session.user.id === lead.generadorId);
+    
+    /*
+    if (lead.generadorId !== session.user.id) {
+      console.log("ERROR: Usuario no tiene permisos para este lead");
+      throw new Error("Sin permisos para este lead");
+    }
+    */
+
+    console.log("Obteniendo interacciones...");
     const result = await prisma.contactInteraction.findMany({
       where: {
         contacto: {
@@ -186,8 +228,59 @@ export const getAllInteractionsByLeadId = async (
       },
     });
 
+    console.log(`Interacciones encontradas: ${result.length}`);
+    console.log("=== FIN DEBUG getAllInteractionsByLeadId ===");
+
     return result;
   } catch (err) {
+    console.error("Error completo en getAllInteractionsByLeadId:", err);
     throw new Error("Error al obtener las interacciones del lead");
+  }
+};
+
+// Nueva función para obtener contactos de un lead con sus interacciones
+export const getContactosByLeadId = async (leadId: string) => {
+  try {
+    const session = await auth();
+    if (!session) {
+      throw new Error("No autorizado");
+    }
+
+    // Verificar que el lead existe y pertenece al usuario
+    const lead = await prisma.lead.findFirst({
+      where: {
+        id: leadId,
+        generadorId: session.user.id,
+      },
+    });
+
+    if (!lead) {
+      throw new Error("Lead no encontrado o sin permisos");
+    }
+
+    const contactos = await prisma.person.findMany({
+      where: {
+        leadId: leadId,
+      },
+      include: {
+        interactions: {
+          include: {
+            autor: true,
+            contacto: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    return contactos;
+  } catch (err) {
+    console.error("Error al obtener contactos:", err);
+    throw new Error("Error al obtener los contactos del lead");
   }
 };

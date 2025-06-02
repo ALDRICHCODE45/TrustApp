@@ -54,22 +54,19 @@ export async function createLead(prevState: any, formData: FormData) {
   let submission;
   try {
     await checkSession();
-
     submission = parseWithZod(formData, {
       schema: createLeadSchema,
     });
-
     if (submission.status !== "success") {
       return submission.reply();
     }
-
     const empresa = submission.value.empresa;
 
-    // Check if lead already exists (case insensitive)
+    // Check if lead already exists (exact match, case insensitive)
     const leadExists = await prisma.lead.findFirst({
       where: {
         empresa: {
-          contains: empresa,
+          equals: empresa,
           mode: "insensitive",
         },
       },
@@ -83,19 +80,16 @@ export async function createLead(prevState: any, formData: FormData) {
         ],
       });
     }
-
     const origen = await prisma.leadOrigen.findUnique({
       where: {
         id: submission.value.origen,
       },
     });
-
     const sector = await prisma.sector.findUnique({
       where: {
         id: submission.value.sector,
       },
     });
-
     // Create the new lead
     const leadCreated = await prisma.lead.create({
       data: {
@@ -114,7 +108,6 @@ export async function createLead(prevState: any, formData: FormData) {
         origen: true,
       },
     });
-
     //crear la trazabilidad para Contacto
     await prisma.leadStatusHistory.create({
       data: {
@@ -123,22 +116,22 @@ export async function createLead(prevState: any, formData: FormData) {
         changedById: submission.value.generadorId,
       },
     });
-
     //Revalidate necessary paths
     revalidatePath("/leads");
     revalidatePath("/list/leads");
     revalidatePath("/leads/kanban");
-
     // Return success with the newly created lead data
     return submission.reply();
   } catch (error) {
     console.error("Error creating lead:", error);
-    return submission?.reply({
-      formErrors: ["Error en la creacion del Lead"]
-    }) || {
-      status: "error",
-      formErrors: ["Error en la creacion del Lead"]
-    };
+    return (
+      submission?.reply({
+        formErrors: ["Error en la creacion del Lead"],
+      }) || {
+        status: "error",
+        formErrors: ["Error en la creacion del Lead"],
+      }
+    );
   }
 }
 

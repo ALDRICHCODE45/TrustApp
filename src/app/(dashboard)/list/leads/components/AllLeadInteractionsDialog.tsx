@@ -23,7 +23,7 @@ import {
   Download,
   PaperclipIcon,
 } from "lucide-react";
-import { ContactInteractionWithRelations } from "@/actions/leadSeguimiento/ations";
+import { ContactInteractionWithRelations, getAllInteractionsByLeadId } from "@/actions/leadSeguimiento/ations";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -57,20 +57,8 @@ export function AllLeadInteractionsDialog({
     setError(null);
 
     try {
-      const url = `/api/leads/${leadId}/interacciones`;
-      console.log("URL de la petición:", url);
-
-      const response = await fetch(url);
-      console.log("Status de respuesta:", response.status);
-      console.log("OK:", response.ok);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Error data:", errorData);
-        throw new Error(errorData.error || "Error al cargar las interacciones");
-      }
-
-      const data = await response.json();
+      console.log("Llamando a getAllInteractionsByLeadId...");
+      const data = await getAllInteractionsByLeadId(leadId);
       console.log("Datos recibidos:", data);
       console.log("Número de interacciones:", data.length);
       setInteractions(data);

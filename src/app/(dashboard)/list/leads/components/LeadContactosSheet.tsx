@@ -37,6 +37,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AllLeadInteractionsDialog } from "./AllLeadInteractionsDialog";
+import { getContactosByLeadId } from "@/actions/leadSeguimiento/ations";
 
 type FormData = z.infer<typeof createLeadPersonSchema>;
 
@@ -128,13 +129,9 @@ export function LeadContactosSheet({
 
           // Actualizar solo los contactos del lead actual
           try {
-            const response = await fetch(
-              `/api/leads/${leadIdRef.current}/contactos`,
+            const updatedContacts = await getContactosByLeadId(
+              leadIdRef.current,
             );
-            if (!response.ok) {
-              throw new Error("Error al actualizar los contactos");
-            }
-            const updatedContacts = await response.json();
             setDisplayedContacts(updatedContacts);
           } catch (error) {
             console.error("Error al actualizar los contactos:", error);
@@ -328,27 +325,28 @@ export function LeadContactosSheet({
             <div className="flex items-center justify-between">
               <SheetTitle>Contactos</SheetTitle>
               <div className="flex gap-2">
+                {/* TODO:ARREGLAR FUNCIONALIDAD*/}
+                {/* <Button */}
+                {/*   size="sm" */}
+                {/*   className="gap-1" */}
+                {/*   variant="outline" */}
+                {/*   onClick={handleViewAllInteractionsClick} */}
+                {/* > */}
+                {/*   <MessageSquare size={16} /> */}
+                {/*   <span>Ver todas</span> */}
+                {/* </Button> */}
                 <Button
                   size="sm"
                   className="gap-1"
                   variant="outline"
-                  onClick={handleViewAllInteractionsClick}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                  onClick={handleAddContactClick}
                 >
-                  <MessageSquare size={16} />
-                  <span>Ver todas</span>
+                  <PlusIcon size={16} />
+                  <span>Agregar</span>
                 </Button>
-              <Button
-                size="sm"
-                className="gap-1"
-                variant="outline"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                }}
-                onClick={handleAddContactClick}
-              >
-                <PlusIcon size={16} />
-                <span>Agregar</span>
-              </Button>
               </div>
             </div>
           </SheetHeader>

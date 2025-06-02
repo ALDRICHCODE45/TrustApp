@@ -73,11 +73,19 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createTaskFromContact } from "@/actions/tasks/actions";
+import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Definición de tipos
 interface ContactoCardProps {
   contacto: ContactWithRelations;
-  onUpdateContacts: React.Dispatch<React.SetStateAction<ContactWithRelations[]>>;
+  onUpdateContacts: React.Dispatch<
+    React.SetStateAction<ContactWithRelations[]>
+  >;
 }
 
 export type ContactWithRelations = Prisma.PersonGetPayload<{
@@ -132,13 +140,13 @@ export const ContactoCard = ({
     try {
       await editLeadPerson(contacto.id, formData);
       toast.success("Contacto editado con exito");
-      
+
       // Extraer los nuevos valores del formulario
       const newName = formData.get("name") as string;
       const newPosition = formData.get("position") as string;
-      const newEmail = formData.get("email") as string || null;
-      const newPhone = formData.get("phone") as string || null;
-      const newLinkedin = formData.get("linkedin") as string || null;
+      const newEmail = (formData.get("email") as string) || null;
+      const newPhone = (formData.get("phone") as string) || null;
+      const newLinkedin = (formData.get("linkedin") as string) || null;
 
       // Crear el contacto actualizado
       const updatedContacto: ContactWithRelations = {
@@ -151,12 +159,11 @@ export const ContactoCard = ({
       };
 
       // Actualizar la lista de contactos reemplazando el contacto editado
-      onUpdateContacts((prev) => 
-        prev.map((contact) => 
-          contact.id === contacto.id ? updatedContacto : contact
-        )
+      onUpdateContacts((prev) =>
+        prev.map((contact) =>
+          contact.id === contacto.id ? updatedContacto : contact,
+        ),
       );
-      
     } catch (error) {
       toast.error("Algo salio mal..");
     } finally {
@@ -173,8 +180,8 @@ export const ContactoCard = ({
         loading: "Eliminando...",
         success: () => {
           // Actualizar la lista local eliminando el contacto
-          onUpdateContacts((prev) => 
-            prev.filter((contact) => contact.id !== id)
+          onUpdateContacts((prev) =>
+            prev.filter((contact) => contact.id !== id),
           );
           return "Contacto eliminado con exito";
         },
@@ -273,7 +280,24 @@ export const ContactoCard = ({
               <div className="flex gap-1 items-center">
                 <CircleUser size={14} className="text-gray-400" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {contacto.linkedin ? contacto.linkedin : "Sin Linkedin"}
+                  {contacto.linkedin ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          className="underline text-blue-500"
+                          href={contacto.linkedin}
+                          target="_blank"
+                        >
+                          Perfil de Linkedin
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{contacto.linkedin}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    "Sin Linkedin"
+                  )}
                 </p>
               </div>
             </div>
