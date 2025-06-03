@@ -734,10 +734,9 @@ export function RecruiterTable<TData, TValue>({
     pageCount: Math.ceil(data.length / pageSize),
     autoResetPageIndex: true,
     filterFns: {
-      dateRange: dateRangeFilterFn,
-      oficina: (row, id, filterValue) => {
+      filterDateRange: (row: any, id: any, filterValue: any) => {
         const oficina = row.getValue(id);
-        if (filterValue === "all" || !filterValue) return true;
+        if (filterValue === "all" || !filterValue || oficina === null) return true;
         return oficina === filterValue;
       },
     },

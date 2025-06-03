@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Oficina, User } from "@prisma/client";
 import { LeadWithRelations } from "../page";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface KanbanFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -30,7 +31,7 @@ interface KanbanFiltersProps {
 
 export interface FilterState {
   generadorId: string | null;
-  fechaCreacion: Date | null;
+  fechaCreacion: { from: Date | null; to: Date | null };
   oficina: Oficina | null;
   searchTerm: string;
 }
@@ -41,7 +42,7 @@ export function KanbanFilters({
 }: KanbanFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
-    fechaCreacion: null,
+    fechaCreacion: { from: null, to: null },
     oficina: null,
     searchTerm: "",
   });
@@ -59,7 +60,7 @@ export function KanbanFilters({
   const clearFilters = () => {
     const resetFilters = {
       generadorId: null,
-      fechaCreacion: null,
+      fechaCreacion: { from: null, to: null },
       oficina: null,
       searchTerm: "",
     };
@@ -69,14 +70,24 @@ export function KanbanFilters({
   };
 
   const clearSingleFilter = (filterKey: keyof FilterState) => {
-    const newFilters = { ...filters, [filterKey]: null };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    if (filterKey === "fechaCreacion") {
+      const newFilters = {
+        ...filters,
+        fechaCreacion: { from: null, to: null },
+      };
+      setFilters(newFilters);
+      onFilterChange(newFilters);
+    } else {
+      const newFilters = { ...filters, [filterKey]: null };
+      setFilters(newFilters);
+      onFilterChange(newFilters);
+    }
   };
 
   const hasActiveFilters =
     filters.generadorId ||
-    filters.fechaCreacion ||
+    filters.fechaCreacion.from ||
+    filters.fechaCreacion.to ||
     filters.oficina ||
     filters.searchTerm;
 
@@ -141,30 +152,56 @@ export function KanbanFilters({
           </SelectContent>
         </Select>
 
-        {/* Date filter */}
+        {/* Date range filter */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
                 "w-[240px] justify-start text-left font-normal h-9",
-                !filters.fechaCreacion && "text-muted-foreground",
+                !filters.fechaCreacion.from &&
+                  !filters.fechaCreacion.to &&
+                  "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filters.fechaCreacion ? (
-                format(filters.fechaCreacion, "PPP", { locale: es })
+              {filters.fechaCreacion.from ? (
+                filters.fechaCreacion.to ? (
+                  <>
+                    {format(filters.fechaCreacion.from, "dd/MM/yyyy", {
+                      locale: es,
+                    })}{" "}
+                    -{" "}
+                    {format(filters.fechaCreacion.to, "dd/MM/yyyy", {
+                      locale: es,
+                    })}
+                  </>
+                ) : (
+                  format(filters.fechaCreacion.from, "dd/MM/yyyy", {
+                    locale: es,
+                  })
+                )
               ) : (
-                <span>Fecha de Creacion</span>
+                <span>Rango de fechas</span>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
-              mode="single"
-              selected={filters.fechaCreacion || undefined}
-              onSelect={(date) => handleFilterChange("fechaCreacion", date)}
+              mode="range"
+              selected={{
+                from: filters.fechaCreacion.from || undefined,
+                to: filters.fechaCreacion.to || undefined,
+              }}
+              onSelect={(range) => {
+                handleFilterChange("fechaCreacion", {
+                  from: range?.from || null,
+                  to: range?.to || null,
+                });
+              }}
               initialFocus
+              numberOfMonths={2}
+              locale={es}
             />
           </PopoverContent>
         </Popover>

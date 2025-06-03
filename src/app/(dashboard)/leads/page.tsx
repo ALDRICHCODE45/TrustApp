@@ -58,7 +58,7 @@ const fetchGeneradores = async () => {
     const users = await prisma.user.findMany({
       where: {
         role: {
-          in: ["GL", "Admin", "MK"],
+          in: [Role.GL, Role.Admin, Role.MK],
         },
       },
     });

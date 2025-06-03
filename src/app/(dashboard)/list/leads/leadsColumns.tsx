@@ -1,6 +1,6 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { Globe } from "lucide-react";
 import { ActionsCell } from "./components/ActionsCell";
 import { LeadContactosSheet } from "./components/LeadContactosSheet";
@@ -10,6 +10,12 @@ import { LeadWithRelations } from "../../leads/kanban/page";
 import { Button } from "@/components/ui/button";
 import { format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
+
+declare module '@tanstack/table-core' {
+  interface FilterFns {
+    filterDateRange: FilterFn<LeadWithRelations>
+  }
+}
 
 export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   {
@@ -96,34 +102,26 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Fecha Creación",
+    header: "Creación",
     cell: ({ row }) => {
-      const fecha = row.original.createdAt;
+      // La fecha viene en UTC desde la base de datos
+      const fechaUTC = new Date(row.original.createdAt);
+      
       return (
         <div className="text-center">
           <Button variant="outline">
-            {format(new Date(fecha), "eee dd/MM/yyyy", { locale: es })}
+            {format(fechaUTC, "eee dd/MM/yyyy", { locale: es })}
           </Button>
         </div>
       );
     },
-    accessorFn: (row) => new Date(row.createdAt),
-    // Usar la función de filtro directamente en lugar de referirla por nombre
-    filterFn: (row, columnId, filterValue) => {
-      // Si no hay valor de filtro, mostrar todas las filas
-      if (!filterValue) return true;
-
-      // Obtener la fecha de los datos de la fila
-      const rowDate = row.getValue(columnId) as Date;
-      const rowDateObj = rowDate instanceof Date ? rowDate : new Date(rowDate);
-
-      // Asegurar que el valor del filtro es un objeto Date
-      const filterDate =
-        filterValue instanceof Date ? filterValue : new Date(filterValue);
-
-      // Comparar solo año, mes y día usando isSameDay de date-fns
-      return isSameDay(rowDateObj, filterDate);
+    accessorFn: (row) => {
+      // La fecha viene en UTC desde la base de datos
+      const fechaUTC = new Date(row.createdAt);
+      // Convertir a fecha local para el filtrado
+      return new Date(fechaUTC.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
     },
+    filterFn: "filterDateRange",
   },
   {
     accessorKey: "contactos",
@@ -132,6 +130,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       <LeadContactosSheet
         contactos={row.original.contactos}
         leadId={row.original.id}
+        empresaName={row.original.empresa}
       />
     ),
   },

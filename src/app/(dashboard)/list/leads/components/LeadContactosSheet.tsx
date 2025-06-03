@@ -24,7 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Loader2, PlusIcon, Users, UserX } from "lucide-react";
+import { Loader2, PlusIcon, Users, UserX, MessageSquare } from "lucide-react";
 import { createLeadPerson } from "@/actions/person/actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,20 +36,26 @@ import {
 } from "@/app/(dashboard)/leads/components/ContactCard";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AllLeadInteractionsDialog } from "./AllLeadInteractionsDialog";
+import { getContactosByLeadId } from "@/actions/leadSeguimiento/ations";
 
 type FormData = z.infer<typeof createLeadPersonSchema>;
 
 export function LeadContactosSheet({
   contactos,
   leadId,
+  empresaName,
 }: {
   contactos: ContactWithRelations[];
   leadId: string;
+  empresaName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingContact, setIsCreatingContact] = useState(false);
+  const [allInteractionsOpen, setAllInteractionsOpen] = useState(false);
+
   const router = useRouter();
 
   // Usar useRef para mantener el leadId consistente
@@ -123,13 +129,9 @@ export function LeadContactosSheet({
 
           // Actualizar solo los contactos del lead actual
           try {
-            const response = await fetch(
-              `/api/leads/${leadIdRef.current}/contactos`,
+            const updatedContacts = await getContactosByLeadId(
+              leadIdRef.current,
             );
-            if (!response.ok) {
-              throw new Error("Error al actualizar los contactos");
-            }
-            const updatedContacts = await response.json();
             setDisplayedContacts(updatedContacts);
           } catch (error) {
             console.error("Error al actualizar los contactos:", error);
@@ -179,6 +181,12 @@ export function LeadContactosSheet({
     e.stopPropagation();
     setIsCreatingContact(true);
     setOpen(true);
+  }, []);
+
+  const handleViewAllInteractionsClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAllInteractionsOpen(true);
   }, []);
 
   // Componente del formulario memoizado para evitar re-renders
@@ -247,6 +255,20 @@ export function LeadContactosSheet({
           </div>
         </div>
 
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="linkedin">Perfil de Linkedin</Label>
+          <Input
+            {...register("linkedin", { required: false })}
+            placeholder="linkedin/user..."
+            type="tel"
+            disabled={isSubmitting}
+            autoComplete="off"
+          />
+          {errors.linkedin && (
+            <p className="text-sm text-red-500">{errors.linkedin.message}</p>
+          )}
+        </div>
+
         <div className="flex gap-3">
           <Button
             type="button"
@@ -302,18 +324,30 @@ export function LeadContactosSheet({
           <SheetHeader className="mt-5">
             <div className="flex items-center justify-between">
               <SheetTitle>Contactos</SheetTitle>
-              <Button
-                size="sm"
-                className="gap-1"
-                variant="outline"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                }}
-                onClick={handleAddContactClick}
-              >
-                <PlusIcon size={16} />
-                <span>Agregar</span>
-              </Button>
+              <div className="flex gap-2">
+                {/* TODO:ARREGLAR FUNCIONALIDAD*/}
+                {/* <Button */}
+                {/*   size="sm" */}
+                {/*   className="gap-1" */}
+                {/*   variant="outline" */}
+                {/*   onClick={handleViewAllInteractionsClick} */}
+                {/* > */}
+                {/*   <MessageSquare size={16} /> */}
+                {/*   <span>Ver todas</span> */}
+                {/* </Button> */}
+                <Button
+                  size="sm"
+                  className="gap-1"
+                  variant="outline"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                  onClick={handleAddContactClick}
+                >
+                  <PlusIcon size={16} />
+                  <span>Agregar</span>
+                </Button>
+              </div>
             </div>
           </SheetHeader>
 
@@ -321,7 +355,11 @@ export function LeadContactosSheet({
             <div className="space-y-4">
               {displayedContacts && displayedContacts.length > 0 ? (
                 displayedContacts.map((contacto) => (
-                  <ContactoCard key={contacto.id} contacto={contacto} />
+                  <ContactoCard
+                    key={contacto.id}
+                    contacto={contacto}
+                    onUpdateContacts={setDisplayedContacts}
+                  />
                 ))
               ) : (
                 <div className="flex flex-col justify-center items-center gap-2 py-8">
@@ -335,6 +373,13 @@ export function LeadContactosSheet({
           </div>
         </SheetContent>
       </Sheet>
+
+      <AllLeadInteractionsDialog
+        open={allInteractionsOpen}
+        onOpenChange={setAllInteractionsOpen}
+        leadId={leadIdRef.current}
+        empresaName={empresaName || "Sin nombre"}
+      />
     </>
   );
 }

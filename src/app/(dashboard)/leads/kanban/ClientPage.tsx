@@ -42,7 +42,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
-    fechaCreacion: null,
+    fechaCreacion: { from: null, to: null },
     oficina: null,
     searchTerm: "",
   });
@@ -83,12 +83,22 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }
 
     // Filter by prospection date
-    if (filters.fechaCreacion) {
-      result = result.filter(
-        (lead) =>
-          lead.createdAt &&
-          isSameDay(new Date(lead.createdAt), filters.fechaCreacion!),
-      );
+    if (filters.fechaCreacion?.from || filters.fechaCreacion?.to) {
+      result = result.filter((lead) => {
+        if (!lead.createdAt) return false;
+        const leadDate = new Date(lead.createdAt);
+        const fromDate = filters.fechaCreacion?.from ? new Date(filters.fechaCreacion.from) : null;
+        const toDate = filters.fechaCreacion?.to ? new Date(filters.fechaCreacion.to) : null;
+
+        if (fromDate && toDate) {
+          return leadDate >= fromDate && leadDate <= toDate;
+        } else if (fromDate) {
+          return leadDate >= fromDate;
+        } else if (toDate) {
+          return leadDate <= toDate;
+        }
+        return true;
+      });
     }
 
     setFilteredLeads(result);
@@ -196,7 +206,8 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
 
       {/* Filter status indicator */}
       {filters.generadorId ||
-      filters.fechaCreacion ||
+      filters.fechaCreacion?.from ||
+      filters.fechaCreacion?.to ||
       filters.oficina ||
       filters.searchTerm ? (
         <div className="px-4 py-2 flex flex-wrap gap-2 text-black text-sm items-center">
@@ -246,18 +257,28 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
             </Badge>
           )}
 
-          {filters.fechaCreacion && (
+          {filters.fechaCreacion?.from || filters.fechaCreacion?.to ? (
             <Badge
               variant="outline"
               className="flex items-center gap-1 px-3 py-1"
             >
-              <span>Fecha: {format(filters.fechaCreacion, "dd/MM/yyyy")}</span>
+              <span>
+                Fecha:{" "}
+                {filters.fechaCreacion?.from && filters.fechaCreacion?.to
+                  ? `${format(new Date(filters.fechaCreacion.from), "dd/MM/yyyy")} - ${format(
+                      new Date(filters.fechaCreacion.to),
+                      "dd/MM/yyyy"
+                    )}`
+                  : filters.fechaCreacion?.from
+                  ? `Desde ${format(new Date(filters.fechaCreacion.from), "dd/MM/yyyy")}`
+                  : `Hasta ${format(new Date(filters.fechaCreacion.to!), "dd/MM/yyyy")}`}
+              </span>
               <X
                 className="size-4 ml-1 cursor-pointer hover:text-red-500"
                 onClick={() => clearSingleFilter("fechaCreacion")}
               />
             </Badge>
-          )}
+          ) : null}
         </div>
       ) : null}
 

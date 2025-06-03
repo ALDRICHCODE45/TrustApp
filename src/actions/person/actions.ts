@@ -50,6 +50,7 @@ export const createLeadPerson = async (prevState: any, formData: FormData) => {
         email: submission.value.email || null,
         phone: submission.value.phone || null,
         leadId: submission.value.leadId,
+        linkedin: submission.value.linkedin || null,
       },
       include: {
         interactions: {
@@ -64,7 +65,6 @@ export const createLeadPerson = async (prevState: any, formData: FormData) => {
     // Revalidar las rutas necesarias
     revalidatePath("/leads");
     revalidatePath("/list/leads");
-    revalidatePath(`/leads/${submission.value.leadId}`);
 
     return {
       status: "success",

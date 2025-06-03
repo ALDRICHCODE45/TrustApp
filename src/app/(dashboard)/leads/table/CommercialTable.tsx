@@ -83,10 +83,44 @@ const filterAnything: FilterFn<LeadWithRelations> = (
   const searchTerm = filterValue.toLowerCase();
   return (
     row.original.origen.nombre.toLowerCase().includes(searchTerm) ||
-    //row.original.generadorId.toLowerCase().includes(searchTerm) ||
     row.original.sector.nombre.toLowerCase().includes(searchTerm) ||
     row.original.empresa.toLowerCase().includes(searchTerm)
   );
+};
+
+const filterDateRange: FilterFn<LeadWithRelations> = (
+  row: Row<LeadWithRelations>,
+  columnId: string,
+  filterValue: { from: Date | undefined; to: Date | undefined },
+) => {
+  if (!filterValue?.from && !filterValue?.to) return true;
+
+  // La fecha del lead viene en UTC desde la base de datos
+  const fechaUTC = new Date(row.original.createdAt);
+  // Convertir a fecha local para comparación
+  const fechaLocal = new Date(fechaUTC.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+
+  // Convertir las fechas del filtro a la zona horaria local
+  const from = filterValue.from ? new Date(filterValue.from.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })) : undefined;
+  const to = filterValue.to ? new Date(filterValue.to.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })) : undefined;
+
+  // Ajustar las fechas para incluir todo el día
+  if (from) {
+    from.setHours(0, 0, 0, 0);
+  }
+  if (to) {
+    to.setHours(23, 59, 59, 999);
+  }
+
+  if (from && to) {
+    return fechaLocal >= from && fechaLocal <= to;
+  } else if (from) {
+    return fechaLocal >= from;
+  } else if (to) {
+    return fechaLocal <= to;
+  }
+
+  return true;
 };
 
 // Tipos
@@ -108,8 +142,8 @@ interface TableFiltersProps<TData, TValue> {
   currentGl: string;
   setCurrentGl: (newGl: string) => void;
   generadores: User[];
-  currentDateCreation: Date | undefined;
-  setCurrentDateCreation: (newDate: Date | undefined) => void;
+  currentDateRange: { from: Date | undefined; to: Date | undefined };
+  setCurrentDateRange: (newDateRange: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
 function TableFilters<TData extends { id: string }, TValue>({
@@ -121,8 +155,8 @@ function TableFilters<TData extends { id: string }, TValue>({
   currentGl,
   setCurrentGl,
   generadores,
-  currentDateCreation,
-  setCurrentDateCreation,
+  currentDateRange,
+  setCurrentDateRange,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -212,10 +246,10 @@ function TableFilters<TData extends { id: string }, TValue>({
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
 
   const handleClearDateFilter = useCallback(() => {
-    setCurrentDateCreation(undefined);
+    setCurrentDateRange({ from: undefined, to: undefined });
     table.getColumn("createdAt")?.setFilterValue(undefined);
     table.setPageIndex(0);
-  }, [setCurrentDateCreation, table]);
+  }, [setCurrentDateRange, table]);
 
   const statusOptions = Object.values(LeadStatus);
 
@@ -268,7 +302,7 @@ function TableFilters<TData extends { id: string }, TValue>({
           {/* Date filter */}
           <div className="space-y-2">
             <Label htmlFor="date-filter" className="text-sm font-medium">
-              Fecha de Creación
+              Rango de Fechas
             </Label>
             <div className="flex flex-col gap-2">
               <Popover>
@@ -279,29 +313,51 @@ function TableFilters<TData extends { id: string }, TValue>({
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {currentDateCreation ? (
-                      format(currentDateCreation, "eee dd/MM/yyyy", {
-                        locale: es,
-                      })
+                    {currentDateRange.from ? (
+                      currentDateRange.to ? (
+                        <>
+                          {format(currentDateRange.from, "dd/MM/yyyy", { locale: es })} -{" "}
+                          {format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}
+                        </>
+                      ) : (
+                        format(currentDateRange.from, "dd/MM/yyyy", { locale: es })
+                      )
                     ) : (
-                      <span>Seleccionar fecha</span>
+                      <span>Seleccionar rango</span>
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
-                    mode="single"
-                    selected={currentDateCreation}
-                    onSelect={setCurrentDateCreation}
+                    mode="range"
+                    selected={{
+                      from: currentDateRange.from,
+                      to: currentDateRange.to,
+                    }}
+                    onSelect={(range) => {
+                      if (range?.from) {
+                        setCurrentDateRange({
+                          from: range.from,
+                          to: range.to,
+                        });
+                        table.getColumn("createdAt")?.setFilterValue({
+                          from: range.from,
+                          to: range.to,
+                        });
+                        table.setPageIndex(0);
+                      }
+                    }}
                     initialFocus
                     locale={es}
+                    numberOfMonths={2}
                   />
                 </PopoverContent>
               </Popover>
 
-              {currentDateCreation && (
+              {(currentDateRange.from || currentDateRange.to) && (
                 <Badge variant="outline" className="w-fit gap-1">
-                  {format(currentDateCreation, "dd/MM/yyyy", { locale: es })}
+                  {currentDateRange.from && format(currentDateRange.from, "dd/MM/yyyy", { locale: es })}
+                  {currentDateRange.to && ` - ${format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}`}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -737,9 +793,10 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
-  const [currentDateCreation, setCurrentDateCreation] = useState<
-    Date | undefined
-  >(undefined);
+  const [currentDateRange, setCurrentDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [tableData, setTableData] = useState<LeadWithRelations[]>(data);
   const [currentPage, setCurrentPage] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -780,7 +837,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
       }
     },
     filterFns: {
-      filterAnything,
+      filterDateRange,
     },
     state: {
       sorting,
@@ -849,15 +906,15 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     table.setPageIndex(0);
   }, []);
 
-  const handleDateChange = useCallback((date: Date | undefined) => {
-    setCurrentDateCreation(date);
-    if (!date) {
+  const handleDateRangeChange = useCallback((range: { from: Date | undefined; to: Date | undefined }) => {
+    setCurrentDateRange(range);
+    if (!range.from && !range.to) {
       table.getColumn("createdAt")?.setFilterValue(undefined);
       return;
     }
-    table.getColumn("createdAt")?.setFilterValue(date);
+    table.getColumn("createdAt")?.setFilterValue(range);
     table.setPageIndex(0);
-  }, []);
+  }, [table]);
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
@@ -880,8 +937,8 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         </div>
       </div>
       <TableFilters
-        setCurrentDateCreation={handleDateChange}
-        currentDateCreation={currentDateCreation}
+        setCurrentDateRange={handleDateRangeChange}
+        currentDateRange={currentDateRange}
         generadores={generadores}
         table={table}
         filterPlaceholder={filterPlaceholder}

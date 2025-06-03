@@ -103,7 +103,7 @@ export const UserProfileHeader = ({
           </div>
 
           {/* Tarjetas de información mejoradas */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mt-6">
             <UserInfoCard title="Edad" value={user.age} />
             <UserInfoCard
               title="Ubicación"

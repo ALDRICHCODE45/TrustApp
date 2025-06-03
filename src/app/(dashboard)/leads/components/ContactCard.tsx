@@ -14,6 +14,9 @@ import {
   Plus,
   History,
   Phone,
+  Calendar,
+  CalendarPlus,
+  CircleUser,
 } from "lucide-react";
 import {
   Card,
@@ -60,10 +63,29 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { createTaskFromContact } from "@/actions/tasks/actions";
+import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Definición de tipos
 interface ContactoCardProps {
   contacto: ContactWithRelations;
+  onUpdateContacts: React.Dispatch<
+    React.SetStateAction<ContactWithRelations[]>
+  >;
 }
 
 export type ContactWithRelations = Prisma.PersonGetPayload<{
@@ -77,7 +99,6 @@ export type ContactWithRelations = Prisma.PersonGetPayload<{
   };
 }>;
 
-// Función para crear una nueva interacción con un contacto
 async function createContactInteraction(
   contactoId: string,
   content: string,
@@ -101,7 +122,10 @@ async function createContactInteraction(
   }
 }
 
-export const ContactoCard = ({ contacto }: ContactoCardProps) => {
+export const ContactoCard = ({
+  contacto,
+  onUpdateContacts,
+}: ContactoCardProps) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
@@ -116,6 +140,30 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
     try {
       await editLeadPerson(contacto.id, formData);
       toast.success("Contacto editado con exito");
+
+      // Extraer los nuevos valores del formulario
+      const newName = formData.get("name") as string;
+      const newPosition = formData.get("position") as string;
+      const newEmail = (formData.get("email") as string) || null;
+      const newPhone = (formData.get("phone") as string) || null;
+      const newLinkedin = (formData.get("linkedin") as string) || null;
+
+      // Crear el contacto actualizado
+      const updatedContacto: ContactWithRelations = {
+        ...contacto,
+        name: newName,
+        position: newPosition,
+        email: newEmail,
+        phone: newPhone,
+        linkedin: newLinkedin,
+      };
+
+      // Actualizar la lista de contactos reemplazando el contacto editado
+      onUpdateContacts((prev) =>
+        prev.map((contact) =>
+          contact.id === contacto.id ? updatedContacto : contact,
+        ),
+      );
     } catch (error) {
       toast.error("Algo salio mal..");
     } finally {
@@ -131,6 +179,10 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
       toast.promise(promise, {
         loading: "Eliminando...",
         success: () => {
+          // Actualizar la lista local eliminando el contacto
+          onUpdateContacts((prev) =>
+            prev.filter((contact) => contact.id !== id),
+          );
           return "Contacto eliminado con exito";
         },
         error: "Ah ocurrido un error",
@@ -224,6 +276,30 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                   {contacto.phone ? contacto.phone : "Sin celular"}
                 </p>
               </div>
+
+              <div className="flex gap-1 items-center">
+                <CircleUser size={14} className="text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {contacto.linkedin ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          className="underline text-blue-500"
+                          href={contacto.linkedin}
+                          target="_blank"
+                        >
+                          Perfil de Linkedin
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span>{contacto.linkedin}</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    "Sin Linkedin"
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -291,6 +367,18 @@ export const ContactoCard = ({ contacto }: ContactoCardProps) => {
                 />
               </div>
             </div>
+
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="phone">Linkedin</Label>
+              <Input
+                id="linkedin"
+                name="linkedin"
+                defaultValue={contacto.linkedin ?? ""}
+                placeholder="linkedin/aldrich.."
+                type="text"
+                required={false}
+              />
+            </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -330,6 +418,14 @@ export interface Attachment {
   attachmentType: string;
 }
 
+// Nueva interfaz para el diálogo de crear tarea
+interface CreateTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  contactName: string;
+  onTaskCreated?: () => void;
+}
+
 export const SeguimientoContacto = ({
   open,
   onOpenChange,
@@ -343,6 +439,9 @@ export const SeguimientoContacto = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [newContent, setNewContent] = useState<string>("");
   const [attachment, setAttachment] = useState<Attachment | null>(null);
+
+  // Estado para el diálogo de crear tarea
+  const [openCreateTask, setOpenCreateTask] = useState<boolean>(false);
 
   // Manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -395,7 +494,7 @@ export const SeguimientoContacto = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-w-[95vw] w-full max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
@@ -403,7 +502,7 @@ export const SeguimientoContacto = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full flex-1 min-h-0 overflow-hidden">
           {/* Formulario para agregar nueva interacción */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="space-y-2">
@@ -420,7 +519,7 @@ export const SeguimientoContacto = ({
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Label htmlFor="attachment" className="cursor-pointer">
                 <div className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-md text-sm">
                   <PaperclipIcon className="h-4 w-4" />
@@ -471,45 +570,234 @@ export const SeguimientoContacto = ({
                   )}
                 </Button>
               </div>
+
+              {/* Botón para crear tarea */}
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenCreateTask(true)}
+                >
+                  <CalendarPlus className="h-4 w-4 mr-2" />
+                  Crear tarea
+                </Button>
+              </div>
             </div>
           </form>
 
           <Separator />
 
           {/* Historial de interacciones */}
-          <div className="space-y-1">
-            <div className="flex  gap-2">
+          <div className="space-y-1 flex-1 min-h-0 flex flex-col">
+            <div className="flex gap-2">
               <History size={17} className="items-center" />
               <h3 className="text-sm font-medium mb-6 items-center">
                 Historial de interacciones
               </h3>
             </div>
             {loading ? (
-              <div className="flex justify-center py-8">
+              <div className="flex justify-center py-8 flex-1">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : interactions?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground flex-1">
                 <p>No hay interacciones registradas con este contacto.</p>
                 <p className="text-sm">
                   Registra la primera interacción arriba.
                 </p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(50vh-200px)] pr-4">
-                <div className="space-y-4">
+              <ScrollArea className="flex-1 min-h-[200px] max-h-[400px] pr-4 overflow-y-auto">
+                <div className="space-y-4 w-full">
                   {interactions.map((interaction) => (
-                    <InteractionCard
-                      key={interaction.id}
-                      interaction={interaction}
-                      setInteractions={setInteractions}
-                    />
+                    <div key={interaction.id} className="w-full">
+                      <InteractionCard
+                        interaction={interaction}
+                        setInteractions={setInteractions}
+                      />
+                    </div>
                   ))}
                 </div>
               </ScrollArea>
             )}
           </div>
         </div>
+
+        {/* Diálogo para crear tarea */}
+        <CreateTaskDialog
+          open={openCreateTask}
+          onOpenChange={setOpenCreateTask}
+          contactName={contacto.name}
+          onTaskCreated={() => {
+            toast.success("Tarea creada exitosamente");
+            setOpenCreateTask(false);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Componente para crear tareas desde el seguimiento
+const CreateTaskDialog = ({
+  open,
+  onOpenChange,
+  contactName,
+  onTaskCreated,
+}: CreateTaskDialogProps) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Función para manejar la selección de fecha
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
+  };
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error("Por favor, añade un título para la tarea");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Por favor añade una descripción para la tarea");
+      return;
+    }
+
+    if (!dueDate) {
+      toast.error("Por favor, selecciona una fecha límite");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await createTaskFromContact(
+        title,
+        description,
+        dueDate.toISOString(),
+      );
+
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
+      // Limpiar el formulario
+      setTitle("");
+      setDescription("");
+      setDueDate(new Date());
+
+      // Llamar la función de callback
+      onTaskCreated?.();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error("Error al crear la tarea");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="h-5 w-5" />
+            Nueva tarea para {contactName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="task-title">Título de la tarea</Label>
+            <Input
+              id="task-title"
+              placeholder="Ej: Enviar seguimiento por WhatsApp"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-description">Descripción</Label>
+            <Textarea
+              id="task-description"
+              placeholder="Describe los detalles de la tarea..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isSubmitting}
+              required
+              className="resize-none min-h-[80px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-dueDate">Fecha límite</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal w-full",
+                    !dueDate && "text-muted-foreground",
+                  )}
+                  disabled={isSubmitting}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dueDate ? (
+                    format(dueDate, "d 'de' MMMM, yyyy", { locale: es })
+                  ) : (
+                    <span>Selecciona una fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[9999]" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={handleDateSelect}
+                  locale={es}
+                  disabled={(date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear tarea
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

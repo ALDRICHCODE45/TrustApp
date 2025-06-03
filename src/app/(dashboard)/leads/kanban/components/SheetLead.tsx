@@ -5,11 +5,12 @@ import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadWithRelations } from "../page";
 import { LeadStatus } from "@prisma/client";
-import { ContactoCard } from "../../components/ContactCard";
+import { ContactoCard, ContactWithRelations } from "../../components/ContactCard";
 import { Badge } from "@/components/ui/badge";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDiffDays } from "@/app/helpers/getDiffDays";
+import { useState } from "react";
 
 interface Props {
   lead: LeadWithRelations;
@@ -31,6 +32,7 @@ export const getStatusColor = (status: LeadStatus) => {
 
 export function LeadSheet({ lead }: Props) {
   const diffInDays = getDiffDays(lead.createdAt);
+  const [contactos, setContactos] = useState<ContactWithRelations[]>(lead?.contactos || []);
 
   return (
     <>
@@ -131,10 +133,14 @@ export function LeadSheet({ lead }: Props) {
                 <TabsTrigger value="history">Historial</TabsTrigger>
               </TabsList>
               <TabsContent value="contacts" className="py-4">
-                {lead?.contactos?.length > 0 ? (
+                {contactos?.length > 0 ? (
                   <div className="space-y-4">
-                    {lead.contactos.map((contacto) => (
-                      <ContactoCard contacto={contacto} key={contacto.id} />
+                    {contactos.map((contacto) => (
+                      <ContactoCard 
+                        contacto={contacto} 
+                        key={contacto.id} 
+                        onUpdateContacts={setContactos}
+                      />
                     ))}
                   </div>
                 ) : (
