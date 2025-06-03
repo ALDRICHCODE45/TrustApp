@@ -120,7 +120,6 @@ export const Announcments: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="p-0">
         <Tabs defaultValue="all" className="w-full">
           <div className="border-b">
@@ -145,7 +144,6 @@ export const Announcments: React.FC = () => {
               </TabsTrigger>
             </TabsList>
           </div>
-
           <TabsContent value="all" className="m-0">
             <NotificationList
               notifications={notifications}
@@ -153,7 +151,6 @@ export const Announcments: React.FC = () => {
               deleteNotification={deleteNotification}
             />
           </TabsContent>
-
           <TabsContent value="unread" className="m-0">
             <NotificationList
               notifications={notifications.filter((n) => !n.read)}
@@ -161,7 +158,6 @@ export const Announcments: React.FC = () => {
               deleteNotification={deleteNotification}
             />
           </TabsContent>
-
           <TabsContent value="read" className="m-0">
             <NotificationList
               notifications={notifications.filter((n) => n.read)}
@@ -171,8 +167,7 @@ export const Announcments: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-
-      <CardFooter className="flex items-center justify-between p-3 border-t">
+      <CardFooter className="flex items-center justify-between px-3 py-1 border-t mt-20">
         <Button
           variant="outline"
           size="sm"

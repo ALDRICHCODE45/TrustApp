@@ -21,7 +21,7 @@ interface PerformanceData {
 /* PERFORMANCE CHART */
 export const AttendanceChart = () => {
   const [loading] = useState(false);
-  
+
   const data: PerformanceData[] = [
     { month: "Lun", present: 60, absent: 39 },
     { month: "Mar", present: 99, absent: 34 },
@@ -48,8 +48,8 @@ export const AttendanceChart = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="min-h-[500px]">
-        <div className="w-full h-[500px] relative">
+      <CardContent className="">
+        <div className="w-full relative">
           {loading ? (
             <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

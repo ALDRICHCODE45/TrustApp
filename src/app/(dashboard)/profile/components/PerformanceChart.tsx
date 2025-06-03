@@ -76,7 +76,6 @@ export const LeadPerformanceChart: React.FC = () => {
           setSelectedUser(response[0].id);
         }
       } catch (error) {
-        console.error("Error obteniendo usuarios:", error);
         // Usuarios de respaldo en caso de que la API falle
         const backupUsers = [
           { id: "user1", name: "Juan Pérez" },
@@ -113,12 +112,6 @@ export const LeadPerformanceChart: React.FC = () => {
     loadData();
   }, [selectedUser]);
 
-  // Obtener el nombre del usuario según el ID seleccionado
-  const getUserName = (userId: string): string => {
-    const user = users.find((user) => user.id === userId);
-    return user ? user.name : "Usuario";
-  };
-
   return (
     <Card className="shadow-sm h-full">
       <CardHeader className="pb-2">
@@ -145,8 +138,8 @@ export const LeadPerformanceChart: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="min-h-[500px]">
-        <div className="w-full h-[500px] relative">
+      <CardContent className="">
+        <div className="w-full  relative">
           {isLoading ? (
             <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

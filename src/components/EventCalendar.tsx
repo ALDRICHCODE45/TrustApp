@@ -13,7 +13,7 @@ import { es } from "date-fns/locale";
 import { getTaskByDate, getTasksByMonth } from "@/actions/tasks/actions";
 import { Task } from "@prisma/client";
 import { toast } from "sonner";
-import { format, startOfMonth, endOfMonth, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 
 interface Props {
   userId: string;
@@ -58,7 +58,6 @@ export const EventCalendar = ({ userId }: Props) => {
         toast.error("Error al cargar eventos del mes");
       }
     } catch (error) {
-      console.error("Error loading month events:", error);
       toast.error("Error al cargar eventos del mes");
     } finally {
       setMonthLoading(false);
@@ -71,20 +70,16 @@ export const EventCalendar = ({ userId }: Props) => {
     try {
       // Usar formato YYYY-MM-DD para la fecha específica
       const dateString = formatDateForServer(date);
-      console.log("Loading events for date:", dateString); // Debug
 
       const result = await getTaskByDate(userId, dateString);
 
       if (result.ok) {
-        console.log("Tasks found:", result.tasks); // Debug
         setEvents(result.tasks || []);
       } else {
-        console.log("No tasks found or error:", result.message); // Debug
         toast.error("Error al traer las tareas");
         setEvents([]);
       }
     } catch (error) {
-      console.error("Error loading events for date:", error);
       toast.error("Error al traer las tareas");
       setEvents([]);
     } finally {
@@ -113,7 +108,6 @@ export const EventCalendar = ({ userId }: Props) => {
   const handleDateSelect = async (date: Date | undefined) => {
     if (!date) return;
 
-    console.log("Date selected:", date); // Debug
     setSelectedDate(date);
     await loadEventsForDate(date);
   };
@@ -165,13 +159,13 @@ export const EventCalendar = ({ userId }: Props) => {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 min-h-[200px]">
             {loading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="animate-spin h-5 w-5 text-blue-500" />
               </div>
             ) : events?.length > 0 ? (
-              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              <div className="space-y-2 min-h-[200px] overflow-y-auto">
                 {events.map((event) => (
                   <Card
                     key={event.id}
