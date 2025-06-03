@@ -4,6 +4,53 @@ import { checkSession } from "@/hooks/auth/checkSession";
 import { Role, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+// getTaskByDate - Para obtener tareas de una fecha específica
+export const getTaskByDate = async (userId: string, date: string) => {
+  try {
+    console.log("getTaskByDate called with:", { userId, date });
+
+    if (!userId || !date) {
+      return {
+        ok: false,
+        message: "Parámetros faltantes",
+        tasks: [],
+      };
+    }
+
+    // Crear el inicio y fin del día para la fecha específica
+    // Usar la fecha local para evitar problemas de zona horaria
+    const [year, month, day] = date.split("-").map(Number);
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignedToId: userId,
+        status: TaskStatus.Pending,
+        dueDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    });
+
+    return {
+      ok: true,
+      message: "Tareas obtenidas correctamente",
+      tasks,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: "Error al obtener las tareas",
+      tasks: [],
+    };
+  }
+};
+
 // getTasksByMonth - Para obtener tareas del mes completo
 export async function getTasksByMonth(
   userId: string,
@@ -11,6 +58,14 @@ export async function getTasksByMonth(
   endDate: string,
 ) {
   try {
+    if (!userId || !startDate || !endDate) {
+      return {
+        ok: false,
+        tasks: [],
+        error: "Parámetros faltantes",
+      };
+    }
+
     const tasks = await prisma.task.findMany({
       where: {
         status: TaskStatus.Pending,
@@ -225,34 +280,6 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
     return {
       ok: false,
       message: "Error Editando la tarea",
-    };
-  }
-};
-export const getTaskByDate = async (userId: string, date: string) => {
-  if (!userId || !date) {
-    return {
-      ok: false,
-      message: "Parametros faltantes",
-    };
-  }
-
-  try {
-    const tasks = await prisma.task.findMany({
-      where: {
-        assignedToId: userId,
-        dueDate: date,
-        status: TaskStatus.Pending,
-      },
-    });
-    return {
-      ok: true,
-      message: "Tareas",
-      tasks,
-    };
-  } catch (error) {
-    return {
-      ok: false,
-      message: "Error desconocido",
     };
   }
 };
