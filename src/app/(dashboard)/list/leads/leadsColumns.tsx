@@ -10,10 +10,16 @@ import { LeadWithRelations } from "../../leads/kanban/page";
 import { Button } from "@/components/ui/button";
 import { format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-declare module '@tanstack/table-core' {
+// Declaración de módulo corregida
+declare module "@tanstack/react-table" {
   interface FilterFns {
-    filterDateRange: FilterFn<LeadWithRelations>
+    filterDateRange: FilterFn<LeadWithRelations>;
   }
 }
 
@@ -93,9 +99,16 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       }
       return (
         <div className="flex gap-2 items-center">
-          <a href={link} target="_blank" className="underline">
-            <Globe size={17} />
-          </a>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <a href={link} target="_blank" className="underline">
+                <Globe size={17} />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{link}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       );
     },
@@ -106,7 +119,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     cell: ({ row }) => {
       // La fecha viene en UTC desde la base de datos
       const fechaUTC = new Date(row.original.createdAt);
-      
+
       return (
         <div className="text-center">
           <Button variant="outline">
@@ -119,7 +132,9 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       // La fecha viene en UTC desde la base de datos
       const fechaUTC = new Date(row.createdAt);
       // Convertir a fecha local para el filtrado
-      return new Date(fechaUTC.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+      return new Date(
+        fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+      );
     },
     filterFn: "filterDateRange",
   },
@@ -151,10 +166,8 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     header: () => <div className="text-center">Oficina</div>,
     cell: ({ row }) => {
       return (
-        <Button variant="outline">
-          {row.original.generadorLeads.Oficina}
-        </Button>
-      )
+        <Button variant="outline">{row.original.generadorLeads.Oficina}</Button>
+      );
     },
     accessorFn: (row) => {
       return row.generadorLeads.Oficina || null;

@@ -1,16 +1,25 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, UserX } from "lucide-react";
+import { CalendarIcon, LinkIcon, UserX } from "lucide-react";
 import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadWithRelations } from "../page";
 import { LeadStatus } from "@prisma/client";
-import { ContactoCard, ContactWithRelations } from "../../components/ContactCard";
+import {
+  ContactoCard,
+  ContactWithRelations,
+} from "../../components/ContactCard";
 import { Badge } from "@/components/ui/badge";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDiffDays } from "@/app/helpers/getDiffDays";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
 
 interface Props {
   lead: LeadWithRelations;
@@ -32,7 +41,16 @@ export const getStatusColor = (status: LeadStatus) => {
 
 export function LeadSheet({ lead }: Props) {
   const diffInDays = getDiffDays(lead.createdAt);
-  const [contactos, setContactos] = useState<ContactWithRelations[]>(lead?.contactos || []);
+  const [contactos, setContactos] = useState<ContactWithRelations[]>(
+    lead?.contactos || [],
+  );
+  const [linkVerify, setLinkVerfy] = useState(lead.link);
+
+  useEffect(() => {
+    if (!/^https?:\/\//i.test(lead.link)) {
+      setLinkVerfy(`https://${lead.link}`);
+    }
+  }, [lead]);
 
   return (
     <>
@@ -109,18 +127,26 @@ export function LeadSheet({ lead }: Props) {
             </div>
 
             {lead?.link && (
-              <div className="mt-3">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Enlace
-                </h3>
-                <a
-                  href={lead.link}
-                  className="text-blue-600 hover:underline truncate block"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {lead.link}
-                </a>
+              <div className="w-full flex justify-between items-center">
+                <div className="mt-3">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Enlace
+                  </h3>
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={linkVerify} target="_blank">
+                      <LinkIcon
+                        size={17}
+                        className="underline cursor-pointer items-center text-center mr-3 text-blue-500"
+                      />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <span>{linkVerify}</span>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -136,9 +162,9 @@ export function LeadSheet({ lead }: Props) {
                 {contactos?.length > 0 ? (
                   <div className="space-y-4">
                     {contactos.map((contacto) => (
-                      <ContactoCard 
-                        contacto={contacto} 
-                        key={contacto.id} 
+                      <ContactoCard
+                        contacto={contacto}
+                        key={contacto.id}
                         onUpdateContacts={setContactos}
                       />
                     ))}

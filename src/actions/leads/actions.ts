@@ -8,6 +8,36 @@ import { revalidatePath } from "next/cache";
 import { User, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
+export const createNewOrigen = async (formData: FormData) => {
+  const session = await auth();
+  if (!session) {
+    throw new Error("invalid session");
+  }
+  const origenName = formData.get("nombre") as string;
+
+  if (origenName.length < 3 || !origenName) {
+    return {
+      ok: false,
+      message: "Origen invalido",
+    };
+  }
+
+  try {
+    await prisma.leadOrigen.create({
+      data: {
+        nombre: origenName,
+      },
+    });
+    revalidatePath("/admin/config/leads");
+    return {
+      ok: true,
+      message: "Origen creado correctamente",
+    };
+  } catch (err) {
+    throw new Error("invalid Origen");
+  }
+};
+
 export const deleteLeadById = async (leadId: string) => {
   const session = await auth();
 

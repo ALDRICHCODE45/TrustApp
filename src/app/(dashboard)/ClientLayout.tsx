@@ -13,6 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/themeToggle";
 import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -32,7 +37,14 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       {/* Header with fixed position */}
       <header className="sticky z-10 top-0 flex justify-between h-16 shrink-0 items-center border-b bg-white dark:bg-[#121212] px-4">
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition-colors" />
+          <Tooltip>
+            <TooltipTrigger>
+              <SidebarTrigger className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition-colors" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>Abrir/Cerrar Sidebar</span>
+            </TooltipContent>
+          </Tooltip>
           <Separator orientation="vertical" className="h-6" />
           <ModeToggle />
           <Separator orientation="vertical" className="h-6 hidden md:block" />
@@ -46,7 +58,14 @@ export function ClientLayout({ children }: ClientLayoutProps) {
                   aria-label="Go back"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span className="text-sm font-medium">Back</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="text-sm font-medium">Back</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <span>Ir a la pagina anterior</span>
+                    </TooltipContent>
+                  </Tooltip>
                 </button>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />

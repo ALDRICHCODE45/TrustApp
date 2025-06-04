@@ -138,64 +138,65 @@ export const LeadPerformanceChart: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="">
-        <div className="w-full  relative">
+      <CardContent>
+        {/* Contenedor con altura fija para evitar el salto */}
+        <div className="w-full h-[378px] relative">
           {isLoading ? (
-            <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm">
+            <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm z-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          ) : (
-            <ChartContainer config={chartConfig} className="w-full h-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={data}
-                  margin={{
-                    top: 10,
-                    right: 10,
-                    left: 0,
-                    bottom: 0,
-                  }}
-                >
-                  <CartesianGrid
-                    vertical={false}
-                    strokeDasharray="3 3"
-                    opacity={0.2}
-                  />
-                  <XAxis
-                    dataKey="mes"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
+          ) : null}
 
-                  {Object.entries(chartConfig).map(([key, config]) => (
-                    <Area
-                      key={key}
-                      dataKey={key}
-                      type="monotone"
-                      fill={config.color}
-                      fillOpacity={0.2}
-                      stroke={config.color}
-                      strokeWidth={2}
-                      stackId="a"
-                      name={config.label}
-                    />
-                  ))}
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          )}
+          <ChartContainer config={chartConfig} className="w-full h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data}
+                margin={{
+                  top: 10,
+                  right: 10,
+                  left: 0,
+                  bottom: 0,
+                }}
+              >
+                <CartesianGrid
+                  vertical={false}
+                  strokeDasharray="3 3"
+                  opacity={0.2}
+                />
+                <XAxis
+                  dataKey="mes"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  tick={{ fontSize: 11, fill: "#64748b" }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tick={{ fontSize: 11, fill: "#64748b" }}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+
+                {Object.entries(chartConfig).map(([key, config]) => (
+                  <Area
+                    key={key}
+                    dataKey={key}
+                    type="monotone"
+                    fill={config.color}
+                    fillOpacity={0.2}
+                    stroke={config.color}
+                    strokeWidth={2}
+                    stackId="a"
+                    name={config.label}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

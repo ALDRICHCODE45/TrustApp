@@ -7,8 +7,6 @@ import { revalidatePath } from "next/cache";
 // getTaskByDate - Para obtener tareas de una fecha específica
 export const getTaskByDate = async (userId: string, date: string) => {
   try {
-    console.log("getTaskByDate called with:", { userId, date });
-
     if (!userId || !date) {
       return {
         ok: false,
