@@ -8,6 +8,36 @@ import { revalidatePath } from "next/cache";
 import { User, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
+export const createNewSector = async (formData: FormData) => {
+  const session = await auth();
+  if (!session) {
+    throw new Error("invalid session");
+  }
+  const sectorName = formData.get("nombre") as string;
+
+  if (sectorName.length < 3 || !sectorName) {
+    return {
+      ok: false,
+      message: "Sector invalido",
+    };
+  }
+
+  try {
+    await prisma.leadOrigen.create({
+      data: {
+        nombre: sectorName,
+      },
+    });
+    revalidatePath("/admin/config/leads");
+    return {
+      ok: true,
+      message: "Origen creado correctamente",
+    };
+  } catch (err) {
+    throw new Error("invalid Origen");
+  }
+};
+
 export const deleteOrigenById = async (formData: FormData) => {
   const origenId = formData.get("origenId") as string;
   if (!origenId) {

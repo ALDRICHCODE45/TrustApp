@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Settings, Bell, Monitor, Database } from "lucide-react";
+import { Database } from "lucide-react";
 
 interface Props {
   children: React.ReactNode;
@@ -7,17 +7,17 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   const sidebarItems = [
-    { icon: User, label: "Profile", id: "profile" },
-    { icon: Settings, label: "Account", id: "account" },
-    { icon: Bell, label: "Notifications", id: "notifications" },
-    { icon: Monitor, label: "Display", id: "display" },
+    // { icon: User, label: "Profile", id: "profile" },
+    // { icon: Settings, label: "Account", id: "account" },
+    // { icon: Bell, label: "Notifications", id: "notifications" },
+    // { icon: Monitor, label: "Display", id: "display" },
     { icon: Database, label: "Leads Config", id: "leads", active: true },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Header */}
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Configuración
@@ -27,11 +27,23 @@ export default function Layout({ children }: Props) {
             preferencias de correo electrónico.
           </p>
         </div>
+      </div>
 
+      {/* Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
         <div className="flex gap-8">
           {/* Sidebar */}
-          <div className="w-64 flex-shrink-0">
-            <nav className="space-y-1">
+          <aside
+            className="w-64 flex-shrink-0"
+            style={{ height: "calc(100vh - 200px)" }}
+          >
+            <nav
+              className="space-y-1 bg-white p-4 rounded-lg shadow"
+              style={{
+                position: "sticky",
+                top: "2rem",
+              }}
+            >
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -49,12 +61,10 @@ export default function Layout({ children }: Props) {
                 );
               })}
             </nav>
-          </div>
+          </aside>
 
           {/* Main Content */}
-          <div className="flex-1">
-            <div className="">{children}</div>
-          </div>
+          <main className="flex-1">{children}</main>
         </div>
       </div>
     </div>
