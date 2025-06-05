@@ -14,6 +14,7 @@ export const createNewOrigen = async (formData: FormData) => {
     throw new Error("invalid session");
   }
   const origenName = formData.get("nombre") as string;
+  console.log({ origenName });
 
   if (origenName.length < 3 || !origenName) {
     return {

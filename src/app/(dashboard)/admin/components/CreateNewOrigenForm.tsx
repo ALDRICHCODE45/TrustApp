@@ -38,6 +38,7 @@ export const CreateNewOrigenForm = () => {
     formData.append("nombre", data.nombre);
 
     const { ok, message } = await createNewOrigen(formData);
+    console.log({ ok, message });
     if (!ok) {
       toast.error("Error", {
         description: "Ha ocurrido un error al crear el origen",
@@ -66,14 +67,14 @@ export const CreateNewOrigenForm = () => {
   return (
     <>
       <Dialog>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus />
-              Agregar origen
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Plus />
+            Agregar origen
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>Agregar Origen</DialogTitle>
               <DialogDescription>
@@ -82,7 +83,9 @@ export const CreateNewOrigenForm = () => {
             </DialogHeader>
             <div className="grid gap-4">
               <div className="grid gap-3">
-                <Label htmlFor="nombre">Nombre</Label>
+                <Label htmlFor="nombre" className="mt-3">
+                  Nombre
+                </Label>
                 <Input
                   {...register("nombre", {
                     required: true,
@@ -95,14 +98,19 @@ export const CreateNewOrigenForm = () => {
                   name="nombre"
                   placeholder="eje: linkedin"
                 />
+
+                {errors.nombre?.message ? (
+                  <span className="text-red-500 text-sm">
+                    {errors.nombre.message}
+                  </span>
+                ) : null}
               </div>
-              {errors.nombre?.message ? (
-                <span className="text-red-500">{errors.nombre.message}</span>
-              ) : null}
             </div>
-            <DialogFooter>
+            <DialogFooter className="mt-5">
               <DialogClose asChild>
-                <Button variant="outline">Cancelar</Button>
+                <Button variant="outline" type="button">
+                  Cancelar
+                </Button>
               </DialogClose>
               <Button type="submit" size="sm">
                 {isLoading ? (
@@ -110,12 +118,12 @@ export const CreateNewOrigenForm = () => {
                     <Loader2 /> Cargando..
                   </>
                 ) : (
-                  "Guardar Cambios"
+                  <p>Guardar Cambios</p>
                 )}
               </Button>
             </DialogFooter>
-          </DialogContent>
-        </form>
+          </form>
+        </DialogContent>
       </Dialog>
     </>
   );
