@@ -8,13 +8,102 @@ import { revalidatePath } from "next/cache";
 import { User, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
+export const deleteOrigenById = async (formData: FormData) => {
+  const origenId = formData.get("origenId") as string;
+  if (!origenId) {
+    return {
+      ok: false,
+      message: "Origen id is required",
+    };
+  }
+
+  const origenExists = await prisma.leadOrigen.findUnique({
+    where: {
+      id: origenId,
+    },
+  });
+
+  if (!origenExists) {
+    return {
+      ok: false,
+      message: "El origen no existe",
+    };
+  }
+
+  try {
+    await prisma.leadOrigen.delete({
+      where: {
+        id: origenId,
+      },
+    });
+
+    revalidatePath("/admin/config/leads");
+    return {
+      ok: true,
+      message: "Origen eliminado satisfactoriamente",
+    };
+  } catch (err) {
+    throw new Error("Error al eliminar el origen");
+  }
+};
+
+export const editOrigen = async (formData: FormData) => {
+  try {
+    const newName = formData.get("newName") as string;
+    const origenId = formData.get("origenId") as string;
+
+    if (!newName || !origenId) {
+      return {
+        ok: false,
+        message: "Datos insuficientes",
+      };
+    }
+
+    if (newName.length < 3) {
+      return {
+        ok: false,
+        message: "El nombre debe contener al menos 3 caracteres",
+      };
+    }
+
+    const origenExists = await prisma.leadOrigen.findUnique({
+      where: {
+        id: origenId,
+      },
+    });
+
+    if (!origenExists) {
+      return {
+        ok: false,
+        message: "Origen does not exists",
+      };
+    }
+
+    await prisma.leadOrigen.update({
+      where: {
+        id: origenId,
+      },
+      data: {
+        nombre: newName,
+      },
+    });
+    revalidatePath("/admin/config/leads");
+
+    return {
+      ok: true,
+      message: "Origen actualizado correctamente",
+    };
+  } catch (err) {
+    throw new Error("Erorr al editar el origen");
+  }
+};
+
 export const createNewOrigen = async (formData: FormData) => {
   const session = await auth();
   if (!session) {
     throw new Error("invalid session");
   }
   const origenName = formData.get("nombre") as string;
-  console.log({ origenName });
 
   if (origenName.length < 3 || !origenName) {
     return {
