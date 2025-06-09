@@ -1,4 +1,4 @@
-//TODO: descomentar y ejecutar una vez en produccion
+//TODO: descomentar y ejecutar una vez en produccion bunx tsx prisma/update-timestamps.ts
 // import prisma from "@/lib/db";
 //
 // async function updateExistingRecords() {

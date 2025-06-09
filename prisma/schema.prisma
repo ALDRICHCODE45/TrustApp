@@ -72,8 +72,8 @@ model Sector {
 
 model LeadOrigen {
   id    String @id @default(cuid())
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime?   @default(now())
+  updatedAt        DateTime?  @updatedAt
   nombre String @unique
   leads  Lead[]
 }
