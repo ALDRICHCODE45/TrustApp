@@ -6,7 +6,7 @@ import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
 import { ToastAlerts } from "@/components/ToastAlerts";
 import { useRouter } from "next/navigation";
-import { LeadOrigen } from "@prisma/client";
+import { LeadOrigen, Role } from "@prisma/client";
 
 interface LeadsPageClientProps {
   initialData: LeadWithRelations[];
@@ -15,7 +15,7 @@ interface LeadsPageClientProps {
   sectores: any[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
-  activeUser: { name: string; id: string };
+  activeUser: { name: string; id: string; role: Role };
 }
 
 export function LeadsPageClient({

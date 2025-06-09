@@ -110,6 +110,7 @@ export default async function page({}: pageProps): Promise<ReactElement> {
   const activeUser = {
     name: session.user.name,
     id: session.user.id,
+    role: session.user.role as Role,
   };
 
   return (

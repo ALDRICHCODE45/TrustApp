@@ -26,7 +26,7 @@ import { createLead } from "@/actions/leads/actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { createLeadSchema } from "@/zod/createLeadSchema";
-import { User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Sector, LeadOrigen } from "@prisma/client";
@@ -51,7 +51,7 @@ export const CreateLeadForm = ({
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
-  activeUser: { name: string; id: string };
+  activeUser: { name: string; id: string; role: Role };
   onLeadCreated?: () => void;
 }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -97,7 +97,7 @@ function NuevoLeadForm({
   sectores: Sector[];
   origenes: LeadOrigen[];
   isAdmin: boolean;
-  activeUser: { name: string; id: string };
+  activeUser: { name: string; id: string; role: Role };
   setOpenDialog: (newState: boolean) => void;
   onLeadCreated?: () => void;
 }) {
@@ -193,12 +193,12 @@ function NuevoLeadForm({
         onSubmit={form.onSubmit}
         noValidate
       >
-        {isAdmin && (
+        {(isAdmin || activeUser.role === Role.MK) && selectedUser && (
           <input
             type="hidden"
             name={fields.generadorId.name}
             key={fields.generadorId.key}
-            value={selectedUser?.id || ""}
+            value={selectedUser.id}
           />
         )}
 
@@ -265,81 +265,83 @@ function NuevoLeadForm({
         <div className="flex gap-4">
           <div className="w-1/2">
             <Label>Generador de Leads</Label>
-            {isAdmin && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild className="w-full">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    type="button"
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <UserIcon />
-                    <span className="truncate">
-                      {selectedUser
-                        ? selectedUser.name
-                        : "Selecciona un Generador"}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72 max-h-[250px] overflow-y-auto z-[9999]">
-                  {generadores.map((generador) => (
-                    <DropdownMenuItem
-                      key={generador.id}
-                      className="flex items-center gap-3 p-2 cursor-pointer"
-                      onClick={() => {
-                        handleSelectGl(generador);
-                      }}
+            {(isAdmin || activeUser.role === Role.MK) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild className="w-full">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      className="flex items-center justify-center gap-2"
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <Avatar className="h-9 w-9 shrink-0">
-                          <AvatarImage
-                            src={generador.image ? generador.image : undefined}
-                            alt={generador.name}
-                            className="object-cover rounded-full h-full w-full"
-                          />
-                          <AvatarFallback className="rounded-full">
-                            {getInitials(generador.name)}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">
-                            {generador.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {generador.email}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="link"
-                        className="ml-auto h-8 w-8 p-0"
-                        type="button"
-                        asChild
+                      <UserIcon />
+                      <span className="truncate">
+                        {selectedUser
+                          ? selectedUser.name
+                          : "Selecciona un Generador"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-72 max-h-[250px] overflow-y-auto z-[9999]">
+                    {generadores.map((generador) => (
+                      <DropdownMenuItem
+                        key={generador.id}
+                        className="flex items-center gap-3 p-2 cursor-pointer"
+                        onClick={() => {
+                          handleSelectGl(generador);
+                        }}
                       >
-                        <Link href={`/profile/${generador.id}`}>Ver</Link>
-                      </Button>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                        <div className="flex items-center gap-3 flex-1">
+                          <Avatar className="h-9 w-9 shrink-0">
+                            <AvatarImage
+                              src={
+                                generador.image ? generador.image : undefined
+                              }
+                              alt={generador.name}
+                              className="object-cover rounded-full h-full w-full"
+                            />
+                            <AvatarFallback className="rounded-full">
+                              {getInitials(generador.name)}
+                            </AvatarFallback>
+                          </Avatar>
 
-            {!isAdmin && (
-              <div className="flex flex-col gap-2">
-                <Button variant="outline" disabled>
-                  {activeUser.name}
-                </Button>
-                <input
-                  type="hidden"
-                  name={fields.generadorId.name}
-                  key={fields.generadorId.key}
-                  value={activeUser.id}
-                />
-              </div>
-            )}
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {generador.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {generador.email}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="link"
+                          className="ml-auto h-8 w-8 p-0"
+                          type="button"
+                          asChild
+                        >
+                          <Link href={`/profile/${generador.id}`}>Ver</Link>
+                        </Button>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+            {(!isAdmin && activeUser.role !== Role.MK) && (
+                <div className="flex flex-col gap-2">
+                  <Button variant="outline" disabled>
+                    {activeUser.name}
+                  </Button>
+                  <input
+                    type="hidden"
+                    name={fields.generadorId.name}
+                    key={fields.generadorId.key}
+                    value={activeUser.id}
+                  />
+                </div>
+              )}
             <p className="text-sm text-red-500">{fields.generadorId.errors}</p>
           </div>
           <div className="w-1/2">

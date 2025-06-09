@@ -101,6 +101,7 @@ export default async function LeadsPage({}: pageProps) {
   const activeUser = {
     name: session.user.name,
     id: session.user.id,
+    role: session.user.role as Role,
   };
 
   return (
