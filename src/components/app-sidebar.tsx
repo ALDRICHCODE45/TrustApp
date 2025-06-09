@@ -154,7 +154,7 @@ const data: {
         },
         {
           title: "Configuracion",
-          url: "/admin/config",
+          url: "/config",
           roles: [Role.Admin],
         },
         // {

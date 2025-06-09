@@ -78,9 +78,9 @@ export function OrigenesTable<TData, TValue>({
         />
       </div>
       {/* Contenedor con altura fija y scroll */}
-      <div className="rounded-md border bg-white max-h-96 overflow-auto">
+      <div className="rounded-md border max-h-96 overflow-auto">
         <Table>
-          <TableHeader className="sticky top-0 bg-white z-10">
+          <TableHeader className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

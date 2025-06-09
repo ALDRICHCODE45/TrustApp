@@ -1,7 +1,7 @@
 import { Sector } from "@prisma/client";
-import { OrigenesTable } from "../../../components/tables/OrigenesTable";
-import { sectoresColumns } from "../../../components/tables/columns/SectionsTableColumns";
-import { CreateNewSectorForm } from "../../../components/CreateNewSectorForm";
+import { OrigenesTable } from "../../../admin/components/tables/OrigenesTable";
+import { sectoresColumns } from "../../../admin/components/tables/columns/SectionsTableColumns";
+import { CreateNewSectorForm } from "../../../admin/components/CreateNewSectorForm";
 
 interface Props {
   sectores: Sector[];

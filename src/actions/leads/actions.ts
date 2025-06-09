@@ -28,7 +28,7 @@ export const createNewSector = async (formData: FormData) => {
         nombre: sectorName,
       },
     });
-    revalidatePath("/admin/config/leads");
+    revalidatePath("/config/leads");
     return {
       ok: true,
       message: "Origen creado correctamente",
@@ -67,7 +67,7 @@ export const deleteOrigenById = async (formData: FormData) => {
       },
     });
 
-    revalidatePath("/admin/config/leads");
+    revalidatePath("/config/leads");
     return {
       ok: true,
       message: "Origen eliminado satisfactoriamente",
@@ -117,7 +117,7 @@ export const editOrigen = async (formData: FormData) => {
         nombre: newName,
       },
     });
-    revalidatePath("/admin/config/leads");
+    revalidatePath("/config/leads");
 
     return {
       ok: true,
@@ -148,7 +148,7 @@ export const createNewOrigen = async (formData: FormData) => {
         nombre: origenName,
       },
     });
-    revalidatePath("/admin/config/leads");
+    revalidatePath("/config/leads");
     return {
       ok: true,
       message: "Origen creado correctamente",

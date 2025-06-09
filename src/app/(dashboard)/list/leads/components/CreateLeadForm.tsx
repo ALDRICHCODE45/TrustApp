@@ -143,7 +143,7 @@ function NuevoLeadForm({
     if (!lastResult) return;
 
     if (lastResult.status === "error") {
-      const errorMessage = 'Error al Crear el Lead'
+      const errorMessage = "Error al Crear el Lead";
       toast.error(errorMessage, {
         description: "Por favor, verifica los datos e intenta nuevamente",
         duration: 5000,
@@ -329,7 +329,9 @@ function NuevoLeadForm({
 
             {!isAdmin && (
               <div className="flex flex-col gap-2">
-                <Button variant="outline">{activeUser.name}</Button>
+                <Button variant="outline" disabled>
+                  {activeUser.name}
+                </Button>
                 <input
                   type="hidden"
                   name={fields.generadorId.name}

@@ -15,14 +15,12 @@ export default function Layout({ children }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Configuración
-          </h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold mb-2">Configuración</h1>
+          <p>
             Administre la configuración de su cuenta y establezca sus
             preferencias de correo electrónico.
           </p>
@@ -38,7 +36,7 @@ export default function Layout({ children }: Props) {
             style={{ height: "calc(100vh - 200px)" }}
           >
             <nav
-              className="space-y-1 bg-white p-4 rounded-lg shadow"
+              className="space-y-1 p-4 rounded-lg shadow"
               style={{
                 position: "sticky",
                 top: "2rem",

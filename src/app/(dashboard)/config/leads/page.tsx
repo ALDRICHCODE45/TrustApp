@@ -2,6 +2,12 @@ import prisma from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrigenesSections } from "./components/OrigenesSection";
 import { SectoresSection } from "./components/SectoresSection";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 
 const getAllOrigenes = async () => {
   try {
@@ -27,9 +33,9 @@ const LeadsPage = async () => {
   return (
     <div className="flex flex-col h-screen ">
       {/* Header fijo */}
-      <div className="flex-shrink-0 bg-white px-6 py-4">
+      <div className="flex-shrink-0 px-6 py-4">
         <div className="mb-2">
-          <h1 className="text-3xl font-bold ">Configuración de Leads</h1>
+          <h1 className="text-3xl font-bold">Configuración de Leads</h1>
           <p className="mt-1">
             Configure sus ajustes y preferencias de gestión de leads.
           </p>
@@ -58,7 +64,12 @@ const LeadsPage = async () => {
               value="sectores"
               className="h-full overflow-y-auto px-6 py-6 space-y-6 data-[state=inactive]:hidden"
             >
-              <SectoresSection sectores={sectores} />
+              {/* <SectoresSection sectores={sectores} /> */}
+              <Card>
+                <CardHeader>En Construccion</CardHeader>
+                <CardContent>Seccion en Construccion.</CardContent>
+                <CardFooter>Pronta liberacion</CardFooter>
+              </Card>
             </TabsContent>
           </div>
         </Tabs>
