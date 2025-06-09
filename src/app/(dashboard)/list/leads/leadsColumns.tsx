@@ -66,6 +66,12 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
         </>
       );
     },
+    accessorFn: (row) => row.origen.id,
+    filterFn: (row, _id, filterValue) => {
+      const origenId = row.original.origen.id;
+      if (filterValue === "all" || !filterValue) return true;
+      return origenId === filterValue;
+    },
   },
   {
     accessorKey: "sector",

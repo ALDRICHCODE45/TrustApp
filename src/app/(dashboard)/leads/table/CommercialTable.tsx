@@ -56,7 +56,7 @@ import {
   Download,
   SlidersHorizontal,
 } from "lucide-react";
-import { LeadStatus, User } from "@prisma/client";
+import { LeadOrigen, LeadStatus, User } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { deleteMayLeads } from "@/actions/leads/deleteLeads";
@@ -98,11 +98,25 @@ const filterDateRange: FilterFn<LeadWithRelations> = (
   // La fecha del lead viene en UTC desde la base de datos
   const fechaUTC = new Date(row.original.createdAt);
   // Convertir a fecha local para comparación
-  const fechaLocal = new Date(fechaUTC.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const fechaLocal = new Date(
+    fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+  );
 
   // Convertir las fechas del filtro a la zona horaria local
-  const from = filterValue.from ? new Date(filterValue.from.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })) : undefined;
-  const to = filterValue.to ? new Date(filterValue.to.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })) : undefined;
+  const from = filterValue.from
+    ? new Date(
+        filterValue.from.toLocaleString("en-US", {
+          timeZone: "America/Mexico_City",
+        }),
+      )
+    : undefined;
+  const to = filterValue.to
+    ? new Date(
+        filterValue.to.toLocaleString("en-US", {
+          timeZone: "America/Mexico_City",
+        }),
+      )
+    : undefined;
 
   // Ajustar las fechas para incluir todo el día
   if (from) {
@@ -130,6 +144,7 @@ export interface DataTableProps<LeadWithRelations, TValue> {
   defaultPageSize?: number;
   filterPlaceholder?: string;
   generadores: User[];
+  origenes?: LeadOrigen[];
 }
 
 // Componente de filtro y selector de columnas
@@ -143,7 +158,13 @@ interface TableFiltersProps<TData, TValue> {
   setCurrentGl: (newGl: string) => void;
   generadores: User[];
   currentDateRange: { from: Date | undefined; to: Date | undefined };
-  setCurrentDateRange: (newDateRange: { from: Date | undefined; to: Date | undefined }) => void;
+  setCurrentDateRange: (newDateRange: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => void;
+  currentOrigen: string;
+  setCurrentOrigen: (newOrigen: string) => void;
+  origenes: LeadOrigen[];
 }
 
 function TableFilters<TData extends { id: string }, TValue>({
@@ -157,6 +178,9 @@ function TableFilters<TData extends { id: string }, TValue>({
   generadores,
   currentDateRange,
   setCurrentDateRange,
+  currentOrigen,
+  setCurrentOrigen,
+  origenes,
 }: TableFiltersProps<TData, TValue>) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -256,7 +280,7 @@ function TableFilters<TData extends { id: string }, TValue>({
   return (
     <Card className="mb-6 mt-6 shadow-sm">
       <CardContent className="p-5">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
           {/* Buscador global */}
           <div className="space-y-2">
             <Label htmlFor="global-filter" className="text-sm font-medium">
@@ -299,6 +323,32 @@ function TableFilters<TData extends { id: string }, TValue>({
             </Select>
           </div>
 
+          {/* Filtro por origen */}
+          <div className="space-y-2">
+            <Label htmlFor="origen-filter" className="text-sm font-medium">
+              Origen
+            </Label>
+            <Select value={currentOrigen} onValueChange={setCurrentOrigen}>
+              <SelectTrigger id="origen-filter" className="w-full">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <SelectValue placeholder="Seleccionar origen" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Origen</SelectLabel>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {origenes.map((origen) => (
+                    <SelectItem value={origen.id} key={origen.id}>
+                      {origen.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Date filter */}
           <div className="space-y-2">
             <Label htmlFor="date-filter" className="text-sm font-medium">
@@ -316,11 +366,18 @@ function TableFilters<TData extends { id: string }, TValue>({
                     {currentDateRange.from ? (
                       currentDateRange.to ? (
                         <>
-                          {format(currentDateRange.from, "dd/MM/yyyy", { locale: es })} -{" "}
-                          {format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}
+                          {format(currentDateRange.from, "dd/MM/yyyy", {
+                            locale: es,
+                          })}{" "}
+                          -{" "}
+                          {format(currentDateRange.to, "dd/MM/yyyy", {
+                            locale: es,
+                          })}
                         </>
                       ) : (
-                        format(currentDateRange.from, "dd/MM/yyyy", { locale: es })
+                        format(currentDateRange.from, "dd/MM/yyyy", {
+                          locale: es,
+                        })
                       )
                     ) : (
                       <span>Seleccionar rango</span>
@@ -356,8 +413,10 @@ function TableFilters<TData extends { id: string }, TValue>({
 
               {(currentDateRange.from || currentDateRange.to) && (
                 <Badge variant="outline" className="w-fit gap-1">
-                  {currentDateRange.from && format(currentDateRange.from, "dd/MM/yyyy", { locale: es })}
-                  {currentDateRange.to && ` - ${format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}`}
+                  {currentDateRange.from &&
+                    format(currentDateRange.from, "dd/MM/yyyy", { locale: es })}
+                  {currentDateRange.to &&
+                    ` - ${format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}`}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -783,6 +842,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   defaultPageSize = 10,
   filterPlaceholder = "Busqueda Global...",
   generadores,
+  origenes,
 }: DataTableProps<TData, TValue>) {
   // Estados
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -793,7 +853,11 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [currentStatus, setCurrentStatus] = useState<LeadStatus | "all">("all");
   const [currentGl, setCurrentGl] = useState("all");
-  const [currentDateRange, setCurrentDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [currentOrigen, setCurrentOrigen] = useState("all");
+  const [currentDateRange, setCurrentDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
     from: undefined,
     to: undefined,
   });
@@ -906,15 +970,32 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     table.setPageIndex(0);
   }, []);
 
-  const handleDateRangeChange = useCallback((range: { from: Date | undefined; to: Date | undefined }) => {
-    setCurrentDateRange(range);
-    if (!range.from && !range.to) {
-      table.getColumn("createdAt")?.setFilterValue(undefined);
-      return;
-    }
-    table.getColumn("createdAt")?.setFilterValue(range);
-    table.setPageIndex(0);
-  }, [table]);
+  const handleOrigenChange = useCallback(
+    (value: string) => {
+      if (value === "all") {
+        table.getColumn("Origen")?.setFilterValue(undefined);
+        setCurrentOrigen("all");
+        return;
+      }
+      setCurrentOrigen(value);
+      table.getColumn("Origen")?.setFilterValue(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
+
+  const handleDateRangeChange = useCallback(
+    (range: { from: Date | undefined; to: Date | undefined }) => {
+      setCurrentDateRange(range);
+      if (!range.from && !range.to) {
+        table.getColumn("createdAt")?.setFilterValue(undefined);
+        return;
+      }
+      table.getColumn("createdAt")?.setFilterValue(range);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   return (
     <div className="dark:bg-[#0e0e0e] w-full max-w-[93vw]">
@@ -940,6 +1021,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         setCurrentDateRange={handleDateRangeChange}
         currentDateRange={currentDateRange}
         generadores={generadores}
+        origenes={origenes ?? []}         
         table={table}
         filterPlaceholder={filterPlaceholder}
         onGlobalFilterChange={handleGlobalFilterChange}
@@ -947,6 +1029,8 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         setCurrentStatus={handleStatusChange}
         currentGl={currentGl}
         setCurrentGl={handleGlChange}
+        currentOrigen={currentOrigen}
+        setCurrentOrigen={handleOrigenChange}
       />
 
       <div className="mb-5">

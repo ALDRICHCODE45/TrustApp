@@ -6,13 +6,14 @@ import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
 import { ToastAlerts } from "@/components/ToastAlerts";
 import { useRouter } from "next/navigation";
+import { LeadOrigen } from "@prisma/client";
 
 interface LeadsPageClientProps {
   initialData: LeadWithRelations[];
   columns: typeof leadsColumns;
   generadores: any[];
   sectores: any[];
-  origenes: any[];
+  origenes: LeadOrigen[];
   isAdmin: boolean;
   activeUser: { name: string; id: string };
 }
@@ -67,6 +68,7 @@ export function LeadsPageClient({
         columns={columns}
         data={data}
         generadores={generadores}
+        origenes={origenes}
       />
     </>
   );

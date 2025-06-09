@@ -25,14 +25,12 @@ const LeadsPage = async () => {
   const sectores = await getAllSectores();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen ">
       {/* Header fijo */}
       <div className="flex-shrink-0 bg-white px-6 py-4">
         <div className="mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Configuración de Leads
-          </h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold ">Configuración de Leads</h1>
+          <p className="mt-1">
             Configure sus ajustes y preferencias de gestión de leads.
           </p>
         </div>

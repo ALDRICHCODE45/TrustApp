@@ -84,9 +84,7 @@ const fetchOrigenes = async () => {
   noStore();
 
   try {
-    const origenes = await prisma.leadOrigen.findMany({
-      select: { id: true, nombre: true },
-    });
+    const origenes = await prisma.leadOrigen.findMany({});
     return origenes;
   } catch (err) {
     throw new Error("No se pueden fetchear los origenes");
