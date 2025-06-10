@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -46,34 +46,26 @@ export function AllLeadInteractionsDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInteractions = async () => {
+  const fetchInteractions = useCallback(async () => {
     if (!leadId || !open) return;
-
-    console.log("=== INICIO DEBUG FETCH INTERACCIONES ===");
-    console.log("Lead ID:", leadId);
-    console.log("Open:", open);
 
     setLoading(true);
     setError(null);
 
     try {
-      console.log("Llamando a getAllInteractionsByLeadId...");
       const data = await getAllInteractionsByLeadId(leadId);
-      console.log("Datos recibidos:", data);
-      console.log("Número de interacciones:", data.length);
       setInteractions(data);
     } catch (err) {
-      console.error("Error en fetch:", err);
+      console.error("Error al obtener interacciones:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
-      console.log("=== FIN DEBUG FETCH INTERACCIONES ===");
     }
-  };
+  }, [leadId, open]);
 
   useEffect(() => {
     fetchInteractions();
-  }, [leadId, open]);
+  }, [fetchInteractions]);
 
   const getTimeAgo = (date: Date) => {
     const now = new Date();
@@ -105,6 +97,20 @@ export function AllLeadInteractionsDialog({
     },
     {} as Record<string, ContactInteractionWithRelations[]>,
   );
+
+  // Ordenar las interacciones de cada contacto por fecha (más recientes primero)
+  Object.keys(groupedInteractions).forEach(contactName => {
+    groupedInteractions[contactName].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  });
+
+  // Ordenar los contactos por la interacción más reciente
+  const sortedContactNames = Object.keys(groupedInteractions).sort((a, b) => {
+    const latestA = groupedInteractions[a][0]?.createdAt || '';
+    const latestB = groupedInteractions[b][0]?.createdAt || '';
+    return new Date(latestB).getTime() - new Date(latestA).getTime();
+  });
 
   const totalInteractions = interactions.length;
   const totalContacts = Object.keys(groupedInteractions).length;
@@ -155,116 +161,108 @@ export function AllLeadInteractionsDialog({
                 No hay interacciones registradas
               </p>
               <p className="text-sm">
-                Esta empresa aún no tiene interacciones con ninguno de sus
-                contactos.
+                Los contactos de esta empresa aún no tienen interacciones registradas.
+                Para agregar una interacción, ve a la sección de contactos y haz clic en &quot;Seguimiento&quot;.
               </p>
             </div>
           ) : (
             <div className="pt-4">
               <ScrollArea className="h-[500px]">
                 <div className="space-y-6 pr-4">
-                  {Object.entries(groupedInteractions).map(
-                    ([contactName, contactInteractions]) => (
-                      <div key={contactName} className="space-y-3">
-                        {/* Header del contacto */}
-                        <div className="flex items-center gap-2 pb-2 border-b">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <h3 className="font-semibold text-base">
-                            {contactName}
-                          </h3>
-                          <Badge variant="secondary" className="ml-auto">
-                            {contactInteractions.length} interacciones
-                          </Badge>
-                        </div>
-
-                        {/* Interacciones del contacto */}
-                        <div className="space-y-3 pl-4">
-                          {contactInteractions.map((interaction) => (
-                            <div
-                              key={interaction.id}
-                              className={cn(
-                                "border-l-4 bg-card rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow",
-                                interaction.attachmentUrl
-                                  ? "border-l-blue-500"
-                                  : "border-l-primary",
-                              )}
-                            >
-                              {/* Header de la interacción */}
-                              <div className="flex items-center gap-3 mb-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage
-                                    src={interaction.autor.image || ""}
-                                    className="object-cover"
-                                  />
-                                  <AvatarFallback className="text-xs bg-primary/10">
-                                    {interaction.autor.name
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .join("")
-                                      .toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-foreground">
-                                    {interaction.autor.name}
-                                  </p>
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>
-                                      {getTimeAgo(
-                                        new Date(interaction.createdAt),
-                                      )}
-                                    </span>
-                                    {interaction.updatedAt !==
-                                      interaction.createdAt && (
-                                      <span className="text-orange-500">
-                                        (editado)
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Contenido de la interacción */}
-                              <div className="mb-3">
-                                <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                                  {interaction.content}
-                                </p>
-                              </div>
-
-                              {/* Archivo adjunto si existe */}
-                              {interaction.attachmentUrl && (
-                                <div className="bg-muted/50 rounded-md p-3 border border-muted">
-                                  <div className="flex items-center gap-2">
-                                    <PaperclipIcon className="h-4 w-4 text-blue-500" />
-                                    <span className="text-sm text-muted-foreground">
-                                      Archivo adjunto:
-                                    </span>
-                                    <a
-                                      href={interaction.attachmentUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
-                                    >
-                                      {interaction.attachmentName ||
-                                        "Ver archivo"}
-                                    </a>
-                                    <a
-                                      href={interaction.attachmentUrl}
-                                      download={interaction.attachmentName}
-                                      className="ml-auto p-1 hover:bg-muted rounded-md transition-colors"
-                                    >
-                                      <Download className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                                    </a>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                  {sortedContactNames.map((contactName) => (
+                    <div key={contactName} className="space-y-3">
+                      {/* Header del contacto */}
+                      <div className="flex items-center gap-2 pb-2 border-b">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="font-semibold text-base">
+                          {contactName}
+                        </h3>
+                        <Badge variant="secondary" className="ml-auto">
+                          {groupedInteractions[contactName].length} interacciones
+                        </Badge>
                       </div>
-                    ),
-                  )}
+
+                      {/* Interacciones del contacto */}
+                      <div className="space-y-3 pl-4">
+                        {groupedInteractions[contactName].map((interaction) => (
+                          <div
+                            key={interaction.id}
+                            className={cn(
+                              "border-l-4 bg-card rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow",
+                              interaction.attachmentUrl
+                                ? "border-l-blue-500"
+                                : "border-l-primary",
+                            )}
+                          >
+                            {/* Header de la interacción */}
+                            <div className="flex items-center gap-3 mb-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={interaction.autor.image || ""}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="text-xs bg-primary/10">
+                                  {interaction.autor.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">
+                                  {interaction.autor.name}
+                                </p>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>
+                                    {getTimeAgo(
+                                      new Date(interaction.createdAt),
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Contenido de la interacción */}
+                            <div className="mb-3">
+                              <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                                {interaction.content}
+                              </p>
+                            </div>
+
+                            {/* Archivo adjunto si existe */}
+                            {interaction.attachmentUrl && (
+                              <div className="bg-muted/50 rounded-md p-3 border border-muted">
+                                <div className="flex items-center gap-2">
+                                  <PaperclipIcon className="h-4 w-4 text-blue-500" />
+                                  <span className="text-sm text-muted-foreground">
+                                    Archivo adjunto:
+                                  </span>
+                                  <a
+                                    href={interaction.attachmentUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
+                                  >
+                                    {interaction.attachmentName ||
+                                      "Ver archivo"}
+                                  </a>
+                                  <a
+                                    href={interaction.attachmentUrl}
+                                    download={interaction.attachmentName}
+                                    className="ml-auto p-1 hover:bg-muted rounded-md transition-colors"
+                                  >
+                                    <Download className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </ScrollArea>
             </div>

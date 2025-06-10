@@ -325,16 +325,15 @@ export function LeadContactosSheet({
             <div className="flex items-center justify-between">
               <SheetTitle>Contactos</SheetTitle>
               <div className="flex gap-2">
-                {/* TODO:ARREGLAR FUNCIONALIDAD*/}
-                {/* <Button */}
-                {/*   size="sm" */}
-                {/*   className="gap-1" */}
-                {/*   variant="outline" */}
-                {/*   onClick={handleViewAllInteractionsClick} */}
-                {/* > */}
-                {/*   <MessageSquare size={16} /> */}
-                {/*   <span>Ver todas</span> */}
-                {/* </Button> */}
+                <Button
+                  size="sm"
+                  className="gap-1"
+                  variant="outline"
+                  onClick={handleViewAllInteractionsClick}
+                >
+                  <MessageSquare size={16} />
+                  <span>Ver todas</span>
+                </Button>
                 <Button
                   size="sm"
                   className="gap-1"

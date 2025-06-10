@@ -52,21 +52,45 @@ export const editInteractionById = async (
 ) => {
   // 1. Validación y limpieza de datos
   const content = formData.get("content")?.toString().trim();
+  const rawAttachment = formData.get("attachment");
+  const removeAttachment = formData.get("removeAttachment");
 
   if (!content || content.length === 0) {
     throw new Error("El contenido no puede estar vacío");
   }
 
   try {
+    // Preparar los datos de actualización
+    const updateData: any = {
+      content,
+      updatedAt: new Date(),
+    };
+
+    // Manejar attachment si existe
+    if (rawAttachment && typeof rawAttachment === "string" && rawAttachment !== "") {
+      try {
+        const attachment = JSON.parse(rawAttachment) as Attachment;
+        updateData.attachmentUrl = attachment.attachmentUrl;
+        updateData.attachmentName = attachment.attachmentName;
+        updateData.attachmentType = attachment.attachmentType;
+      } catch (error) {
+        console.error("Error parsing attachment JSON:", error);
+      }
+    }
+
+    // Manejar eliminación de attachment
+    if (removeAttachment === "true") {
+      updateData.attachmentUrl = null;
+      updateData.attachmentName = null;
+      updateData.attachmentType = null;
+    }
+
     // 3. Verificar existencia y actualizar en una sola operación
     const updatedInteraction = await prisma.contactInteraction.update({
       where: {
         id: interactionId,
       },
-      data: {
-        content,
-        updatedAt: new Date(), // Buena práctica actualizar timestamp
-      },
+      data: updateData,
       include: {
         contacto: true,
         autor: true,
@@ -171,19 +195,13 @@ export const getAllInteractionsByLeadId = async (
   leadId: string,
 ): Promise<ContactInteractionWithRelations[]> => {
   try {
-    console.log("=== INICIO DEBUG getAllInteractionsByLeadId ===");
-    console.log("Lead ID recibido:", leadId);
-    
     const session = await auth();
-    console.log("Session obtenida:", session?.user?.id ? `Usuario: ${session.user.id}` : "No hay sesión");
     
     if (!session) {
-      console.log("ERROR: No hay sesión");
       throw new Error("No autorizado");
     }
 
-    // Verificar que el lead existe (temporalmente sin verificar usuario para debug)
-    console.log("Buscando lead...");
+    // Verificar que el lead existe y obtener información básica
     const lead = await prisma.lead.findFirst({
       where: {
         id: leadId,
@@ -193,26 +211,34 @@ export const getAllInteractionsByLeadId = async (
       },
     });
 
-    console.log("Lead encontrado:", lead ? `${lead.empresa} - Generador: ${lead.generadorLeads.name} (${lead.generadorLeads.id})` : "No encontrado");
-
     if (!lead) {
-      console.log("ERROR: Lead no encontrado");
       throw new Error("Lead no encontrado");
     }
 
-    // Verificación de permisos (comentada temporalmente para debug)
-    console.log("Usuario actual:", session.user.id);
-    console.log("Generador del lead:", lead.generadorId);
-    console.log("¿Coinciden?", session.user.id === lead.generadorId);
-    
-    /*
-    if (lead.generadorId !== session.user.id) {
-      console.log("ERROR: Usuario no tiene permisos para este lead");
+    // Obtener información del usuario actual con su rol
+    const currentUser = await prisma.user.findUnique({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!currentUser) {
+      throw new Error("Usuario no encontrado");
+    }
+
+    // Verificación de permisos - el generador del lead o un Admin pueden ver las interacciones
+    const isLeadOwner = lead.generadorId === session.user.id;
+    const isAdmin = currentUser.role === "Admin";
+
+    if (!isLeadOwner && !isAdmin) {
       throw new Error("Sin permisos para este lead");
     }
-    */
 
-    console.log("Obteniendo interacciones...");
+    // Obtener todas las interacciones de los contactos de este lead
     const result = await prisma.contactInteraction.findMany({
       where: {
         contacto: {
@@ -228,13 +254,10 @@ export const getAllInteractionsByLeadId = async (
       },
     });
 
-    console.log(`Interacciones encontradas: ${result.length}`);
-    console.log("=== FIN DEBUG getAllInteractionsByLeadId ===");
-
     return result;
   } catch (err) {
-    console.error("Error completo en getAllInteractionsByLeadId:", err);
-    throw new Error("Error al obtener las interacciones del lead");
+    console.error("Error en getAllInteractionsByLeadId:", err);
+    throw new Error(err instanceof Error ? err.message : "Error al obtener las interacciones del lead");
   }
 };
 
@@ -246,15 +269,37 @@ export const getContactosByLeadId = async (leadId: string) => {
       throw new Error("No autorizado");
     }
 
-    // Verificar que el lead existe y pertenece al usuario
+    // Verificar que el lead existe y obtener información básica
     const lead = await prisma.lead.findFirst({
       where: {
         id: leadId,
-        generadorId: session.user.id,
       },
     });
 
     if (!lead) {
+      throw new Error("Lead no encontrado");
+    }
+
+    // Obtener información del usuario actual con su rol
+    const currentUser = await prisma.user.findUnique({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!currentUser) {
+      throw new Error("Usuario no encontrado");
+    }
+
+    // Verificación de permisos - el generador del lead o un Admin pueden acceder
+    const isLeadOwner = lead.generadorId === session.user.id;
+    const isAdmin = currentUser.role === "Admin";
+
+    if (!isLeadOwner && !isAdmin) {
       throw new Error("Lead no encontrado o sin permisos");
     }
 

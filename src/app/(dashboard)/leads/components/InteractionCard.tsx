@@ -116,14 +116,10 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
             setIsAttachmentChanged,
           )
         }
-        handleDeleteFile={(fileName) =>
-          handleDeleteFile(
-            fileName,
-            interaction.id,
-            setAttachmentInfo,
-            setInteractions,
-          )
-        }
+        handleDeleteFile={() => {
+          setAttachmentInfo(null);
+          setIsAttachmentChanged(true);
+        }}
       />
     </>
   );
@@ -348,7 +344,7 @@ const EditInteractionDialog = ({
   handleNewFileChange: (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => Promise<void>;
-  handleDeleteFile: (fileName: string) => Promise<void>;
+  handleDeleteFile: () => void;
 }) => {
   const getFileIcon = () => {
     const fileType = attachmentInfo?.attachmentType || "";
@@ -409,11 +405,7 @@ const EditInteractionDialog = ({
                           <ConfirmDialog
                             title="¿Seguro que desea eliminar el archivo?"
                             description="Esta acción no puede deshacerse y eliminará permanentemente el archivo."
-                            onConfirm={async () => {
-                              await handleDeleteFile(
-                                interaction.attachmentUrl!,
-                              );
-                            }}
+                            onConfirm={async () => handleDeleteFile()}
                             trigger={
                               <Button
                                 size="icon"
@@ -638,7 +630,8 @@ const handleNewFileChange = async (
   }
 };
 
-const handleDeleteFile = async (
+// Función para eliminar completamente un archivo (fuera del contexto de edición)
+const handleDeleteFileCompletely = async (
   fileName: string,
   interactionId: string,
   setAttachmentInfo: React.Dispatch<React.SetStateAction<Attachment | null>>,
