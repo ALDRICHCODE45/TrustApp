@@ -297,10 +297,6 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       return submission.reply();
     }
 
-    if (submission.value.generadorId && sesion.user.role !== Role.Admin) {
-      throw Error("No tienes los privilegios para reasignar el role");
-    }
-
     const existingLead = await prisma.lead.findUnique({
       where: {
         id: leadId,
@@ -316,12 +312,12 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     }
 
     // Modificado: Si NO es admin Y además no es el creador del lead, entonces no puede modificarlo
-    if (
-      sesion.user.role !== Role.Admin &&
-      sesion.user.id !== existingLead.generadorId
-    ) {
-      throw new Error("No puedes modificar este lead");
-    }
+    // if (
+    //   sesion.user.role !== Role.Admin &&
+    //   sesion.user.id !== existingLead.generadorId
+    // ) {
+    //   throw new Error("No puedes modificar este lead");
+    // }
 
     // Verificamos si el status está cambiando
     const newStatus = submission.value.status;
