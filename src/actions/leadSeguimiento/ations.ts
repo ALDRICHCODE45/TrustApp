@@ -67,7 +67,11 @@ export const editInteractionById = async (
     };
 
     // Manejar attachment si existe
-    if (rawAttachment && typeof rawAttachment === "string" && rawAttachment !== "") {
+    if (
+      rawAttachment &&
+      typeof rawAttachment === "string" &&
+      rawAttachment !== ""
+    ) {
       try {
         const attachment = JSON.parse(rawAttachment) as Attachment;
         updateData.attachmentUrl = attachment.attachmentUrl;
@@ -196,7 +200,7 @@ export const getAllInteractionsByLeadId = async (
 ): Promise<ContactInteractionWithRelations[]> => {
   try {
     const session = await auth();
-    
+
     if (!session) {
       throw new Error("No autorizado");
     }
@@ -215,29 +219,6 @@ export const getAllInteractionsByLeadId = async (
       throw new Error("Lead no encontrado");
     }
 
-    // Obtener información del usuario actual con su rol
-    const currentUser = await prisma.user.findUnique({
-      where: {
-        id: session.user.id,
-      },
-      select: {
-        id: true,
-        role: true,
-      },
-    });
-
-    if (!currentUser) {
-      throw new Error("Usuario no encontrado");
-    }
-
-    // Verificación de permisos - el generador del lead o un Admin pueden ver las interacciones
-    const isLeadOwner = lead.generadorId === session.user.id;
-    const isAdmin = currentUser.role === "Admin";
-
-    if (!isLeadOwner && !isAdmin) {
-      throw new Error("Sin permisos para este lead");
-    }
-
     // Obtener todas las interacciones de los contactos de este lead
     const result = await prisma.contactInteraction.findMany({
       where: {
@@ -250,14 +231,18 @@ export const getAllInteractionsByLeadId = async (
         autor: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     return result;
   } catch (err) {
     console.error("Error en getAllInteractionsByLeadId:", err);
-    throw new Error(err instanceof Error ? err.message : "Error al obtener las interacciones del lead");
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "Error al obtener las interacciones del lead",
+    );
   }
 };
 
@@ -314,12 +299,12 @@ export const getContactosByLeadId = async (leadId: string) => {
             contacto: true,
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
       },
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     });
 

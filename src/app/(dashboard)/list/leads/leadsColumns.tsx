@@ -8,13 +8,14 @@ import { LeadChangeStatus } from "./components/LeadChangeStatus";
 import { GeneradorDropdownSelect } from "./components/GeneradorDropdownSelect";
 import { LeadWithRelations } from "../../leads/kanban/page";
 import { Button } from "@/components/ui/button";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Link from "next/link";
 
 // Declaración de módulo corregida
 declare module "@tanstack/react-table" {
@@ -107,9 +108,9 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
         <div className="flex gap-2 items-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <a href={link} target="_blank" className="underline">
+              <Link href={link} target="_blank" className="underline">
                 <Globe size={17} />
-              </a>
+              </Link>
             </TooltipTrigger>
             <TooltipContent>
               <p>{link}</p>

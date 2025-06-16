@@ -152,31 +152,33 @@ export function LeadSheet({ lead }: Props) {
           </div>
 
           {/* Tabs para la información adicional */}
-          <div className="flex-grow overflow-y-auto">
-            <Tabs defaultValue="contacts" className="mt-4">
+          <div className="flex-grow ">
+            <Tabs defaultValue="contacts" className="mt-4 z-50">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="contacts">Contactos</TabsTrigger>
                 <TabsTrigger value="history">Historial</TabsTrigger>
               </TabsList>
-              <TabsContent value="contacts" className="py-4">
-                {contactos?.length > 0 ? (
-                  <div className="space-y-4">
-                    {contactos.map((contacto) => (
-                      <ContactoCard
-                        contacto={contacto}
-                        key={contacto.id}
-                        onUpdateContacts={setContactos}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col justify-center items-center gap-2 py-8">
-                    <UserX size={40} className="text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground text-center">
-                      No hay contactos disponibles.
-                    </p>
-                  </div>
-                )}
+              <TabsContent value="contacts" className="py-4 z-[9999px]">
+                <ScrollArea className="h-[400px]">
+                  {contactos?.length > 0 ? (
+                    <div className="space-y-4">
+                      {contactos.map((contacto) => (
+                        <ContactoCard
+                          contacto={contacto}
+                          key={contacto.id}
+                          onUpdateContacts={setContactos}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col justify-center items-center gap-2 py-8">
+                      <UserX size={40} className="text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground text-center">
+                        No hay contactos disponibles.
+                      </p>
+                    </div>
+                  )}
+                </ScrollArea>
               </TabsContent>
               <TabsContent value="history" className="py-4">
                 <ScrollArea className="h-80 rounded-md border p-3">

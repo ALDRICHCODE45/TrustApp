@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { User } from "@prisma/client";
+import { createLog } from "@/actions/logs/actions";
 
 export function NavUser({
   user,
@@ -30,6 +31,16 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const name = user.name;
+
+  const handleLogOut = async () => {
+    signOut();
+    try {
+      //TODO: Implementar og
+      //await createLog();
+    } catch (err) {
+      throw new Error("Error al crear el log");
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -103,7 +114,7 @@ export function NavUser({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => signOut()}
+                onClick={handleLogOut}
                 className="cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />

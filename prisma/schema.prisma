@@ -48,6 +48,7 @@ model User {
   Task      Task[]
   LeadStatusHistory   LeadStatusHistory[] // Nueva relación
   ContactInteraction  ContactInteraction[] // Nueva relación para las interacciones con contactos
+  Logs Log[]
 }
 
 // Modelo para registrar historial de cambios de estado de leads
@@ -162,6 +163,31 @@ model Task {
   createdAt    DateTime   @default(now())
 }
 
+enum LogAction {
+  Publicar
+  Eliminar
+  Actualizar
+  Ingresar
+}
+
+
+enum LogModule {
+  Leads
+  Reclutamiento
+  Sistema
+  Usuarios
+}
+
+model Log {
+  id        String    @id @default(cuid())
+  autor     User      @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  autorId   String
+  action    LogAction
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  file      String?
+  logModule LogModule @default(Sistema)
+}
 
 // Nuevo modelo para las interacciones con contactos
 model ContactInteraction {
@@ -181,3 +207,8 @@ model ContactInteraction {
   
   @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
 }
+
+
+
+
+

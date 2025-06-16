@@ -485,7 +485,7 @@ const EmptyState = ({ type }: { type: TaskStatus }) => {
   );
 };
 
-// Componente de lista de actividades
+// Componente de lista de actividades CORREGIDO
 const ActivitiesList = ({
   activities,
   onToggleStatus,
@@ -498,28 +498,29 @@ const ActivitiesList = ({
   onEdit: (id: string, editData: EditData) => void;
 }) => {
   return (
-    <ScrollArea className="max-h-[500px] rounded-md border p-2 overflow-y-auto">
-      <div className="space-y-3 pr-4">
-        {activities.length > 0 ? (
-          activities.map((activity) => (
-            <ActivityCard
-              onEdit={onEdit}
-              key={activity.id}
-              activity={activity}
-              onToggleStatus={onToggleStatus}
-              onDelete={onDelete}
+    <div className="h-[500px] w-full">
+      <ScrollArea className="h-full w-full rounded-md border">
+        <div className="p-4 space-y-3">
+          {activities.length > 0 ? (
+            activities.map((activity) => (
+              <ActivityCard
+                onEdit={onEdit}
+                key={activity.id}
+                activity={activity}
+                onToggleStatus={onToggleStatus}
+                onDelete={onDelete}
+              />
+            ))
+          ) : (
+            <EmptyState
+              type={activities[0]?.status === "Done" ? "Done" : "Pending"}
             />
-          ))
-        ) : (
-          <EmptyState
-            type={activities[0]?.status === "Done" ? "Done" : "Pending"}
-          />
-        )}
-      </div>
-    </ScrollArea>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 };
-
 // Componente principal
 export const ActivityProfileSheet = ({
   user,

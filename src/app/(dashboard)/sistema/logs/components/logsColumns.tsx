@@ -1,15 +1,25 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
-import { Log } from "@/lib/data";
+import { Prisma } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { UserCog, File, Fingerprint, Clock, Calendar } from "lucide-react";
+import { LogsColumnsActions } from "./logColumnsActions";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-export const logsColumns: ColumnDef<Log>[] = [
+export type LogWithRelations = Prisma.LogGetPayload<{
+  include: {
+    autor: true;
+  };
+}>;
+
+export const logsColumns: ColumnDef<LogWithRelations>[] = [
   {
-    accessorKey: "userId",
+    accessorKey: "autorId",
     header: "User Id",
     cell: ({ row }) => {
-      const userId = row.original.userId as number;
+      const userId = row.original.autorId as string;
       return (
         <div className="flex flex-row gap-2 items-center">
           <Fingerprint size={18} />
@@ -19,10 +29,10 @@ export const logsColumns: ColumnDef<Log>[] = [
     },
   },
   {
-    accessorKey: "username",
+    accessorKey: "autor",
     header: "Nombre del Usuario",
     cell: ({ row }) => {
-      const username = row.original.username as string;
+      const username = row.original.autor.name as string;
       return (
         <div className="flex flex-row gap-2 items-center">
           <UserCog size={18} />
@@ -48,42 +58,68 @@ export const logsColumns: ColumnDef<Log>[] = [
     },
   },
   {
-    accessorKey: "fileName",
+    accessorKey: "file",
     header: "Archivo",
     cell: ({ row }) => {
-      const fileName = row.original.fileName;
+      const fileName = row.original.file;
       return (
         <div className="flex gap-2 items-center">
-          <File size={18} />
-          <span>{fileName}</span>
+          {typeof fileName === "string" && fileName.length > 0 ? (
+            <>
+              <Link href={fileName} target="_blank">
+                <File size={18} />
+              </Link>
+            </>
+          ) : (
+            <span className="text-muted-foreground italic">Sin archivo</span>
+          )}
         </div>
       );
     },
   },
   {
-    accessorKey: "fecha",
+    accessorKey: "logModule",
+    header: "Modulo",
+    cell: ({ row }) => {
+      const logModule = row.original.logModule;
+      return (
+        <>
+          <Button variant="outline">{logModule}</Button>
+        </>
+      );
+    },
+  },
+  {
+    accessorKey: "createdAt",
     header: "Fecha",
     cell: ({ row }) => {
-      const fecha = row.original.fecha;
+      const fecha = row.original.createdAt;
       return (
         <div className="flex gap-2 items-center">
           <Calendar size={18} />
-          <span>{fecha}</span>
+          <span>{format(fecha, "dd/mm/yyyy")}</span>
         </div>
       );
     },
   },
   {
-    accessorKey: "hora",
+    id: "Hora",
     header: "Hora",
     cell: ({ row }) => {
-      const hora = row.original.hora;
+      const hora = row.original.createdAt;
       return (
         <div className="flex items-center gap-2">
           <Clock size={18} />
-          <span>{hora}</span>
+          <span>{format(hora, "h:mmaaa")}</span>
         </div>
       );
+    },
+  },
+
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      return <LogsColumnsActions row={row} />;
     },
   },
 ];

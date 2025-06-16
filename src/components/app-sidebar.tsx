@@ -164,19 +164,19 @@ const data: {
         // },
       ],
     },
-    // {
-    //   title: "Sistema",
-    //   url: "",
-    //   icon: UserRoundCog,
-    //   roles: [Role.Admin],
-    //   items: [
-    //     {
-    //       title: "Logs",
-    //       url: "/sistema/logs",
-    //       roles: [Role.Admin],
-    //     },
-    //   ],
-    // },
+    {
+      title: "Sistema",
+      url: "",
+      icon: UserRoundCog,
+      roles: [Role.Admin],
+      items: [
+        {
+          title: "Logs",
+          url: "/sistema/logs",
+          roles: [Role.Admin],
+        },
+      ],
+    },
     // {
     //   title: "Finanzas",
     //   url: "",

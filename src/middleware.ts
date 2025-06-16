@@ -7,7 +7,7 @@ export default async function middleware(request: Request) {
 
   // Rutas públicas que no requieren autenticación
   const publicPaths = ["/sign-in", "/api/auth"];
-  if (publicPaths.some(path => pathname.startsWith(path))) {
+  if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
