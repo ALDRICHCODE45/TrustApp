@@ -17,6 +17,7 @@ import { AttendanceChart } from "@/components/AttendanceChart";
 import { LeadPerformanceChart } from "../components/PerformanceChart";
 import { unstable_noStore as noStore } from "next/cache";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TaskWithUsers } from "../../list/reclutamiento/components/ActivityProfileSheet";
 
 const fetchDoneTasksByUserId = async (userId: string) => {
   noStore();
@@ -55,9 +56,7 @@ export type TasksWithRelations = Prisma.TaskGetPayload<{
   };
 }>;
 
-const fetchTasksById = async (
-  userId: string,
-): Promise<TasksWithRelations[]> => {
+const fetchTasksById = async (userId: string): Promise<TaskWithUsers[]> => {
   noStore();
   try {
     const tasks = await prisma.task.findMany({
@@ -66,6 +65,7 @@ const fetchTasksById = async (
       },
       include: {
         assignedTo: true,
+        notificationRecipients: true,
       },
     });
     return tasks;

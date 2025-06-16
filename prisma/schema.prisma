@@ -49,6 +49,8 @@ model User {
   LeadStatusHistory   LeadStatusHistory[] // Nueva relación
   ContactInteraction  ContactInteraction[] // Nueva relación para las interacciones con contactos
   Logs Log[]
+  notifications Notification[]
+  taskNotifications Task[] @relation("TaskNotificationRecipients")
 }
 
 // Modelo para registrar historial de cambios de estado de leads
@@ -161,6 +163,9 @@ model Task {
   status       TaskStatus @default(Pending)
   dueDate      DateTime
   createdAt    DateTime   @default(now())
+  notifications Notification[]
+  notifyOnComplete Boolean @default(false)
+  notificationRecipients User[] @relation("TaskNotificationRecipients")
 }
 
 enum LogAction {
@@ -208,7 +213,29 @@ model ContactInteraction {
   @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
 }
 
+enum NotificationType {
+  TASK_INITIALIZED
+  TASK_COMPLETED
+  TASK_OVERDUE
+  EDIT
+}
 
+enum NotificationStatus {
+  UNREAD
+  READ
+}
 
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  status      NotificationStatus @default(UNREAD)
+  message     String
+  task        Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      String?
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
-
+  @@index([recipientId, status])
+}

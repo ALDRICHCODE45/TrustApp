@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { checkSession } from "@/hooks/auth/checkSession";
-import { Role, TaskStatus } from "@prisma/client";
+import { NotificationType, Role, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 // getTaskByDate - Para obtener tareas de una fecha específica
@@ -99,6 +99,19 @@ export const createTask = async (formData: FormData) => {
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const dueDate = formData.get("dueDate") as string;
+  const notifyOnComplete = formData.get("notifyOnComplete") === "true";
+  const notificationRecipients = formData.getAll(
+    "notificationRecipients",
+  ) as string[];
+
+  console.log("ServerData", {
+    userId,
+    title,
+    description,
+    dueDate,
+    notifyOnComplete,
+    notificationRecipients,
+  });
 
   if (!userId) {
     return {
@@ -121,21 +134,44 @@ export const createTask = async (formData: FormData) => {
       };
     }
 
-    const task = await prisma.task.create({
-      data: {
-        description,
-        dueDate,
-        title,
-        assignedToId: userId,
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      // 1. Crear tarea
+      const task = await prisma.task.create({
+        data: {
+          description,
+          dueDate,
+          title,
+          assignedToId: userId,
+          notifyOnComplete,
+          notificationRecipients: {
+            connect: notificationRecipients.map((id) => ({ id })),
+          },
+        },
+        select: {
+          id: true,
 
-    if (!task) {
-      return {
-        ok: false,
-        message: "Error creando la tarea",
-      };
-    }
+          assignedTo: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      // 2. Crear notificaciones
+      if (notificationRecipients.length > 0) {
+        for (const recipientId of notificationRecipients) {
+          await prisma.notification.create({
+            data: {
+              type: "TASK_INITIALIZED",
+              message: `El usuario ${task.assignedTo.name} ha iniciado una tarea compartida`,
+              taskId: task.id,
+              recipientId: recipientId,
+            },
+          });
+        }
+      }
+    });
 
     revalidatePath(`/profile/${userId}`);
     return {
@@ -165,6 +201,10 @@ export const editTask = async (taskId: string, formData: FormData) => {
       where: {
         id: taskId,
       },
+      include: {
+        notificationRecipients: true,
+        assignedTo: true,
+      },
     });
 
     if (!existingTask) {
@@ -184,6 +224,19 @@ export const editTask = async (taskId: string, formData: FormData) => {
       },
     });
 
+    if (existingTask.notificationRecipients.length > 0) {
+      for (const recipientId of existingTask.notificationRecipients) {
+        await prisma.notification.create({
+          data: {
+            type: NotificationType.TASK_COMPLETED,
+            message: `El usuario ${existingTask.assignedTo.name} ha editado tarea compartida`,
+            taskId: existingTask.id,
+            recipientId: recipientId.id,
+          },
+        });
+      }
+    }
+
     revalidatePath(`/profile/${userId}`);
   } catch (error) {
     console.log(error);
@@ -193,13 +246,6 @@ export const editTask = async (taskId: string, formData: FormData) => {
 
 export const deleteTask = async (userId: string, taskId: string) => {
   const session = await checkSession();
-
-  if (session.user.role !== Role.Admin) {
-    return {
-      ok: false,
-      message: "No puedes eliminar la tarea",
-    };
-  }
 
   try {
     const taskToDelete = await prisma.task.findUnique({
@@ -212,6 +258,14 @@ export const deleteTask = async (userId: string, taskId: string) => {
       return {
         ok: false,
         message: "La tarea no existe.",
+      };
+    }
+
+    // Verificar si el usuario es el propietario de la tarea o es administrador
+    if (taskToDelete.assignedToId !== userId && session.user.role !== Role.Admin) {
+      return {
+        ok: false,
+        message: "No tienes permiso para eliminar esta tarea",
       };
     }
 
@@ -230,7 +284,7 @@ export const deleteTask = async (userId: string, taskId: string) => {
     console.log(error);
     return {
       ok: false,
-      message: "Error al editar la tarea",
+      message: "Error al eliminar la tarea",
     };
   }
 };
@@ -243,6 +297,10 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
     const existingTask = await prisma.task.findUnique({
       where: {
         id: taskId,
+      },
+      include: {
+        notificationRecipients: true,
+        assignedTo: true,
       },
     });
 
@@ -267,6 +325,19 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
         status: statusToUpdate,
       },
     });
+
+    if (existingTask.notificationRecipients.length > 0) {
+      for (const recipientId of existingTask.notificationRecipients) {
+        await prisma.notification.create({
+          data: {
+            type: NotificationType.TASK_COMPLETED,
+            message: `El usuario ${existingTask.assignedTo.name} ha completado una tarea compartida`,
+            taskId: existingTask.id,
+            recipientId: recipientId.id,
+          },
+        });
+      }
+    }
 
     revalidatePath(`/profile/${userId}`);
     return {

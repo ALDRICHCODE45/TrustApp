@@ -7,7 +7,10 @@ import Lightbox from "yet-another-react-lightbox-lite";
 import "yet-another-react-lightbox-lite/styles.css";
 import { Badge } from "@/components/ui/badge";
 import { EditUserProfile } from "@/app/(dashboard)/list/users/components/EditUserDropDown";
-import { ActivityProfileSheet } from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
+import {
+  ActivityProfileSheet,
+  TaskWithUsers,
+} from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
 import { ChangePassword } from "@/app/(dashboard)/list/users/components/ChangePassword";
 
@@ -24,7 +27,7 @@ export const UserProfileHeader = ({
 }: {
   user: User;
   isAdmin: boolean;
-  tasks: Task[];
+  tasks: TaskWithUsers[];
   activeUserId: string;
 }) => {
   const [index, setIndex] = useState<number>();

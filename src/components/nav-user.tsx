@@ -20,7 +20,6 @@ import {
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { User } from "@prisma/client";
-import { createLog } from "@/actions/logs/actions";
 
 export function NavUser({
   user,
@@ -35,7 +34,7 @@ export function NavUser({
   const handleLogOut = async () => {
     signOut();
     try {
-      //TODO: Implementar og
+      //TODO: Implementar log
       //await createLog();
     } catch (err) {
       throw new Error("Error al crear el log");
@@ -44,7 +43,7 @@ export function NavUser({
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
+      <SidebarMenuItem className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
@@ -97,7 +96,9 @@ export function NavUser({
                     alt={user.name!!}
                     className="object-cover"
                   />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {name ? name.slice(0, 2).toUpperCase() : "??"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>

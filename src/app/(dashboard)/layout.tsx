@@ -58,7 +58,7 @@ export default async function Layout({ children }: LayoutProps) {
       <SidebarProvider>
         <AppSidebar user={user} hasPendingTasks={hasPendingTasks} />
         <SidebarInset>
-          <ClientLayout>{children}</ClientLayout>
+          <ClientLayout user={user}>{children}</ClientLayout>
         </SidebarInset>
       </SidebarProvider>
     </>

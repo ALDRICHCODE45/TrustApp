@@ -18,12 +18,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { User } from "@prisma/client";
 
 interface ClientLayoutProps {
   children: ReactNode;
+  user: User;
 }
 
-export function ClientLayout({ children }: ClientLayoutProps) {
+export function ClientLayout({ children, user }: ClientLayoutProps) {
   const router = useRouter();
   const pathName = usePathname();
   let currentUrl = pathName.split("/").at(-1);
@@ -78,14 +81,18 @@ export function ClientLayout({ children }: ClientLayoutProps) {
           </Breadcrumb>
         </div>
         {/* Right side of navbar - add user profile or actions */}
-        <div className="flex items-center">
-          <Image
-            src="/trust-logo.webp"
-            alt="Trust Logo"
-            className=" rounded-full object-cover"
-            width={45}
-            height={45}
-          />
+        <div className="flex gap-5 items-center">
+          <NotificationDropdown userId={user.id} />
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center">
+            <Image
+              src="/trust-logo.webp"
+              alt="Trust Logo"
+              className=" rounded-full object-cover"
+              width={45}
+              height={45}
+            />
+          </div>
         </div>
       </header>
       {/* Content container with better padding */}

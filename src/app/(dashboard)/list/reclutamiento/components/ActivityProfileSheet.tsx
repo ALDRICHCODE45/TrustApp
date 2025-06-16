@@ -14,7 +14,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Task, TaskStatus, User } from "@prisma/client";
+import { Prisma, Task, TaskStatus, User } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -30,8 +30,10 @@ import {
   SquarePen,
   Trash2,
   XCircle,
+  X,
+  BellRing,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -77,6 +79,20 @@ import {
   editTask,
   toggleTaskStatus,
 } from "@/actions/tasks/actions";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
 
 // Interfaces
 export interface Activity {
@@ -91,6 +107,12 @@ interface EditData {
   description?: string;
   dueDate?: Date;
 }
+export type TaskWithUsers = Prisma.TaskGetPayload<{
+  include: {
+    assignedTo: true;
+    notificationRecipients: true;
+  };
+}>;
 
 // Componente para formatear fechas
 const FormattedDate = ({ dateString }: { dateString: string }) => {
@@ -115,7 +137,7 @@ const EditActivityDialog = ({
 }: {
   activityId: string;
   onEdit: (id: string, EditData: EditData) => void;
-  activity: Task;
+  activity: TaskWithUsers;
 }) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(activity.title || "");
@@ -294,7 +316,7 @@ const ActivityActions = ({
   onDelete,
   onEdit,
 }: {
-  activity: Task;
+  activity: TaskWithUsers;
   onToggleStatus: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, editData: EditData) => void;
@@ -376,7 +398,7 @@ const ActivityCard = ({
   onDelete,
   onEdit,
 }: {
-  activity: Task;
+  activity: TaskWithUsers;
   onToggleStatus: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, editData: EditData) => void;
@@ -457,6 +479,31 @@ const ActivityCard = ({
               )}
             </div>
           )}
+          {activity.notificationRecipients.length > 0 ? (
+            <div className="flex -space-x-[0.650rem] mt-3">
+              {activity.notificationRecipients.map((user) => (
+                <Tooltip key={user.id}>
+                  <TooltipTrigger>
+                    <Link href={`/profile/${user.id}`}>
+                      <img
+                        className="ring-background rounded-full ring-2"
+                        src={
+                          user.image ??
+                          `https://gremcorpsarpg.com/images/avatars/default.jpg `
+                        }
+                        width={28}
+                        height={28}
+                        alt="Avatar 01"
+                      />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <span>{user.name}</span>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          ) : null}
         </div>
         <ActivityActions
           activity={activity}
@@ -492,7 +539,7 @@ const ActivitiesList = ({
   onDelete,
   onEdit,
 }: {
-  activities: Task[];
+  activities: TaskWithUsers[];
   onToggleStatus: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, editData: EditData) => void;
@@ -527,7 +574,7 @@ export const ActivityProfileSheet = ({
   tasks,
 }: {
   user: User;
-  tasks: Task[];
+  tasks: TaskWithUsers[];
 }) => {
   // Función para cambiar el estado de una actividad
   const toggleActivityStatus = async (taskId: string) => {
@@ -572,12 +619,22 @@ export const ActivityProfileSheet = ({
     title: string;
     description: string;
     dueDate: Date;
+    notifyOnComplete: boolean;
+    notificationRecipients: string[];
   }) => {
     const formData = new FormData();
     formData.append("title", activityData.title);
     formData.append("description", activityData.description);
     formData.append("dueDate", activityData.dueDate.toISOString());
     formData.append("userId", user.id);
+    formData.append(
+      "notifyOnComplete",
+      activityData.notifyOnComplete.toString(),
+    );
+    activityData.notificationRecipients.forEach((recipientId) => {
+      formData.append("notificationRecipients", recipientId);
+    });
+    console.log("Client Data: ", { formData });
 
     try {
       const { ok, message } = await createTask(formData);
@@ -684,6 +741,8 @@ interface AddActivityDialogProps {
     title: string;
     description: string;
     dueDate: Date;
+    notifyOnComplete: boolean;
+    notificationRecipients: string[];
   }) => void;
 }
 
@@ -694,6 +753,23 @@ export const AddActivityDialog = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    // Cargar usuarios para el selector
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
+        setUsers(data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -719,19 +795,20 @@ export const AddActivityDialog = ({
       return;
     }
 
-    // Formatear la fecha a YYYY-MM-DD para consistencia con el formato existente
-    const formattedDate = format(date, "yyyy-MM-dd");
-
     onAddActivity({
       title,
       description,
       dueDate: date,
+      notifyOnComplete: notificationsEnabled,
+      notificationRecipients: selectedUsers,
     });
 
     // Limpiar el formulario
     setTitle("");
     setDescription("");
     setDate(new Date());
+    setNotificationsEnabled(false);
+    setSelectedUsers([]);
     setOpen(false);
   };
 
@@ -808,6 +885,85 @@ export const AddActivityDialog = ({
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between space-x-2">
+                <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
+                  <Switch
+                    id="notifications"
+                    className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2 data-[state=checked]:[&_span]:rtl:-translate-x-2"
+                    aria-describedby={`$notifications-description`}
+                    checked={notificationsEnabled}
+                    onCheckedChange={setNotificationsEnabled}
+                  />
+                  <div className="flex grow items-center gap-3">
+                    <BellRing />
+                    <div className="grid grow gap-2">
+                      <Label htmlFor="notifications">
+                        Notificar{" "}
+                        <span className="text-muted-foreground text-xs leading-[inherit] font-normal">
+                          (Al completar)
+                        </span>
+                      </Label>
+                      <p
+                        id={`$notifications-description`}
+                        className="text-muted-foreground text-xs"
+                      >
+                        Al activar esta opcion los usuarios seran notificados
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {notificationsEnabled && (
+                <div className="space-y-2">
+                  <Label>Destinatarios de la notificación</Label>
+                  <Select
+                    onValueChange={(value) => {
+                      if (!selectedUsers.includes(value)) {
+                        setSelectedUsers([...selectedUsers, value]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar usuarios" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[9999]">
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedUsers.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedUsers.map((userId) => {
+                        const user = users.find((u) => u.id === userId);
+                        return (
+                          <Badge
+                            key={userId}
+                            variant="secondary"
+                            className="flex items-center gap-1"
+                          >
+                            {user?.name}
+                            <X
+                              className="h-3 w-3 cursor-pointer"
+                              onClick={() =>
+                                setSelectedUsers(
+                                  selectedUsers.filter((id) => id !== userId),
+                                )
+                              }
+                            />
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
