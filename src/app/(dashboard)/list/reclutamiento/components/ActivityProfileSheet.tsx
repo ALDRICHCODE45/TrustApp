@@ -93,6 +93,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import Image from "next/image";
 
 // Interfaces
 export interface Activity {
@@ -485,12 +486,9 @@ const ActivityCard = ({
                 <Tooltip key={user.id}>
                   <TooltipTrigger>
                     <Link href={`/profile/${user.id}`}>
-                      <img
+                      <Image
                         className="ring-background rounded-full ring-2"
-                        src={
-                          user.image ??
-                          `https://gremcorpsarpg.com/images/avatars/default.jpg `
-                        }
+                        src="/default.png"
                         width={28}
                         height={28}
                         alt="Avatar 01"

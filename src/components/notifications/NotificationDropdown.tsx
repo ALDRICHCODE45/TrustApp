@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "../ui/badge";
+import Image from "next/image";
 
 interface NotificationDropdownProps {
   userId: string;
@@ -274,12 +275,9 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                     <Tooltip key={user.id}>
                       <TooltipTrigger>
                         <Link href={`/profile/${user.id}`}>
-                          <img
+                          <Image
                             className="ring-background rounded-full ring-2"
-                            src={
-                              user.image ??
-                              `https://gremcorpsarpg.com/images/avatars/default.jpg`
-                            }
+                            src="/default.png"
                             width={35}
                             height={35}
                             alt={user.name}
