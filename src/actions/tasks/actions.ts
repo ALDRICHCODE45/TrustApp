@@ -104,15 +104,6 @@ export const createTask = async (formData: FormData) => {
     "notificationRecipients",
   ) as string[];
 
-  console.log("ServerData", {
-    userId,
-    title,
-    description,
-    dueDate,
-    notifyOnComplete,
-    notificationRecipients,
-  });
-
   if (!userId) {
     return {
       ok: false,
@@ -262,7 +253,10 @@ export const deleteTask = async (userId: string, taskId: string) => {
     }
 
     // Verificar si el usuario es el propietario de la tarea o es administrador
-    if (taskToDelete.assignedToId !== userId && session.user.role !== Role.Admin) {
+    if (
+      taskToDelete.assignedToId !== userId &&
+      session.user.role !== Role.Admin
+    ) {
       return {
         ok: false,
         message: "No tienes permiso para eliminar esta tarea",
@@ -331,7 +325,7 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
         await prisma.notification.create({
           data: {
             type: NotificationType.TASK_COMPLETED,
-            message: `El usuario ${existingTask.assignedTo.name} ha completado una tarea compartida`,
+            message: `El usuario ${existingTask.assignedTo.name} ha cambiado el status de una tarea compartida`,
             taskId: existingTask.id,
             recipientId: recipientId.id,
           },

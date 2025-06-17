@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  Ban,
   Bell,
   FileSymlink,
+  ListCheck,
   MoreVertical,
   Trash,
   UserSearch,
@@ -20,13 +22,15 @@ import { Notification, NotificationStatus, Prisma } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
-import { deleteNotification } from "@/actions/notifications/actions";
+import {
+  deleteNotification,
+  markAsReadNotification,
+} from "@/actions/notifications/actions";
 import Link from "next/link";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -56,6 +60,7 @@ type NotificationWithTask = Prisma.NotificationGetPayload<{
 }>;
 
 export function NotificationDropdown({ userId }: NotificationDropdownProps) {
+  const [isMarkingRead, setIsMarkingRead] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<NotificationWithTask[]>(
     [],
   );
@@ -103,6 +108,39 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
     }
   }, []);
 
+  const handleMarkAsRead = useCallback(
+    async (notificationId: string) => {
+      console.log("Reading Notification...", { notificationId });
+      if (isMarkingRead) return;
+
+      try {
+        setIsMarkingRead(true);
+        //TODO:mandar a llamar al server action
+        const { ok, message } = await markAsReadNotification(notificationId);
+        if (!ok) {
+          toast.error("Error al marcar como leida la notificacion");
+          return;
+        }
+
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((n) => {
+            if (n.id === notificationId) {
+              n.status = NotificationStatus.READ;
+            }
+            return n;
+          }),
+        );
+        toast.success("Notificacion marcada como leida");
+      } catch (err) {
+        toast.error("Error al marcar como leida la notificacion");
+        throw new Error("Error al marcar como leida");
+      } finally {
+        setIsMarkingRead(false);
+      }
+    },
+    [isMarkingRead],
+  );
+
   const handleDeleteNotification = useCallback(
     async (notificationId: string) => {
       if (isDeleting) return;
@@ -146,7 +184,8 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
       <DropdownMenuContent align="end" className="w-80">
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-5 p-4 text-center mt-10 text-sm text-muted-foreground">
+              <Ban className="text-center text-gray-400" size={25} />
               No hay notificaciones
             </div>
           ) : (
@@ -181,7 +220,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          disabled={isDeleting}
+                          disabled={isDeleting || isMarkingRead}
                         >
                           <span className="sr-only">Abrir Menú</span>
                           <MoreVertical className="text-black" />
@@ -194,7 +233,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                             handleDeleteNotification(notification.id);
                           }}
                           className="gap-2 text-red-600 hover:bg-red-50 focus:bg-red-100 cursor-pointer"
-                          disabled={isDeleting}
+                          disabled={isDeleting || isMarkingRead}
                         >
                           <Trash className="h-4 w-4" />
                           {isDeleting ? "Eliminando..." : "Eliminar"}
@@ -206,7 +245,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                             setSelectedTask(notification);
                           }}
                           className="gap-2 cursor-pointer"
-                          disabled={isDeleting}
+                          disabled={isDeleting || isMarkingRead}
                         >
                           <FileSymlink />
                           Ver tarea
@@ -214,7 +253,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
 
                         <DropdownMenuItem
                           className="gap-2 cursor-pointer"
-                          disabled={isDeleting}
+                          disabled={isDeleting || isMarkingRead}
                         >
                           <Link
                             href={`/profile/${notification.task?.assignedTo.id}`}
@@ -223,6 +262,17 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                             <UserSearch />
                             Ver usuario
                           </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMarkAsRead(notification.id);
+                          }}
+                          className="gap-2 cursor-pointer"
+                          disabled={isMarkingRead || isDeleting}
+                        >
+                          <ListCheck />
+                          {isMarkingRead ? "Cargando..." : "Marcar como leído"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
