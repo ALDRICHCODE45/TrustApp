@@ -95,8 +95,8 @@ export function EditUserProfile({
 
       toast.promise(result, {
         loading: "Cargando...",
-        success: (data) => {
-          return `La imagen ha sido removida`;
+        success: () => {
+          return "La imagen ha sido removida";
         },
         error: "Error",
       });
@@ -174,7 +174,7 @@ export function EditUserProfile({
                 open={dialogConfirmOpen}
                 onOpenChange={setDialogConfirmOpen}
               >
-                <AlertDialogContent>
+                <AlertDialogContent className="z-[99999]">
                   <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
                     <div
                       className="flex size-9 shrink-0 items-center justify-center rounded-full border"
@@ -185,8 +185,7 @@ export function EditUserProfile({
                     <AlertDialogHeader>
                       <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        ¿Estás seguro de que deseas eliminar tu cuenta? Todos
-                        tus datos serán eliminados.
+                        ¿Estás seguro de que deseas eliminar tu perfil?
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                   </div>
