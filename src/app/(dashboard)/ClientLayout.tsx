@@ -82,14 +82,7 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
         </div>
         {/* Right side of navbar - add user profile or actions */}
         <div className="flex gap-5 items-center">
-          <Tooltip>
-            <TooltipTrigger>
-              <NotificationDropdown userId={user.id} />
-            </TooltipTrigger>
-            <TooltipContent>
-              <span>Notificaciones</span>
-            </TooltipContent>
-          </Tooltip>
+          <NotificationDropdown userId={user.id} />
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center">
             <Image
