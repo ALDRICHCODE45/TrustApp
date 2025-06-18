@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Pencil, Trash } from "lucide-react";
+import { CircleAlertIcon, Loader2, Pencil, Trash } from "lucide-react";
 import { User } from "@prisma/client";
 import { deleteUserProfileImage, editUser } from "@/actions/users/create-user";
 import { useActionState, useEffect, useState } from "react";
@@ -31,6 +31,16 @@ import { editUserSchema } from "@/zod/editUserSchema";
 import { toast } from "sonner";
 import UploadProfileImage from "@/components/comp-543";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function EditUserProfile({
   user,
@@ -42,6 +52,7 @@ export function EditUserProfile({
   const { id } = useParams();
   const [canEditEmail, setCanEditEmail] = useState<boolean>(true);
   const [index, setIndex] = useState<number>();
+  const [dialogConfirmOpen, setDialogConfirmOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (user.id === activeUserId) {
@@ -80,7 +91,6 @@ export function EditUserProfile({
 
   const deleteImageProfile = async (userId: string) => {
     try {
-      //Crear el nuevo formData con la imagen vacia
       const result = deleteUserProfileImage(user.id);
 
       toast.promise(result, {
@@ -154,12 +164,42 @@ export function EditUserProfile({
                 {/* Icono de Trash que aparece en hover */}
                 <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Trash
-                    onClick={() => deleteImageProfile(user.id)}
+                    onClick={() => setDialogConfirmOpen(true)}
                     className="w-7 h-7 text-white cursor-pointer"
                     size={5}
                   />
                 </div>
               </div>
+              <AlertDialog
+                open={dialogConfirmOpen}
+                onOpenChange={setDialogConfirmOpen}
+              >
+                <AlertDialogContent>
+                  <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
+                    <div
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+                      aria-hidden="true"
+                    >
+                      <CircleAlertIcon className="opacity-80" size={16} />
+                    </div>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        ¿Estás seguro de que deseas eliminar tu cuenta? Todos
+                        tus datos serán eliminados.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteUserProfileImage(user.id)}
+                    >
+                      Confirmar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               <div className="mt-2 text-center">
                 <p className="text-sm font-medium text-gray-700">
