@@ -17,6 +17,26 @@ const s3 = new S3Client({
   },
 });
 
+export const deleteAnyFile = async (fileName: string) => {
+  try {
+    const fileKey = fileName.split("/").pop();
+
+    if (!fileKey) {
+      console.log({ fileKey });
+      throw new Error("File key error");
+    }
+    //eliminar el archivo
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.DO_SPACES_BUCKET!,
+      Key: fileKey,
+    });
+
+    await s3.send(command);
+  } catch (err) {
+    throw new Error("Error al eliminar el archivo");
+  }
+};
+
 export const deleteFile = async (fileKey: string, interactionId: string) => {
   try {
     //eliminar el archivo

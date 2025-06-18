@@ -7,6 +7,7 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { editUserSchema } from "@/zod/editUserSchema";
 import { Role } from "@prisma/client";
+import { deleteAnyFile } from "../files/actions";
 
 export const getLeadsUsers = async () => {
   try {
@@ -21,6 +22,28 @@ export const getLeadsUsers = async () => {
   } catch (err) {
     console.log(err);
     throw new Error("Error al devolver los usuarios");
+  }
+};
+
+export const deleteUserProfileImage = async (userId: string) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.image) return;
+    await deleteAnyFile(user.image);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { image: null },
+    });
+
+    revalidatePath(`/profile/${userId}`);
+    return {
+      ok: true,
+      message: "Imagen removida",
+    };
+  } catch (err) {
+    throw new Error("No se pudo eliminar la imagen");
   }
 };
 
@@ -49,6 +72,8 @@ export const editUser = async (userId: string, formData: FormData) => {
 
   if (submission.value.image) {
     if (existingUser.image) {
+      await deleteUserProfileImage(userId);
+      existingUser.image = submission.value.image;
     }
   }
 

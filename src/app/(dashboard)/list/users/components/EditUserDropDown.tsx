@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Pencil, Trash } from "lucide-react";
 import { User } from "@prisma/client";
-import { editUser } from "@/actions/users/create-user";
+import { deleteUserProfileImage, editUser } from "@/actions/users/create-user";
 import { useActionState, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useForm } from "@conform-to/react";
@@ -77,7 +77,23 @@ export function EditUserProfile({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
-  const deleteImageProfile = (userId: string) => {};
+
+  const deleteImageProfile = async (userId: string) => {
+    try {
+      //Crear el nuevo formData con la imagen vacia
+      const result = deleteUserProfileImage(user.id);
+
+      toast.promise(result, {
+        loading: "Cargando...",
+        success: (data) => {
+          return `La imagen ha sido removida`;
+        },
+        error: "Error",
+      });
+    } catch (err) {
+      toast.error("No se pudo eliminar la imagen");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -138,7 +154,8 @@ export function EditUserProfile({
                 {/* Icono de Trash que aparece en hover */}
                 <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Trash
-                    className="w-5 h-5 text-white cursor-pointer"
+                    onClick={() => deleteImageProfile(user.id)}
+                    className="w-7 h-7 text-white cursor-pointer"
                     size={5}
                   />
                 </div>
@@ -311,7 +328,7 @@ export function EditUserProfile({
                           Administrador
                         </SelectItem>
                         <SelectItem value={Role.GL} className="cursor-pointer">
-                          Gerente de Línea
+                          Generador de Leads
                         </SelectItem>
                         <SelectItem
                           value={Role.reclutador}
