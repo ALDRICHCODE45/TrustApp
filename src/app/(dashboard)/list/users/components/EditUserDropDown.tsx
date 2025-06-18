@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, Trash } from "lucide-react";
 import { User } from "@prisma/client";
 import { editUser } from "@/actions/users/create-user";
 import { useActionState, useEffect, useState } from "react";
@@ -29,6 +29,8 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { editUserSchema } from "@/zod/editUserSchema";
 import { toast } from "sonner";
+import UploadProfileImage from "@/components/comp-543";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function EditUserProfile({
   user,
@@ -39,8 +41,8 @@ export function EditUserProfile({
 }) {
   const { id } = useParams();
   const [canEditEmail, setCanEditEmail] = useState<boolean>(true);
+  const [index, setIndex] = useState<number>();
 
-  // Use useEffect to set canEditEmail based on user id comparison
   useEffect(() => {
     if (user.id === activeUserId) {
       setCanEditEmail(false);
@@ -65,7 +67,7 @@ export function EditUserProfile({
     lastResult,
     onSubmit(event, context) {
       if (context.submission?.status === "success") {
-        toast.success("Lead creado correctamente");
+        toast.success("Usuario editado exitosamente");
         setOpen(false);
       }
     },
@@ -75,6 +77,7 @@ export function EditUserProfile({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+  const deleteImageProfile = (userId: string) => {};
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -84,7 +87,7 @@ export function EditUserProfile({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="flex flex-col gap-0 overflow-y-scroll p-0 sm:max-w-lg [&>button:last-child]:top-3.5 max-h-[min(640px,80vh)]">
+      <DialogContent className="flex flex-col gap-0 overflow-y-scroll p-0 sm:max-w-4xl [&>button:last-child]:top-3.5 max-h-[min(700px,85vh)]">
         <DialogHeader className="contents space-y-0 text-left">
           <DialogTitle className="border-b border-border px-6 py-4 text-base">
             Editar Perfil
@@ -95,116 +98,180 @@ export function EditUserProfile({
         </DialogDescription>
 
         <div className="overflow-y-auto">
-          <div className="px-6 pt-4 pb-6">
+          {/* Header con Background e Imagen de Perfil */}
+          <div className="relative">
+            {/* Background Image */}
+            <div
+              className="h-48 w-full overflow-hidden"
+              style={{
+                backgroundImage: `url('/background.png')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              {/* Overlay con efecto */}
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/20 via-gray-600/20 to-gray-700/20"></div>
+
+              {/* Formas decorativas */}
+              <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute bottom-8 left-20 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+              <div className="absolute top-8 right-16 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+            </div>
+
+            {/* Avatar posicionado en el lado derecho */}
+            <div className="absolute -bottom-16 left-8 flex flex-col items-center">
+              <div className="relative group">
+                <Avatar
+                  className="w-32 h-32 border-4 border-white shadow-2xl cursor-pointer ring-4 ring-white/20 hover:ring-white/40 transition-all duration-300"
+                  onClick={() => setIndex(0)}
+                >
+                  <AvatarImage
+                    src={user?.image ? user.image : undefined}
+                    alt={user?.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl font-bold">
+                    {user?.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Icono de Trash que aparece en hover */}
+                <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <Trash
+                    className="w-5 h-5 text-white cursor-pointer"
+                    size={5}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-2 text-center">
+                <p className="text-sm font-medium text-gray-700">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-gray-500">{user?.role}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Formulario */}
+          <div className="px-6 pt-20 pb-6 mt-4">
             <form
               id={form.id}
               action={formAction}
               onSubmit={form.onSubmit}
               noValidate
-              className="space-y-4"
+              className="space-y-6"
             >
-              <div className="flex flex-col gap-3 sm:flex-row">
-                {/* Campo Nombre */}
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={fields.name.id}>Nombre</Label>
-                  <Input
-                    id={fields.name.id}
-                    name={fields.name.name}
-                    key={fields.name.key}
-                    defaultValue={user.name}
-                    placeholder="Nombre"
-                    type="text"
-                  />
-                  <p className="text-sm text-red-500">{fields.name.errors}</p>
+              {/* Información Personal */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Información Personal
+                  </h3>
                 </div>
 
-                {/* Campo Email */}
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={fields.email.id}>Correo electrónico</Label>
-                  <Input
-                    id={fields.email.id}
-                    name={fields.email.name}
-                    key={fields.email.key}
-                    defaultValue={user.email}
-                    placeholder="correo@ejemplo.com"
-                    type="email"
-                    disabled={!canEditEmail}
-                  />
-                  <p className="text-sm text-red-500">{fields.email.errors}</p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                {/* Campo Teléfono */}
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={fields.celular?.id}>Teléfono</Label>
-                  <Input
-                    id={fields.celular?.id}
-                    name={fields.celular?.name}
-                    key={fields.celular?.key}
-                    defaultValue={user.celular}
-                    placeholder="+52 55..."
-                    type="tel"
-                  />
-                  <p className="text-sm text-red-500">
-                    {fields.celular?.errors}
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Campo Nombre */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor={fields.name.id}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Nombre completo
+                    </Label>
+                    <Input
+                      id={fields.name.id}
+                      name={fields.name.name}
+                      key={fields.name.key}
+                      defaultValue={user.name}
+                      placeholder="Ingresa tu nombre completo"
+                      type="text"
+                    />
+                    <p className="text-sm text-red-500">{fields.name.errors}</p>
+                  </div>
+
+                  {/* Campo Email */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor={fields.email.id}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Correo electrónico
+                    </Label>
+                    <Input
+                      id={fields.email.id}
+                      name={fields.email.name}
+                      key={fields.email.key}
+                      defaultValue={user.email}
+                      placeholder="correo@ejemplo.com"
+                      type="email"
+                      disabled={!canEditEmail}
+                    />
+                    <p className="text-sm text-red-500">
+                      {fields.email.errors}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={fields.age?.id}>Edad</Label>
-                  <Input
-                    id={fields.age?.id}
-                    name={fields.age?.name}
-                    key={fields.age?.key}
-                    defaultValue={user.age}
-                    placeholder="23"
-                    type="text"
-                  />
-                  <p className="text-sm text-red-500">{fields.age?.errors}</p>
-                </div>
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Campo Teléfono */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor={fields.celular?.id}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Número de teléfono
+                    </Label>
+                    <Input
+                      id={fields.celular?.id}
+                      name={fields.celular?.name}
+                      key={fields.celular?.key}
+                      defaultValue={user.celular}
+                      placeholder="+52 55 1234 5678"
+                      type="tel"
+                    />
+                    <p className="text-sm text-red-500">
+                      {fields.celular?.errors}
+                    </p>
+                  </div>
 
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="w-1/2">
-                  <Label>Role</Label>
-                  <Select
-                    name={fields.role.name}
-                    key={fields.role.key}
-                    defaultValue={user.role}
+                  {/* Campo Edad */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor={fields.age?.id}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Edad
+                    </Label>
+                    <Input
+                      id={fields.age?.id}
+                      name={fields.age?.name}
+                      key={fields.age?.key}
+                      defaultValue={user.age}
+                      placeholder="25"
+                      type="number"
+                      min="18"
+                      max="100"
+                    />
+                    <p className="text-sm text-red-500">{fields.age?.errors}</p>
+                  </div>
+                </div>
+
+                {/* Campo Dirección */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={fields.direccion.id}
+                    className="text-sm font-medium text-gray-700"
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      <SelectItem value={Role.Admin} className="cursor-pointer">
-                        Admin
-                      </SelectItem>
-                      <SelectItem value={Role.GL} className="cursor-pointer">
-                        GL
-                      </SelectItem>
-                      <SelectItem
-                        value={Role.reclutador}
-                        className="cursor-pointer"
-                      >
-                        Reclutador
-                      </SelectItem>
-
-                      <SelectItem value={Role.MK} className="cursor-pointer">
-                        MK
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <p className="text-sm text-red-500">{fields.role.errors}</p>
-                </div>
-                <div className="w-1/2">
-                  <Label>Direccion</Label>
+                    Dirección
+                  </Label>
                   <Input
                     id={fields.direccion.id}
                     name={fields.direccion.name}
                     key={fields.direccion.key}
                     defaultValue={user.direccion}
-                    placeholder="direccion"
+                    placeholder="Calle, número, colonia, ciudad"
                     type="text"
                   />
                   <p className="text-sm text-red-500">
@@ -213,87 +280,161 @@ export function EditUserProfile({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="w-1/2">
-                  <Label>Oficina</Label>
-                  <Select
-                    name={fields.oficina.name}
-                    key={fields.oficina.key}
-                    defaultValue={user.Oficina}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      <SelectItem
-                        value={Oficina.Oficina1}
-                        className="cursor-pointer"
-                      >
-                        1
-                      </SelectItem>
-                      <SelectItem
-                        value={Oficina.Oficina2}
-                        className="cursor-pointer"
-                      >
-                        2
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <p className="text-sm text-red-500">
-                    {fields.oficina.errors}
-                  </p>
+              {/* Configuración Laboral */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Configuración Laboral
+                  </h3>
                 </div>
-                <div className="w-1/2">
-                  <Label>Status</Label>
-                  <Select
-                    defaultValue={user.State}
-                    name={fields.status.name}
-                    key={fields.status.key}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      <SelectItem
-                        value={UserState.ACTIVO}
-                        className="cursor-pointer"
-                      >
-                        ACTIVO
-                      </SelectItem>
-                      <SelectItem
-                        value={UserState.INACTIVO}
-                        className="cursor-pointer"
-                      >
-                        INACTIVO
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-red-500">{fields.status.errors}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Campo Role */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Rol
+                    </Label>
+                    <Select
+                      name={fields.role.name}
+                      key={fields.role.key}
+                      defaultValue={user.role}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un rol" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        <SelectItem
+                          value={Role.Admin}
+                          className="cursor-pointer"
+                        >
+                          Administrador
+                        </SelectItem>
+                        <SelectItem value={Role.GL} className="cursor-pointer">
+                          Gerente de Línea
+                        </SelectItem>
+                        <SelectItem
+                          value={Role.reclutador}
+                          className="cursor-pointer"
+                        >
+                          Reclutador
+                        </SelectItem>
+                        <SelectItem value={Role.MK} className="cursor-pointer">
+                          Marketing
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-red-500">{fields.role.errors}</p>
+                  </div>
+
+                  {/* Campo Oficina */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Oficina
+                    </Label>
+                    <Select
+                      name={fields.oficina.name}
+                      key={fields.oficina.key}
+                      defaultValue={user.Oficina}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona oficina" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        <SelectItem
+                          value={Oficina.Oficina1}
+                          className="cursor-pointer"
+                        >
+                          Oficina 1
+                        </SelectItem>
+                        <SelectItem
+                          value={Oficina.Oficina2}
+                          className="cursor-pointer"
+                        >
+                          Oficina 2
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-red-500">
+                      {fields.oficina.errors}
+                    </p>
+                  </div>
+
+                  {/* Campo Status */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Estado
+                    </Label>
+                    <Select
+                      defaultValue={user.State}
+                      name={fields.status.name}
+                      key={fields.status.key}
+                    >
+                      <SelectTrigger className="h-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="Selecciona estado" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        <SelectItem
+                          value={UserState.ACTIVO}
+                          className="cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Activo
+                          </span>
+                        </SelectItem>
+                        <SelectItem
+                          value={UserState.INACTIVO}
+                          className="cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            Inactivo
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-red-500">
+                      {fields.status.errors}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Botones */}
-              <DialogFooter className="border-t border-border pt-4">
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">
-                    Cancelar
-                  </Button>
-                </DialogClose>
-                <Button type="submit">
-                  {isPending ? (
-                    <>
-                      <Loader2 className="size-4 mr-2 animate-spin" />
-                      Cargando...
-                    </>
-                  ) : (
-                    <span>Guardar cambios</span>
-                  )}
-                </Button>
-              </DialogFooter>
+              {/* Sección de Imagen */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1 h-6"></div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Imagen de Perfil
+                  </h3>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <UploadProfileImage userId={user.id} />
+                </div>
+              </div>
             </form>
           </div>
         </div>
+
+        {/* Footer con botones */}
+        <DialogFooter className="border-t border-gray-200 bg-gray-50/50 px-6 py-4">
+          <DialogClose asChild>
+            <Button type="button" variant="outline" className="h-10">
+              Cancelar
+            </Button>
+          </DialogClose>
+          <Button type="submit" form={form.id}>
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 mr-2 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              <span>Guardar cambios</span>
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -47,6 +47,11 @@ export const editUser = async (userId: string, formData: FormData) => {
     throw Error("User does not exists");
   }
 
+  if (submission.value.image) {
+    if (existingUser.image) {
+    }
+  }
+
   await prisma.user.update({
     where: { id: userId },
     data: {

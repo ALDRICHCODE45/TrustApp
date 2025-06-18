@@ -1,7 +1,7 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Task, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox-lite";
 import "yet-another-react-lightbox-lite/styles.css";
@@ -33,7 +33,7 @@ export const UserProfileHeader = ({
   const [index, setIndex] = useState<number>();
 
   //const value = user?.placements || user?.clientes || 32;
-  const value = 32;
+  const value = 0;
 
   return (
     <Card className="mb-6 shadow-sm overflow-hidden">
@@ -99,6 +99,11 @@ export const UserProfileHeader = ({
                   </div>
                   <p className="text-muted-foreground">{user?.email}</p>
                 </div>
+                {/* TODO: FUNCIONALIDAD PARA VER TODAS LAS TAREAS COMPARTIDAS */}
+                {/* <Button variant="outline"> */}
+                {/*   <Repeat2 /> */}
+                {/*   Compartidas */}
+                {/* </Button> */}
                 {/* Actividades del usuario */}
                 <ActivityProfileSheet user={user} tasks={tasks} />
               </div>

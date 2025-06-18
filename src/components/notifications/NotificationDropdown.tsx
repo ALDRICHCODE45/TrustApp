@@ -327,7 +327,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                         <Link href={`/profile/${user.id}`}>
                           <Image
                             className="ring-background rounded-full ring-2"
-                            src="/default.png"
+                            src={user.image ?? "/default.png"}
                             width={35}
                             height={35}
                             alt={user.name}

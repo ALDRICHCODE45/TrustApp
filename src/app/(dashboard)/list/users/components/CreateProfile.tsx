@@ -30,6 +30,7 @@ import { createUserSchema } from "@/zod/createUserSchema";
 import { UserState, Role, Oficina } from "@prisma/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import UploadProfileImage from "@/components/comp-543";
 
 export default function CreateProfile() {
   const [open, setOpen] = useState(false);
@@ -275,6 +276,7 @@ export default function CreateProfile() {
 
                 <p className="text-sm text-red-500">{fields.status.errors}</p>
               </div>
+
               <Button
                 className="w-full"
                 type="submit"

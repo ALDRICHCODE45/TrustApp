@@ -488,7 +488,7 @@ const ActivityCard = ({
                     <Link href={`/profile/${user.id}`}>
                       <Image
                         className="ring-background rounded-full ring-2"
-                        src="/default.png"
+                        src={user.image ?? "/default.png"}
                         width={28}
                         height={28}
                         alt="Avatar 01"

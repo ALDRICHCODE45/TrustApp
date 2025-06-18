@@ -138,14 +138,14 @@ export default async function UserProfile({
                 <Card className="border">
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-500">Este mes</p>
-                    <p className="text-2xl font-medium mt-1">14</p>
+                    <p className="text-2xl font-medium mt-1">0</p>
                   </CardContent>
                 </Card>
                 <Card className="border">
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-500">Tiempo Promedio</p>
                     <p className="text-2xl font-medium mt-1">
-                      8.5 <span className="text-sm">(dias)</span>
+                      0 <span className="text-sm">(dias)</span>
                     </p>
                   </CardContent>
                 </Card>
