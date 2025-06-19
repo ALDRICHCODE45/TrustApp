@@ -103,7 +103,7 @@ model Lead {
   updatedAt        DateTime   @updatedAt
   // Relaciones con Sector y Origen
   sectorId         String
-  sector           Sector      @relation(fields: [sectorId], references: [id])
+  sector           Sector     @relation(fields: [sectorId], references: [id])
   origenId         String
   origen           LeadOrigen  @relation(fields: [origenId], references: [id])
   // Relaciones -> Generador de leads
@@ -152,6 +152,27 @@ enum TaskStatus {
   Done
 }
 
+// Modelo para las interacciones con contactos
+model ContactInteraction {
+  id          String   @id @default(cuid())
+  content     String   // Contenido del comentario o estado de la negociación
+  contacto    Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
+  contactoId  String
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  autorId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  linkedTasks  Task[]   // Relación uno a muchos a tareas
+  
+  // Campo opcional para adjuntar un archivo
+  attachmentUrl String?
+  attachmentName String?
+  attachmentType String?
+  
+  @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
+}
+
 model Task {
   id           String     @id @default(uuid())
   title        String
@@ -166,6 +187,13 @@ model Task {
   notifications Notification[]
   notifyOnComplete Boolean @default(false)
   notificationRecipients User[] @relation("TaskNotificationRecipients")
+  
+  // Relación bidireccional con ContactInteraction
+  // Una tarea solo puede estar vinculada a una interacción
+  linkedInteraction   ContactInteraction? @relation(fields: [interactionId], references: [id])
+  interactionId       String?
+  
+  @@index([interactionId]) // Índice para optimizar consultas por interacción vinculada
 }
 
 enum LogAction {
@@ -192,25 +220,6 @@ model Log {
   updatedAt DateTime  @updatedAt
   file      String?
   logModule LogModule @default(Sistema)
-}
-
-// Nuevo modelo para las interacciones con contactos
-model ContactInteraction {
-  id          String   @id @default(cuid())
-  content     String   // Contenido del comentario o estado de la negociación
-  contacto    Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
-  contactoId  String
-  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
-  autorId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Campo opcional para adjuntar un archivo
-  attachmentUrl String?
-  attachmentName String?
-  attachmentType String?
-  
-  @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
 }
 
 enum NotificationType {

@@ -422,7 +422,6 @@ export interface Attachment {
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  contactName: string;
   onTaskCreated?: () => void;
 }
 
@@ -579,7 +578,7 @@ export const SeguimientoContacto = ({
                   onClick={() => setOpenCreateTask(true)}
                 >
                   <CalendarPlus className="h-4 w-4 mr-2" />
-                  Crear tarea
+                  Vincular tarea
                 </Button>
               </div>
             </div>
@@ -612,6 +611,7 @@ export const SeguimientoContacto = ({
                   {interactions.map((interaction) => (
                     <div key={interaction.id} className="w-full">
                       <InteractionCard
+                        setOpenTaskDialog={setOpenCreateTask}
                         interaction={interaction}
                         setInteractions={setInteractions}
                       />
@@ -627,7 +627,6 @@ export const SeguimientoContacto = ({
         <CreateTaskDialog
           open={openCreateTask}
           onOpenChange={setOpenCreateTask}
-          contactName={contacto.name}
           onTaskCreated={() => {
             toast.success("Tarea creada exitosamente");
             setOpenCreateTask(false);
@@ -639,10 +638,9 @@ export const SeguimientoContacto = ({
 };
 
 // Componente para crear tareas desde el seguimiento
-const CreateTaskDialog = ({
+export const CreateTaskDialog = ({
   open,
   onOpenChange,
-  contactName,
   onTaskCreated,
 }: CreateTaskDialogProps) => {
   const [title, setTitle] = useState("");
@@ -711,7 +709,7 @@ const CreateTaskDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarPlus className="h-5 w-5" />
-            Nueva tarea para {contactName}
+            Nueva tarea vinculada
           </DialogTitle>
         </DialogHeader>
 

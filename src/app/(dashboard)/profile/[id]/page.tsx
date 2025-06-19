@@ -66,6 +66,11 @@ const fetchTasksById = async (userId: string): Promise<TaskWithUsers[]> => {
       include: {
         assignedTo: true,
         notificationRecipients: true,
+        linkedInteraction: {
+          include: {
+            contacto: true,
+          },
+        },
       },
     });
     return tasks;

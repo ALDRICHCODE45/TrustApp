@@ -347,6 +347,54 @@ export const toggleTaskStatus = async (userId: string, taskId: string) => {
   }
 };
 
+interface Args {
+  title: string;
+  description: string;
+  dueDate: string;
+  interactionId: string;
+}
+
+export const createTaskFromContactInteractionLinked = async ({
+  interactionId,
+  dueDate,
+  description,
+  title,
+}: Args) => {
+  try {
+    const session = await checkSession();
+
+    if (!title || !description || !dueDate) {
+      return {
+        ok: false,
+        message: "Todos los campos son requeridos",
+      };
+    }
+
+    const task = await prisma.task.create({
+      data: {
+        title,
+        description,
+        dueDate: new Date(dueDate),
+        assignedToId: session.user.id,
+        interactionId,
+      },
+    });
+
+    if (!task) {
+      return {
+        ok: false,
+        message: "Error creando la tarea",
+      };
+    }
+    return {
+      ok: true,
+      message: "Tarea Creada y vinculada a una interaccion",
+    };
+  } catch (err) {
+    throw new Error("Erorr al crear la tarea vinculada");
+  }
+};
+
 // Nueva función para crear tareas desde el seguimiento de contactos
 export const createTaskFromContact = async (
   title: string,

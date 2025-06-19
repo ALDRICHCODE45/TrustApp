@@ -4,6 +4,7 @@ import {
   deleteInteractionById,
   editInteractionById,
 } from "@/actions/leadSeguimiento/ations";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,11 +34,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
+  Calendar,
+  CalendarPlus,
   Download,
   Edit,
+  ExternalLink,
   Loader2,
   MoreVertical,
   PaperclipIcon,
+  Plus,
   RefreshCw,
   Trash2,
   UploadCloud,
@@ -55,12 +60,20 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { createTaskFromContactInteractionLinked } from "@/actions/tasks/actions";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Props {
   interaction: ContactInteractionWithRelations;
   setInteractions: React.Dispatch<
     React.SetStateAction<ContactInteractionWithRelations[]>
   >;
+  setOpenTaskDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const InteractionCard = ({ interaction, setInteractions }: Props) => {
@@ -159,7 +172,9 @@ const InteractionCardView = ({
         </div>
       </CardHeader>
       <CardContent className="py-2 px-4 pr-8">
-        <p className="text-sm whitespace-pre-wrap break-words hyphens-auto leading-relaxed">{interaction.content}</p>
+        <p className="text-sm whitespace-pre-wrap break-words hyphens-auto leading-relaxed">
+          {interaction.content}
+        </p>
       </CardContent>
       {interaction.attachmentUrl && (
         <AttachmentFooter
@@ -247,38 +262,241 @@ const InteractionOptionsMenu = ({
   setOpenDialog: (open: boolean) => void;
   deleteInteraction: (id: string) => void;
 }) => {
+  // Estado para el diálogo de crear tarea
+  const [openCreateTask, setOpenCreateTask] = useState<boolean>(false);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="z-[999]">
-        <DropdownMenuItem
-          onClick={() => setOpenDialog(true)}
-          className="cursor-pointer"
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          <span>Editar</span>
-        </DropdownMenuItem>
-        <ConfirmDialog
-          title="¿De verdad deseas eliminar la interacción?"
-          description="La interacción será eliminada de forma permanente y no podrás restablecerla."
-          trigger={
-            <div className="text-red-500 cursor-pointer flex items-center p-1  text-sm  rounded-sm hover:bg-gray-100">
-              <Trash2 className="h-4 w-4 ml-1" />
-              <span className="ml-4">Eliminar</span>
-            </div>
-          }
-          onConfirm={async () => deleteInteraction(interactionId)}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-[999]">
+          <DropdownMenuItem
+            onClick={() => {
+              console.log("Crear tarea para la interaccion: ", {
+                interactionId,
+              });
+              setOpenCreateTask(true);
+            }}
+            className="cursor-pointer"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Vincular tarea
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setOpenDialog(true)}
+            className="cursor-pointer"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            <span>Editar</span>
+          </DropdownMenuItem>
+          <ConfirmDialog
+            title="¿De verdad deseas eliminar la interacción?"
+            description="La interacción será eliminada de forma permanente y no podrás restablecerla."
+            trigger={
+              <div className="text-red-500 cursor-pointer flex items-center p-1  text-sm  rounded-sm hover:bg-gray-100">
+                <Trash2 className="h-4 w-4 ml-1" />
+                <span className="ml-4">Eliminar</span>
+              </div>
+            }
+            onConfirm={async () => deleteInteraction(interactionId)}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {/* Diálogo para crear tarea */}
+      <CreateTaskDialog
+        interactionId={interactionId}
+        open={openCreateTask}
+        onOpenChange={setOpenCreateTask}
+        onTaskCreated={() => {
+          toast.success("Tarea creada exitosamente");
+          setOpenCreateTask(false);
+        }}
+      />
+    </>
+  );
+};
+
+// Nueva interfaz para el diálogo de crear tarea
+interface CreateTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onTaskCreated?: () => void;
+  interactionId: string;
+}
+
+// Componente para crear tareas desde el seguimiento
+const CreateTaskDialog = ({
+  open,
+  onOpenChange,
+  interactionId,
+  onTaskCreated,
+}: CreateTaskDialogProps) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Función para manejar la selección de fecha
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
+  };
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error("Por favor, añade un título para la tarea");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Por favor añade una descripción para la tarea");
+      return;
+    }
+
+    if (!dueDate) {
+      toast.error("Por favor, selecciona una fecha límite");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = createTaskFromContactInteractionLinked({
+        title,
+        description,
+        dueDate: dueDate.toISOString(),
+        interactionId,
+      });
+
+      toast.promise(result, {
+        loading: "Loading...",
+        success: () => {
+          return "Tarea creada correctamente";
+        },
+        error: "Error",
+      });
+
+      // Limpiar el formulario
+      setTitle("");
+      setDescription("");
+      setDueDate(new Date());
+
+      // Llamar la función de callback
+      onTaskCreated?.();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error("Error al crear la tarea");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="h-5 w-5" />
+            Nueva tarea vinculada
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="task-title">Título de la tarea</Label>
+            <Input
+              id="task-title"
+              placeholder="Ej: Enviar seguimiento por WhatsApp"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-description">Descripción</Label>
+            <Textarea
+              id="task-description"
+              placeholder="Describe los detalles de la tarea..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isSubmitting}
+              required
+              className="resize-none min-h-[80px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-dueDate">Fecha límite</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal w-full",
+                    !dueDate && "text-muted-foreground",
+                  )}
+                  disabled={isSubmitting}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dueDate ? (
+                    format(dueDate, "d 'de' MMMM, yyyy", { locale: es })
+                  ) : (
+                    <span>Selecciona una fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[9999]" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={handleDateSelect}
+                  locale={es}
+                  disabled={(date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear tarea
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
