@@ -14,25 +14,23 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Prisma, Task, TaskStatus, User } from "@prisma/client";
+import { Prisma, TaskStatus, User } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   AlertTriangle,
   CalendarIcon,
   CheckCircle,
-  CircleCheck,
   ClipboardList,
-  Clock,
   Edit,
   MoreVertical,
   Plus,
-  SquarePen,
   Trash2,
   XCircle,
   X,
   BellRing,
   MessageSquareReply,
+  FolderCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -40,7 +38,6 @@ import {
   DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -96,6 +93,7 @@ import {
 } from "@/components/ui/tooltip";
 import Link from "next/link";
 import Image from "next/image";
+import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 
 // Interfaces
 export interface Activity {
@@ -196,7 +194,7 @@ const EditActivityDialog = ({
     }
 
     try {
-      await onEdit(activityId, { description, title, dueDate: date });
+      onEdit(activityId, { description, title, dueDate: date });
 
       // Limpiar el formulario
       setTitle("");
@@ -223,8 +221,8 @@ const EditActivityDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="w-full">
-        <div className="flex items-center pl-2">
-          <Edit className="mr-2" size={15} aria-hidden="true" />
+        <div className="flex w-full items-center pl-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-sm cursor-pointer">
+          <Edit className="opacity-60 mr-2" size={15} aria-hidden="true" />
           <span className="text-sm">Editar</span>
         </div>
       </DialogTrigger>
@@ -364,7 +362,7 @@ const DeleteActivityDialog = ({
           onSelect={(e) => e.preventDefault()}
           className="cursor-pointer text-destructive"
         >
-          <Trash2 size={4} />
+          <Trash2 size={4} className="opacity-60" />
           Eliminar
         </DropdownMenuItem>
       </AlertDialogTrigger>
@@ -463,51 +461,35 @@ const ActivityActions = ({
             className="h-8 w-8"
             aria-label={`Acciones para la tarea: ${activity.title}`}
           >
-            <MoreVertical className="h-4 w-4" aria-hidden="true" />
+            <MoreVertical className="h-4 w-4 opacity-60" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="z-[50]" align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-
-          {/* Opción para ver interacción */}
-          {activity.linkedInteraction?.id && (
-            <>
-              <DropdownMenuItem
-                onClick={handleViewInteraction}
-                className="cursor-pointer"
-              >
-                <MessageSquareReply
-                  className="mr-2 h-4 w-4"
-                  aria-hidden="true"
-                />
-                Ver Interacción
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-
-          {/* Opción para cambiar estado */}
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.preventDefault();
-              setAlertOpen(true);
-            }}
-            className="cursor-pointer"
-          >
-            {isTaskDone ? (
-              <>
-                <XCircle className="mr-2 h-4 w-4" aria-hidden="true" />
-                Marcar como pendiente
-              </>
-            ) : (
-              <>
-                <CircleCheck className="mr-2 h-4 w-4" aria-hidden="true" />
-                Marcar como completada
-              </>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {/* Opción para cambiar estado */}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.preventDefault();
+                setAlertOpen(true);
+              }}
+              className="cursor-pointer"
+            >
+              {isTaskDone ? (
+                <>
+                  <XCircle className="opacity-60 h-4 w-4" aria-hidden="true" />
+                  Pendiente
+                </>
+              ) : (
+                <>
+                  <FolderCheck
+                    className="opacity-60 h-4 w-4"
+                    aria-hidden="true"
+                  />
+                  Completar
+                </>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
 
           {/* Opción para editar */}
           <EditActivityDialog
@@ -518,6 +500,25 @@ const ActivityActions = ({
 
           {/* Opción para eliminar */}
           <DeleteActivityDialog activityId={activity.id} onDelete={onDelete} />
+
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {/* Opción para ver interacción */}
+            {activity.linkedInteraction?.id && (
+              <>
+                <DropdownMenuItem
+                  onClick={handleViewInteraction}
+                  className="cursor-pointer"
+                >
+                  <MessageSquareReply
+                    className="opacity-60 h-4 w-4"
+                    aria-hidden="true"
+                  />
+                  Ver Interacción
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -681,12 +682,12 @@ const ActivityCard = ({
                   <TooltipTrigger asChild>
                     <Link
                       href={`/profile/${user.id}`}
-                      className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full"
+                      className=""
                       tabIndex={0}
                     >
                       <Image
-                        className="ring-2 ring-background rounded-full hover:ring-primary/50 transition-all"
-                        src={user.image ?? "/default.png"}
+                        className=""
+                        src={user.image ?? "/default2.png"}
                         width={28}
                         height={28}
                         alt={`Avatar de ${user.name}`}
@@ -1018,7 +1019,7 @@ export const AddActivityDialog = ({
     }
 
     try {
-      await onAddActivity({
+      onAddActivity({
         title,
         description,
         dueDate: date,

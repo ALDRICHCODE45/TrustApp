@@ -19,6 +19,7 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
           include: {
             contacto: true;
             autor: true;
+            linkedTasks: true;
           };
         };
       };
@@ -42,6 +43,7 @@ const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
               include: {
                 autor: true,
                 contacto: true,
+                linkedTasks: true,
               },
             },
           },

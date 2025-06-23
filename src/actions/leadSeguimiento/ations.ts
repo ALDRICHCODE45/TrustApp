@@ -6,11 +6,25 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { deleteFile } from "../files/actions";
 
+// Importar el tipo TaskWithUsers
+export type TaskWithUsers = Prisma.TaskGetPayload<{
+  include: {
+    assignedTo: true;
+    notificationRecipients: true;
+    linkedInteraction: {
+      include: {
+        contacto: true;
+      };
+    };
+  };
+}>;
+
 export type ContactInteractionWithRelations =
   Prisma.ContactInteractionGetPayload<{
     include: {
       autor: true;
       contacto: true;
+      linkedTasks: true;
     };
   }>;
 
@@ -161,6 +175,7 @@ export const createInteraction = async (
       include: {
         autor: true,
         contacto: true,
+        linkedTasks: true,
       },
     });
 
@@ -185,6 +200,7 @@ export const getAllContactInteractionsByContactId = async (
       include: {
         contacto: true,
         autor: true,
+        linkedTasks: true,
       },
     });
 
@@ -229,6 +245,7 @@ export const getAllInteractionsByLeadId = async (
       include: {
         contacto: true,
         autor: true,
+        linkedTasks: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -297,6 +314,7 @@ export const getContactosByLeadId = async (leadId: string) => {
           include: {
             autor: true,
             contacto: true,
+            linkedTasks: true,
           },
           orderBy: {
             createdAt: "desc",
@@ -312,5 +330,45 @@ export const getContactosByLeadId = async (leadId: string) => {
   } catch (err) {
     console.error("Error al obtener contactos:", err);
     throw new Error("Error al obtener los contactos del lead");
+  }
+};
+
+// Nueva función para obtener las tareas vinculadas a una interacción
+export const getTasksByInteractionId = async (
+  interactionId: string,
+): Promise<TaskWithUsers[]> => {
+  try {
+    const session = await auth();
+
+    if (!session) {
+      throw new Error("No autorizado");
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        interactionId: interactionId,
+      },
+      include: {
+        assignedTo: true,
+        notificationRecipients: true,
+        linkedInteraction: {
+          include: {
+            contacto: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return tasks;
+  } catch (err) {
+    console.error("Error en getTasksByInteractionId:", err);
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "Error al obtener las tareas de la interacción",
+    );
   }
 };

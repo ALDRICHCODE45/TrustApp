@@ -352,6 +352,8 @@ interface Args {
   description: string;
   dueDate: string;
   interactionId: string;
+  notifyOnComplete?: boolean;
+  notificationRecipients?: string[];
 }
 
 export const createTaskFromContactInteractionLinked = async ({
@@ -359,6 +361,8 @@ export const createTaskFromContactInteractionLinked = async ({
   dueDate,
   description,
   title,
+  notifyOnComplete = false,
+  notificationRecipients = [],
 }: Args) => {
   try {
     const session = await checkSession();
@@ -370,28 +374,56 @@ export const createTaskFromContactInteractionLinked = async ({
       };
     }
 
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        dueDate: new Date(dueDate),
-        assignedToId: session.user.id,
-        interactionId,
-      },
+    await prisma.$transaction(async (tx) => {
+      // 1. Crear tarea
+      const task = await tx.task.create({
+        data: {
+          title,
+          description,
+          dueDate: new Date(dueDate),
+          assignedToId: session.user.id,
+          interactionId,
+          notifyOnComplete,
+          notificationRecipients: {
+            connect: notificationRecipients.map((id) => ({ id })),
+          },
+        },
+        select: {
+          id: true,
+          assignedTo: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      // 2. Crear notificaciones si hay destinatarios
+      if (notificationRecipients.length > 0) {
+        for (const recipientId of notificationRecipients) {
+          await tx.notification.create({
+            data: {
+              type: "TASK_INITIALIZED",
+              message: `El usuario ${task.assignedTo.name} ha iniciado una tarea compartida vinculada a una interacción`,
+              taskId: task.id,
+              recipientId: recipientId,
+            },
+          });
+        }
+      }
     });
 
-    if (!task) {
-      return {
-        ok: false,
-        message: "Error creando la tarea",
-      };
-    }
+    revalidatePath(`/profile/${session.user.id}`);
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+
     return {
       ok: true,
       message: "Tarea Creada y vinculada a una interaccion",
     };
   } catch (err) {
-    throw new Error("Erorr al crear la tarea vinculada");
+    console.error("Error creating linked task:", err);
+    throw new Error("Error al crear la tarea vinculada");
   }
 };
 

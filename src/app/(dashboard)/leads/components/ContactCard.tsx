@@ -94,6 +94,7 @@ export type ContactWithRelations = Prisma.PersonGetPayload<{
       include: {
         autor: true;
         contacto: true;
+        linkedTasks: true;
       };
     };
   };
@@ -569,18 +570,6 @@ export const SeguimientoContacto = ({
                   )}
                 </Button>
               </div>
-
-              {/* Botón para crear tarea */}
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpenCreateTask(true)}
-                >
-                  <CalendarPlus className="h-4 w-4 mr-2" />
-                  Vincular tarea
-                </Button>
-              </div>
             </div>
           </form>
 
@@ -611,7 +600,6 @@ export const SeguimientoContacto = ({
                   {interactions.map((interaction) => (
                     <div key={interaction.id} className="w-full">
                       <InteractionCard
-                        setOpenTaskDialog={setOpenCreateTask}
                         interaction={interaction}
                         setInteractions={setInteractions}
                       />

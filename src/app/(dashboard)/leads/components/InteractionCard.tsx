@@ -3,6 +3,8 @@ import {
   ContactInteractionWithRelations,
   deleteInteractionById,
   editInteractionById,
+  getTasksByInteractionId,
+  TaskWithUsers,
 } from "@/actions/leadSeguimiento/ations";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,8 +49,13 @@ import {
   Trash2,
   UploadCloud,
   X,
+  ClipboardList,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  BellRing,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Attachment } from "./ContactCard";
 import { deleteFile, uploadFile } from "@/actions/files/actions";
@@ -67,13 +74,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { User } from "@prisma/client";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   interaction: ContactInteractionWithRelations;
   setInteractions: React.Dispatch<
     React.SetStateAction<ContactInteractionWithRelations[]>
   >;
-  setOpenTaskDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenTaskDialog?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const InteractionCard = ({ interaction, setInteractions }: Props) => {
@@ -264,6 +284,9 @@ const InteractionOptionsMenu = ({
 }) => {
   // Estado para el diálogo de crear tarea
   const [openCreateTask, setOpenCreateTask] = useState<boolean>(false);
+  // Estado para el diálogo de ver tareas vinculadas
+  const [openLinkedTasks, setOpenLinkedTasks] = useState<boolean>(false);
+
   return (
     <>
       <DropdownMenu>
@@ -286,23 +309,35 @@ const InteractionOptionsMenu = ({
             }}
             className="cursor-pointer"
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="h-4 w-4 opacity-60" />
             Vincular tarea
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setOpenDialog(true)}
             className="cursor-pointer"
           >
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit className="h-4 w-4 opacity-60" />
             <span>Editar</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              console.log("Ver tareas vinculadas: ", {
+                interactionId,
+              });
+              setOpenLinkedTasks(true);
+            }}
+            className="cursor-pointer"
+          >
+            <ClipboardList className="opacity-60 h-4 w-4" />
+            Ver tareas
           </DropdownMenuItem>
           <ConfirmDialog
             title="¿De verdad deseas eliminar la interacción?"
             description="La interacción será eliminada de forma permanente y no podrás restablecerla."
             trigger={
               <div className="text-red-500 cursor-pointer flex items-center p-1  text-sm  rounded-sm hover:bg-gray-100">
-                <Trash2 className="h-4 w-4 ml-1" />
-                <span className="ml-4">Eliminar</span>
+                <Trash2 className="h-4 w-4 ml-1 items-center" />
+                <span className="ml-2">Eliminar</span>
               </div>
             }
             onConfirm={async () => deleteInteraction(interactionId)}
@@ -318,6 +353,12 @@ const InteractionOptionsMenu = ({
           toast.success("Tarea creada exitosamente");
           setOpenCreateTask(false);
         }}
+      />
+      {/* Diálogo para ver tareas vinculadas */}
+      <LinkedTasksDialog
+        interactionId={interactionId}
+        open={openLinkedTasks}
+        onOpenChange={setOpenLinkedTasks}
       />
     </>
   );
@@ -342,12 +383,49 @@ const CreateTaskDialog = ({
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  // Cargar usuarios cuando se abre el diálogo
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!open) return; // Solo cargar cuando se abre el dialog
+
+      setIsLoadingUsers(true);
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
+        setUsers(data.users || []);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Error al cargar usuarios");
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+
+    if (open) {
+      fetchUsers();
+    }
+  }, [open]);
 
   // Función para manejar la selección de fecha
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       setDueDate(selectedDate);
     }
+  };
+
+  // Función para resetear el formulario
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setDueDate(new Date());
+    setNotificationsEnabled(false);
+    setSelectedUsers([]);
+    setIsSubmitting(false);
   };
 
   // Función para manejar el envío del formulario
@@ -377,6 +455,8 @@ const CreateTaskDialog = ({
         description,
         dueDate: dueDate.toISOString(),
         interactionId,
+        notifyOnComplete: notificationsEnabled,
+        notificationRecipients: selectedUsers,
       });
 
       toast.promise(result, {
@@ -388,9 +468,7 @@ const CreateTaskDialog = ({
       });
 
       // Limpiar el formulario
-      setTitle("");
-      setDescription("");
-      setDueDate(new Date());
+      resetForm();
 
       // Llamar la función de callback
       onTaskCreated?.();
@@ -402,8 +480,23 @@ const CreateTaskDialog = ({
     }
   };
 
+  // Función para manejar el cambio de estado del diálogo
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && !isSubmitting) {
+      resetForm();
+    }
+    onOpenChange(newOpen);
+  };
+
+  // Función para remover un usuario de la lista
+  const removeUser = (userIdToRemove: string) => {
+    setSelectedUsers(selectedUsers.filter((id) => id !== userIdToRemove));
+  };
+
+  const canSubmit = title.trim() && description.trim() && dueDate && !isSubmitting;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -470,17 +563,123 @@ const CreateTaskDialog = ({
             </Popover>
           </div>
 
+          <div className="space-y-4">
+            <div className="flex items-center justify-between space-x-2">
+              <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
+                <Switch
+                  id="task-notifications"
+                  className="order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2 data-[state=checked]:[&_span]:rtl:-translate-x-2"
+                  aria-describedby="task-notifications-description"
+                  checked={notificationsEnabled}
+                  onCheckedChange={setNotificationsEnabled}
+                  disabled={isSubmitting}
+                />
+                <div className="flex grow items-center gap-3">
+                  <BellRing aria-hidden="true" />
+                  <div className="grid grow gap-2">
+                    <Label htmlFor="task-notifications">
+                      Notificar{" "}
+                      <span className="text-muted-foreground text-xs leading-[inherit] font-normal">
+                        (Al completar)
+                      </span>
+                    </Label>
+                    <p
+                      id="task-notifications-description"
+                      className="text-muted-foreground text-xs"
+                    >
+                      Al activar esta opción los usuarios serán notificados
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {notificationsEnabled && (
+              <div className="space-y-2">
+                <Label htmlFor="task-user-select">
+                  Destinatarios de la notificación
+                </Label>
+                <Select
+                  onValueChange={(value) => {
+                    if (!selectedUsers.includes(value)) {
+                      setSelectedUsers([...selectedUsers, value]);
+                    }
+                  }}
+                  disabled={isSubmitting || isLoadingUsers}
+                >
+                  <SelectTrigger id="task-user-select">
+                    <SelectValue
+                      placeholder={
+                        isLoadingUsers
+                          ? "Cargando usuarios..."
+                          : "Seleccionar usuarios"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="z-[9999]">
+                    {users.map((user) => (
+                      <SelectItem
+                        key={user.id}
+                        value={user.id}
+                        disabled={selectedUsers.includes(user.id)}
+                      >
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                    {users.length === 0 && !isLoadingUsers && (
+                      <SelectItem value="" disabled>
+                        No hay usuarios disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {selectedUsers.length > 0 && (
+                  <div
+                    className="flex flex-wrap gap-2 mt-2"
+                    role="group"
+                    aria-label="Usuarios seleccionados"
+                  >
+                    {selectedUsers.map((userId) => {
+                      const user = users.find((u) => u.id === userId);
+                      return (
+                        <Badge
+                          key={userId}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {user?.name || "Usuario desconocido"}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 hover:bg-transparent"
+                            onClick={() => removeUser(userId)}
+                            disabled={isSubmitting}
+                            aria-label={`Eliminar ${user?.name} de la lista`}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isSubmitting}
               className="flex-1"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <Button type="submit" disabled={!canSubmit} className="flex-1">
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -889,5 +1088,253 @@ const handleDeleteFileCompletely = async (
           }
         : item,
     ),
+  );
+};
+
+// Componente para ver tareas vinculadas a una interacción
+interface LinkedTasksDialogProps {
+  interactionId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const LinkedTasksDialog = ({
+  interactionId,
+  open,
+  onOpenChange,
+}: LinkedTasksDialogProps) => {
+  const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Función para cargar las tareas vinculadas
+  const loadLinkedTasks = async () => {
+    if (!interactionId || !open) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getTasksByInteractionId(interactionId);
+      setTasks(data);
+    } catch (err) {
+      console.error("Error al obtener tareas vinculadas:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar tareas cuando se abre el diálogo
+  useEffect(() => {
+    if (open) {
+      loadLinkedTasks();
+    }
+  }, [open, interactionId]);
+
+  // Función para obtener el estado visual de la tarea
+  const getTaskStatusInfo = (task: TaskWithUsers) => {
+    const isTaskDone = task.status === "Done";
+
+    if (isTaskDone) {
+      return {
+        borderColor: "border-l-emerald-400",
+        bgColor: "",
+        textColor: "",
+        icon: <CheckCircle className="w-4 h-4 text-emerald-500" />,
+        label: "Completada",
+      };
+    }
+
+    const today = new Date();
+    const dueDate = new Date(task.dueDate);
+    const timeDiff = dueDate.getTime() - today.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    if (daysLeft > 5) {
+      return {
+        borderColor: "border-l-blue-500",
+        bgColor: "",
+        textColor: "",
+        icon: <Clock className="w-4 h-4 text-blue-500" />,
+        label: `${daysLeft} días restantes`,
+      };
+    } else if (daysLeft >= 3) {
+      return {
+        borderColor: "border-l-amber-400",
+        bgColor: "",
+        textColor: "",
+        icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
+        label: `${daysLeft} días restantes`,
+      };
+    } else {
+      return {
+        borderColor: "border-l-red-500",
+        bgColor: "bg-red-50",
+        textColor: "text-red-700",
+        icon: <AlertTriangle className="w-4 h-4 text-red-500" />,
+        label: daysLeft < 0 ? "Vencida" : `${daysLeft} días restantes`,
+      };
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-w-[95vw] w-full max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5" />
+            Tareas vinculadas
+          </DialogTitle>
+          <DialogDescription>
+            Tareas que han sido vinculadas a esta interacción
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 min-h-0">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">
+                Cargando tareas...
+              </span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500">
+              <p>Error: {error}</p>
+              <Button
+                variant="outline"
+                onClick={loadLinkedTasks}
+                className="mt-4"
+              >
+                Reintentar
+              </Button>
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No hay tareas vinculadas</p>
+              <p className="text-sm">
+                Esta interacción no tiene tareas vinculadas. Para crear una
+                tarea, usa la opción Vincular tarea.
+              </p>
+            </div>
+          ) : (
+            <div className="pt-4">
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-4 pr-4">
+                  {tasks.map((task) => {
+                    const statusInfo = getTaskStatusInfo(task);
+                    return (
+                      <Card
+                        key={task.id}
+                        className={cn(
+                          "border-l-4 transition-colors hover:bg-muted/50",
+                          statusInfo.borderColor,
+                          statusInfo.bgColor,
+                        )}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-base font-medium">
+                                {task.title}
+                              </CardTitle>
+                              <CardDescription className="text-sm mt-1">
+                                {task.description}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {statusInfo.icon}
+                              <Badge variant="secondary" className="text-xs">
+                                {statusInfo.label}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <span>Asignada a:</span>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage
+                                    src={task.assignedTo.image || ""}
+                                    alt={task.assignedTo.name}
+                                  />
+                                  <AvatarFallback className="text-xs">
+                                    {task.assignedTo.name
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")
+                                      .toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium">
+                                  {task.assignedTo.name}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              <span>
+                                {format(
+                                  new Date(task.dueDate),
+                                  "d 'de' MMMM, yyyy",
+                                  { locale: es },
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Mostrar usuarios que reciben notificaciones */}
+                          {task.notificationRecipients.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-muted/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs text-muted-foreground">
+                                  Notificar a:
+                                </span>
+                              </div>
+                              <div
+                                className="flex -space-x-2"
+                                role="group"
+                                aria-label="Usuarios que serán notificados"
+                              >
+                                {task.notificationRecipients.map((user) => (
+                                  <Tooltip key={user.id}>
+                                    <TooltipTrigger asChild>
+                                      <Link
+                                        href={`/profile/${user.id}`}
+                                        className=""
+                                        tabIndex={0}
+                                      >
+                                        <Image
+                                          className="ring-background rounded-full ring-2"
+                                          src={user.image ?? "/default2.png"}
+                                          width={28}
+                                          height={28}
+                                          alt={`Avatar de ${user.name}`}
+                                        />
+                                      </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <span>{user.name}</span>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

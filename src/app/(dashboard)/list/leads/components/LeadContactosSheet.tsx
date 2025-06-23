@@ -124,9 +124,6 @@ export function LeadContactosSheet({
           setOpen(false);
           reset(defaultValues); // Usar defaultValues consistentes
 
-          // Actualizar la lista de contactos con el nuevo contacto
-          setDisplayedContacts((prev) => [...prev, result.data]);
-
           // Actualizar solo los contactos del lead actual
           try {
             const updatedContacts = await getContactosByLeadId(
