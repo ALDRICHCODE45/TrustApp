@@ -11,4 +11,8 @@ export const createUserSchema = z.object({
   celular: z.string().min(6, "El celular es requerido"),
   role: z.enum(["reclutador", "GL", "Admin", "MK"]),
   image: z.string().optional(),
+  ingreso: z.coerce.date({
+    required_error: "La fecha de ingreso es obligatoria",
+    invalid_type_error: "Debe ser una fecha válida",
+  }),
 });

@@ -29,28 +29,29 @@ enum UserState {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  Oficina       Oficina   @default(Oficina1)
-  password      String
-  age           Int
-  direccion     String
-  State         UserState @default(ACTIVO)
-  celular       String
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(reclutador) // Valor por defecto
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Lead      Lead[]
-  Comment   Comment[]
-  Task      Task[]
-  LeadStatusHistory   LeadStatusHistory[] // Nueva relación
-  ContactInteraction  ContactInteraction[] // Nueva relación para las interacciones con contactos
-  Logs Log[]
-  notifications Notification[]
-  taskNotifications Task[] @relation("TaskNotificationRecipients")
+  id                 String               @id @default(cuid())
+  name               String
+  email              String               @unique
+  Oficina            Oficina              @default(Oficina1)
+  password           String
+  age                Int
+  direccion          String
+  State              UserState            @default(ACTIVO)
+  celular            String
+  emailVerified      DateTime?
+  image              String?
+  role               Role                 @default(reclutador) // Valor por defecto
+  ingreso            DateTime
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Lead               Lead[]
+  Comment            Comment[]
+  Task               Task[]
+  LeadStatusHistory  LeadStatusHistory[] // Nueva relación
+  ContactInteraction ContactInteraction[] // Nueva relación para las interacciones con contactos
+  Logs               Log[]
+  notifications      Notification[]
+  taskNotifications  Task[]               @relation("TaskNotificationRecipients")
 }
 
 // Modelo para registrar historial de cambios de estado de leads
@@ -60,25 +61,26 @@ model LeadStatusHistory {
   leadId    String
   status    LeadStatus
   changedAt DateTime   @default(now())
-  
+
   // Para auditoría
-  changedBy User       @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  changedBy   User   @relation(fields: [changedById], references: [id], onDelete: Cascade)
   changedById String
+
   @@index([leadId, changedAt]) // Índice para optimizar consultas por lead y fecha
 }
 
 model Sector {
-  id    String @id @default(cuid())
+  id     String @id @default(cuid())
   nombre String @unique
   leads  Lead[]
 }
 
 model LeadOrigen {
-  id    String @id @default(cuid())
-  createdAt        DateTime?   @default(now())
-  updatedAt        DateTime?  @updatedAt
-  nombre String @unique
-  leads  Lead[]
+  id        String    @id @default(cuid())
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  nombre    String    @unique
+  leads     Lead[]
 }
 
 enum LeadStatus {
@@ -94,29 +96,29 @@ enum LeadStatus {
 }
 
 model Lead {
-  id               String     @id @default(cuid())
-  empresa          String
-  link             String
-  status           LeadStatus @default(Contacto)
-  contactos        Person[]
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id             String              @id @default(cuid())
+  empresa        String
+  link           String
+  status         LeadStatus          @default(Contacto)
+  contactos      Person[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
   // Relaciones con Sector y Origen
-  sectorId         String
-  sector           Sector     @relation(fields: [sectorId], references: [id])
-  origenId         String
-  origen           LeadOrigen  @relation(fields: [origenId], references: [id])
+  sectorId       String
+  sector         Sector              @relation(fields: [sectorId], references: [id])
+  origenId       String
+  origen         LeadOrigen          @relation(fields: [origenId], references: [id])
   // Relaciones -> Generador de leads
-  generadorId      String
-  generadorLeads   User        @relation(fields: [generadorId], references: [id], onDelete: Cascade)
-  statusHistory    LeadStatusHistory[]
+  generadorId    String
+  generadorLeads User                @relation(fields: [generadorId], references: [id], onDelete: Cascade)
+  statusHistory  LeadStatusHistory[]
 }
 
 //modelo de contacto para todos los moodulos
 model Person {
   id       String  @id @default(cuid())
   name     String
-  email    String? 
+  email    String?
   phone    String?
   position String?
   linkedin String?
@@ -124,13 +126,13 @@ model Person {
   //relaciones -> contacto de leads
   Lead     Lead?   @relation(fields: [leadId], references: [id])
   leadId   String?
-  
+
   // Nueva relación para las interacciones/conversaciones
   interactions ContactInteraction[]
 }
 
 model Vacancy {
-  id String @id @default(uuid())
+  id      String    @id @default(uuid())
   Comment Comment[]
 }
 
@@ -142,7 +144,7 @@ model Comment {
   taskId    String?  @unique
   vacancy   Vacancy  @relation(fields: [vacancyId], references: [id])
   vacancyId String
-  author    User     @relation(fields: [authorId], references: [id], onDelete:Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   createdAt DateTime @default(now())
 }
@@ -154,45 +156,45 @@ enum TaskStatus {
 
 // Modelo para las interacciones con contactos
 model ContactInteraction {
-  id          String   @id @default(cuid())
-  content     String   // Contenido del comentario o estado de la negociación
-  contacto    Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
-  contactoId  String
-  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
-  autorId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  linkedTasks  Task[]   // Relación uno a muchos a tareas
-  
+  id         String   @id @default(cuid())
+  content    String // Contenido del comentario o estado de la negociación
+  contacto   Person   @relation(fields: [contactoId], references: [id], onDelete: Cascade)
+  contactoId String
+  autor      User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  autorId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  linkedTasks Task[] // Relación uno a muchos a tareas
+
   // Campo opcional para adjuntar un archivo
-  attachmentUrl String?
+  attachmentUrl  String?
   attachmentName String?
   attachmentType String?
-  
+
   @@index([contactoId, createdAt]) // Índice para optimizar consultas por contacto y fecha
 }
 
 model Task {
-  id           String     @id @default(uuid())
-  title        String
-  description  String
-  assignedTo   User       @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
-  assignedToId String
-  comment      Comment?   @relation
-  commentId    String?
-  status       TaskStatus @default(Pending)
-  dueDate      DateTime
-  createdAt    DateTime   @default(now())
-  notifications Notification[]
-  notifyOnComplete Boolean @default(false)
-  notificationRecipients User[] @relation("TaskNotificationRecipients")
-  
+  id                     String         @id @default(uuid())
+  title                  String
+  description            String
+  assignedTo             User           @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
+  assignedToId           String
+  comment                Comment?       @relation
+  commentId              String?
+  status                 TaskStatus     @default(Pending)
+  dueDate                DateTime
+  createdAt              DateTime       @default(now())
+  notifications          Notification[]
+  notifyOnComplete       Boolean        @default(false)
+  notificationRecipients User[]         @relation("TaskNotificationRecipients")
+
   // Relación bidireccional con ContactInteraction
   // Una tarea solo puede estar vinculada a una interacción
-  linkedInteraction   ContactInteraction? @relation(fields: [interactionId], references: [id])
-  interactionId       String?
-  
+  linkedInteraction ContactInteraction? @relation(fields: [interactionId], references: [id])
+  interactionId     String?
+
   @@index([interactionId]) // Índice para optimizar consultas por interacción vinculada
 }
 
@@ -202,7 +204,6 @@ enum LogAction {
   Actualizar
   Ingresar
 }
-
 
 enum LogModule {
   Leads
@@ -235,16 +236,16 @@ enum NotificationStatus {
 }
 
 model Notification {
-  id          String           @id @default(cuid())
+  id          String             @id @default(cuid())
   type        NotificationType
   status      NotificationStatus @default(UNREAD)
   message     String
-  task        Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task        Task?              @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId      String?
-  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipient   User               @relation(fields: [recipientId], references: [id], onDelete: Cascade)
   recipientId String
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([recipientId, status])
 }

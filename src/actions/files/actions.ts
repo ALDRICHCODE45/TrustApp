@@ -104,7 +104,8 @@ export async function uploadFile(formData: FormData) {
 
   await s3.send(command);
 
-  const fileUrl = `https://${process.env.DO_SPACES_BUCKET!}.nyc3.digitaloceanspaces.com/${key}`;
+  const fileUrl = `https://${process.env
+    .DO_SPACES_BUCKET!}.nyc3.digitaloceanspaces.com/${key}`;
 
   return {
     success: true,
