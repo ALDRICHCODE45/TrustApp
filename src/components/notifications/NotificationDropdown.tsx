@@ -70,14 +70,8 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
   );
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-    // Configurar polling cada 30 segundos
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [userId]);
-
-  const fetchNotifications = async () => {
+ 
+  const fetchNotifications =useCallback( async () => {
     try {
       const response = await fetch(`/api/notifications?userId=${userId}`);
       const data = await response.json();
@@ -89,7 +83,14 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  };
+  },[userId])
+
+  useEffect(() => {
+    fetchNotifications();
+    // Configurar polling cada 30 segundos
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [userId, fetchNotifications]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
@@ -106,7 +107,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
       console.error("Error marking notification as read:", error);
       toast.error("Error, intentalo de nuevo mas tarde");
     }
-  }, []);
+  }, [fetchNotifications]);
 
   const handleMarkAsRead = useCallback(
     async (notificationId: string) => {

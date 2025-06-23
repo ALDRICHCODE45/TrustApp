@@ -80,7 +80,7 @@ export function LeadContactosSheet({
       email: "",
       phone: "",
     }),
-    [leadIdRef.current],
+    [],
   );
 
   const {
@@ -98,7 +98,7 @@ export function LeadContactosSheet({
   // Asegurar que el leadId esté actualizado sin causar re-renders innecesarios
   useEffect(() => {
     setValue("leadId", leadIdRef.current);
-  }, [setValue, leadIdRef.current]);
+  }, [setValue]);
 
   // Función de submit memoizada para evitar recreaciones
   const onSubmit = useCallback(

@@ -65,7 +65,7 @@ export default function CreateProfile() {
         description: "Usuario creado correctamente",
       });
     }
-  }, [lastResult, toast]);
+  }, [lastResult]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

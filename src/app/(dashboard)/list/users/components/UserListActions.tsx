@@ -56,7 +56,7 @@ export const UserListActions = ({ row }: Props) => {
     } finally {
       setIsDeleting(false);
     }
-  }, []);
+  }, [isDeleting]);
 
   return (
     <>

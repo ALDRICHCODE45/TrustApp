@@ -941,12 +941,12 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     const newSize = parseInt(value, 10);
     setPageSize(newSize);
     table.setPageSize(newSize);
-  }, []);
+  }, [table]);
 
   const handleGlobalFilterChange = useCallback((value: string) => {
     setGlobalFilter(value);
     table.setPageIndex(0);
-  }, []);
+  }, [table]);
 
   const handleStatusChange = useCallback((value: string) => {
     if (value === "all") {
@@ -957,7 +957,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     setCurrentStatus(value as LeadStatus);
     table.getColumn("status")?.setFilterValue(value);
     table.setPageIndex(0);
-  }, []);
+  }, [table]);
 
   const handleGlChange = useCallback((value: string) => {
     if (value === "all") {
@@ -968,7 +968,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
     setCurrentGl(value);
     table.getColumn("generadorLeads")?.setFilterValue(value);
     table.setPageIndex(0);
-  }, []);
+  }, [table]);
 
   const handleOrigenChange = useCallback(
     (value: string) => {

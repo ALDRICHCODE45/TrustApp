@@ -347,7 +347,7 @@ const LinkedTasksMiniDialog = ({
   const [error, setError] = useState<string | null>(null);
 
   // Función para cargar las tareas vinculadas
-  const loadLinkedTasks = async () => {
+  const loadLinkedTasks = useCallback( async () => {
     if (!interactionId || !open) return;
 
     setLoading(true);
@@ -362,14 +362,14 @@ const LinkedTasksMiniDialog = ({
     } finally {
       setLoading(false);
     }
-  };
+  },[interactionId, open])
 
   // Cargar tareas cuando se abre el diálogo
   useEffect(() => {
     if (open) {
       loadLinkedTasks();
     }
-  }, [open, interactionId]);
+  }, [open, interactionId,loadLinkedTasks]);
 
   // Función para obtener el estado visual de la tarea
   const getTaskStatusInfo = (task: TaskWithUsers) => {

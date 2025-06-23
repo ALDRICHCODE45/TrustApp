@@ -59,7 +59,7 @@ export function EditUserProfile({
       setCanEditEmail(false);
     }
     console.log({ user, id });
-  }, []);
+  }, [activeUserId, id, user]);
 
   const [open, setOpen] = useState<boolean>(false);
 

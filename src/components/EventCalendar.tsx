@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -45,7 +45,7 @@ export const EventCalendar = ({ userId }: Props) => {
   };
 
   // Cargar eventos del mes
-  const loadMonthEvents = async (date: Date) => {
+  const loadMonthEvents = useCallback( async (date: Date) => {
     setMonthLoading(true);
     try {
       const startDate = startOfMonth(date);
@@ -71,10 +71,10 @@ export const EventCalendar = ({ userId }: Props) => {
     } finally {
       setMonthLoading(false);
     }
-  };
+  },[userId])
 
   // Cargar eventos para una fecha específica
-  const loadEventsForDate = async (date: Date) => {
+  const loadEventsForDate =useCallback( async (date: Date) => {
     setLoading(true);
     try {
       // Usar formato YYYY-MM-DD para la fecha específica
@@ -94,7 +94,7 @@ export const EventCalendar = ({ userId }: Props) => {
     } finally {
       setLoading(false);
     }
-  };
+  },[userId])
 
   // Efecto inicial: cargar mes actual y eventos del día actual
   useEffect(() => {
@@ -111,14 +111,14 @@ export const EventCalendar = ({ userId }: Props) => {
     };
 
     initializeCalendar();
-  }, [userId]);
+  }, [userId, loadEventsForDate,loadMonthEvents]);
 
   // Efecto para cargar eventos cuando cambia la fecha seleccionada
   useEffect(() => {
     if (selectedDate && userId) {
       loadEventsForDate(selectedDate);
     }
-  }, [selectedDate, userId]);
+  }, [selectedDate, userId, loadEventsForDate]);
 
   // Manejar cambio de mes en el calendario
   const handleMonthChange = (date: Date) => {

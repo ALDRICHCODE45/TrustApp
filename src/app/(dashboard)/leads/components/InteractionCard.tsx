@@ -87,6 +87,7 @@ import {
 import { User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import {useCallback} from 'react'
 
 interface Props {
   interaction: ContactInteractionWithRelations;
@@ -1108,7 +1109,7 @@ const LinkedTasksDialog = ({
   const [error, setError] = useState<string | null>(null);
 
   // Función para cargar las tareas vinculadas
-  const loadLinkedTasks = async () => {
+  const loadLinkedTasks = useCallback(async () => {
     if (!interactionId || !open) return;
 
     setLoading(true);
@@ -1123,14 +1124,14 @@ const LinkedTasksDialog = ({
     } finally {
       setLoading(false);
     }
-  };
+  },[interactionId, open])
 
   // Cargar tareas cuando se abre el diálogo
   useEffect(() => {
     if (open) {
       loadLinkedTasks();
     }
-  }, [open, interactionId]);
+  }, [open, interactionId, loadLinkedTasks]);
 
   // Función para obtener el estado visual de la tarea
   const getTaskStatusInfo = (task: TaskWithUsers) => {
