@@ -96,14 +96,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       const dateOnly = new Date(
         date.getFullYear(),
         date.getMonth(),
-        date.getDate(),
+        date.getDate()
       );
 
       const fromDate = filterValue.from
         ? new Date(
             filterValue.from.getFullYear(),
             filterValue.from.getMonth(),
-            filterValue.from.getDate(),
+            filterValue.from.getDate()
           )
         : null;
 
@@ -111,7 +111,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
         ? new Date(
             filterValue.to.getFullYear(),
             filterValue.to.getMonth(),
-            filterValue.to.getDate(),
+            filterValue.to.getDate()
           )
         : null;
 
@@ -128,7 +128,6 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     id: "reclutador",
-    accessorKey: "reclutador",
     header: ({ column }) => (
       <SortableHeader column={column} title="Reclutador" />
     ),
@@ -136,47 +135,50 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       return <RecruiterDropDown row={row} />;
     },
     accessorFn: (row) => row.reclutador?.name,
+    enableGlobalFilter: true,
   },
   {
     id: "tipo",
-    accessorKey: "tipo",
     header: ({ column }) => <SortableHeader column={column} title="Tipo" />,
     cell: ({ row }) => {
       return <TypeDropdown row={row} />;
     },
     accessorFn: (row) => row.tipo,
+    enableGlobalFilter: true,
   },
   {
     id: "cliente",
-    accessorKey: "cliente",
     header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
     cell: ({ row }) => {
       return <ClientesDropDown row={row} />;
     },
     accessorFn: (row) => row.cliente.cuenta,
+    enableGlobalFilter: true,
   },
   {
     id: "estado",
-    accessorKey: "estado",
     header: ({ column }) => <SortableHeader column={column} title="Estado" />,
-
     cell: ({ row }) => {
       return <StatusDropdown row={row} />;
     },
+    accessorFn: (row) => row.estado,
+    enableGlobalFilter: true,
   },
   {
     id: "posicion",
-    accessorKey: "puesto",
     header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
     cell: ({ row }) => {
       return <PosicionPopOver row={row} />;
     },
+    accessorFn: (row) => row.puesto,
+    enableGlobalFilter: true,
   },
   {
     id: "comentarios",
-    accessorKey: "comentarios",
     header: "Comentarios",
     cell: ({ row }) => <CommentSheet comments={row.original.comentarios} />,
+    accessorFn: (row) => row.comentarios?.map((c) => c.texto).join(" ") || "",
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "fechaUltimaTerna",
@@ -200,11 +202,12 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     header: ({ column }) => (
       <SortableHeader column={column} title="Tiempo trranscurrido" />
     ),
-
     cell: ({ row }) => {
       const tiempo = row.original.tiempoTranscurrido;
       return <span>{tiempo} días</span>;
     },
+    accessorFn: (row) => row.tiempoTranscurrido?.toString(),
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "fechaOferta",
@@ -235,6 +238,8 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
         )}
       </div>
     ),
+    accessorFn: (row) => row.candidatoContratado?.nombre || "N.A",
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "salario",
@@ -243,6 +248,8 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       const salario = row.original.salario;
       return <span>${salario}</span>;
     },
+    accessorFn: (row) => row.salario?.toString(),
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "fechaComision",
@@ -266,6 +273,8 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     header: ({ column }) => (
       <SortableHeader column={column} title="Valor factura" />
     ),
+    accessorFn: (row) => row.valorFactura?.toString(),
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "fee",
@@ -274,10 +283,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       const fee = row.original.fee;
       return <span>{fee}%</span>;
     },
+    accessorFn: (row) => row.fee?.toString(),
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "monto",
     header: ({ column }) => <SortableHeader column={column} title="Monto" />,
+    accessorFn: (row) => row.monto?.toString(),
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "checklist",
@@ -316,7 +329,6 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
   },
   {
     accessorKey: "duracionTotal",
-
     header: ({ column }) => (
       <SortableHeader column={column} title="Duración Total" />
     ),
@@ -324,12 +336,15 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
       const total = row.original.duracionTotal;
       return <span>{total} días</span>;
     },
+    accessorFn: (row) => row.duracionTotal?.toString(),
+    enableGlobalFilter: true,
   },
   {
     id: "oficina",
     cell: () => null,
     header: () => null,
     accessorFn: (row) => row.reclutador.oficina,
+    enableGlobalFilter: true,
   },
   {
     id: "actions",

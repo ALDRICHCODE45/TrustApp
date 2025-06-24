@@ -1,6 +1,6 @@
 import { vacantes } from "@/lib/data";
 import { type ReactElement } from "react";
-import { RecruiterTable } from "../list/reclutamiento/table/RecruiterTable";
+import { RecruiterTable } from "../list/reclutamiento/table/RecruiterTableOptimized";
 import { reclutadorColumns } from "./components/ReclutadorColumns";
 import { ToastAlerts } from "@/components/ToastAlerts";
 import { checkRoleRedirect } from "../../helpers/checkRoleRedirect";

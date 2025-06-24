@@ -70,24 +70,24 @@ const data: {
     },
   ],
   navMain: [
-    // {
-    //   title: "Reclutamiento",
-    //   url: "#",
-    //   icon: UserSearch,
-    //   roles: [Role.reclutador],
-    //   items: [
-    //     {
-    //       title: "Vacantes",
-    //       url: "/reclutador",
-    //       roles: [Role.reclutador],
-    //     },
-    //     {
-    //       title: "Kanban",
-    //       url: "/reclutador/kanban",
-    //       roles: [Role.reclutador],
-    //     },
-    //   ],
-    // },
+    {
+      title: "Reclutamiento",
+      url: "#",
+      icon: UserSearch,
+      roles: [Role.reclutador],
+      items: [
+        {
+          title: "Vacantes",
+          url: "/reclutador",
+          roles: [Role.reclutador],
+        },
+        {
+          title: "Kanban",
+          url: "/reclutador/kanban",
+          roles: [Role.reclutador],
+        },
+      ],
+    },
     {
       title: "Generacion de Leads",
       url: "#",
@@ -211,7 +211,7 @@ export function AppSidebar({
     .map((item) => ({
       ...item,
       items: item.items?.filter((subItem) =>
-        subItem.roles?.includes(user.role),
+        subItem.roles?.includes(user.role)
       ),
     }));
 

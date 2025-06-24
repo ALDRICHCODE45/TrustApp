@@ -96,14 +96,14 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
       const dateOnly = new Date(
         date.getFullYear(),
         date.getMonth(),
-        date.getDate(),
+        date.getDate()
       );
 
       const fromDate = filterValue.from
         ? new Date(
             filterValue.from.getFullYear(),
             filterValue.from.getMonth(),
-            filterValue.from.getDate(),
+            filterValue.from.getDate()
           )
         : null;
 
@@ -111,7 +111,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
         ? new Date(
             filterValue.to.getFullYear(),
             filterValue.to.getMonth(),
-            filterValue.to.getDate(),
+            filterValue.to.getDate()
           )
         : null;
 
@@ -309,9 +309,14 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
   },
   {
     id: "oficina",
-    cell: () => null,
-    header: () => null,
-    accessorFn: (row) => row.reclutador.oficina,
+    accessorKey: "oficina",
+    header: ({ column }) => <SortableHeader column={column} title="Oficina" />,
+    cell: ({ row }) => {
+      return <span>{row.original.reclutador?.oficina || "Sin oficina"}</span>;
+    },
+    accessorFn: (row) => row.reclutador?.oficina,
+    enableSorting: true,
+    enableHiding: true,
   },
   {
     id: "actions",
@@ -319,5 +324,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <ActionsRecruitment row={row} />;
     },
+    enableSorting: false,
+    enableHiding: false,
   },
 ];

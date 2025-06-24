@@ -90,29 +90,36 @@ const getTipoColor = (tipo: string) => {
 // Components
 const VacanteCard: React.FC<VacanteCardProps> = ({ vacante, onClick }) => (
   <Card
-    className="mb-3 cursor-pointer hover:shadow-md transition-shadow"
+    className="cursor-pointer hover:shadow-md transition-shadow"
     onClick={onClick}
   >
     <CardHeader className="p-4 pb-2">
-      <div className="flex justify-between items-start">
-        <h3 className="font-medium text-base">{vacante.puesto}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium text-sm line-clamp-2">{vacante.puesto}</h3>
+        <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
+          {vacante.tipo}
+        </Badge>
       </div>
       <div className="flex items-center text-sm text-muted-foreground mt-1">
         <Building className="h-3.5 w-3.5 mr-1" />
-        <span>Zendesk</span>
+        <span>{vacante.cliente?.cuenta || "Sin cliente"}</span>
       </div>
     </CardHeader>
     <CardContent className="p-4 pt-0 pb-2">
       <div className="flex items-center text-sm mt-2">
         <Avatar className="h-6 w-6 mr-2">
           <AvatarImage
-            src={vacante.reclutador.photo}
-            alt={vacante.reclutador.name}
+            src={vacante.reclutador?.photo}
+            alt={vacante.reclutador?.name || "Reclutador"}
             className="h-full w-full object-cover"
           />
-          <AvatarFallback>{vacante.reclutador.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback>
+            {vacante.reclutador?.name?.charAt(0) || "R"}
+          </AvatarFallback>
         </Avatar>
-        <span className="text-sm">{vacante.reclutador.name}</span>
+        <span className="text-sm">
+          {vacante.reclutador?.name || "Sin reclutador"}
+        </span>
       </div>
       <div className="flex items-center text-sm mt-2">
         <Calendar className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
@@ -174,20 +181,26 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
         <div className="flex items-center gap-2">
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={vacante.reclutador.photo}
-              alt={vacante.reclutador.name}
+              src={vacante.reclutador?.photo}
+              alt={vacante.reclutador?.name || "Reclutador"}
               className="w-full h-full object-cover"
             />
-            <AvatarFallback>{vacante.reclutador.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>
+              {vacante.reclutador?.name?.charAt(0) || "R"}
+            </AvatarFallback>
           </Avatar>
           <div>
             <p className="text-sm text-muted-foreground">Reclutador asignado</p>
-            <p className="font-medium">{vacante.reclutador.name}</p>
+            <p className="font-medium">
+              {vacante.reclutador?.name || "Sin reclutador"}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Badge className={getTipoColor(vacante.tipo)}>{vacante.tipo}</Badge>
-          <Badge variant="outline">{vacante.cliente.cuenta}</Badge>
+          <Badge variant="outline">
+            {vacante.cliente?.cuenta || "Sin cliente"}
+          </Badge>
         </div>
       </div>
       {/* Información de cliente y tiempos */}
@@ -196,7 +209,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
           <div className="flex items-center">
             <Building className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Cliente:</span>
-            <span className="ml-2 font-medium">{vacante.cliente.cuenta}</span>
+            <span className="ml-2 font-medium">
+              {vacante.cliente?.cuenta || "Sin cliente"}
+            </span>
           </div>
           <div className="flex items-center">
             <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -232,13 +247,13 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
                   vacante.tiempoTranscurrido > 30
                     ? "bg-red-500"
                     : vacante.tiempoTranscurrido > 15
-                      ? "bg-amber-500"
-                      : "bg-green-500"
+                    ? "bg-amber-500"
+                    : "bg-green-500"
                 }`}
                 style={{
                   width: `${Math.min(
                     100,
-                    (vacante.tiempoTranscurrido / 45) * 100,
+                    (vacante.tiempoTranscurrido / 45) * 100
                   )}%`,
                 }}
               ></div>
@@ -670,6 +685,15 @@ export const KanbanBoardPage = () => {
   const [selectedVacante, setSelectedVacante] = useState<Vacante | null>(null);
   const [mobileView, setMobileView] = useState<string | null>(null);
 
+  // Filtrar vacantes que tienen reclutador asignado
+  const validVacantes = vacantes.filter((vacante) => {
+    if (!vacante.reclutador) {
+      console.warn(`Vacante ${vacante.id} no tiene reclutador asignado`);
+      return false;
+    }
+    return true;
+  });
+
   const columns = [
     { id: "Hunting", title: "Hunting" },
     { id: "Entrevistas", title: "Entrevistas" },
@@ -689,10 +713,10 @@ export const KanbanBoardPage = () => {
                 key={column.id}
                 id={column.id}
                 title={column.title}
-                vacantes={vacantes.filter((v) => v.estado === column.id)}
+                vacantes={validVacantes.filter((v) => v.estado === column.id)}
                 onVacanteClick={setSelectedVacante}
               />
-            ),
+            )
         )}
       </div>
     </div>

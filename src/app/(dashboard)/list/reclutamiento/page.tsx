@@ -1,12 +1,12 @@
 import { type ReactElement } from "react";
 import { vacantesColumns } from "./columns";
 import { Vacante, vacantes } from "@/lib/data";
-import { RecruiterTable } from "./table/RecruiterTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
+import { RecruiterTable } from "./table/RecruiterTableOptimized";
 
 export interface pageProps {}
 
@@ -23,7 +23,7 @@ const fetchVacantes = async () => {
           data: vacantes,
         });
       }, 2000); // Retraso de 2 segundos
-    },
+    }
   );
 };
 
