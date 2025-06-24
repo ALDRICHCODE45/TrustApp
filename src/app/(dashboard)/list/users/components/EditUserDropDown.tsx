@@ -41,6 +41,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export function EditUserProfile({
   user,
@@ -53,6 +61,10 @@ export function EditUserProfile({
   const [canEditEmail, setCanEditEmail] = useState<boolean>(true);
   const [index, setIndex] = useState<number>();
   const [dialogConfirmOpen, setDialogConfirmOpen] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    user.ingreso ? new Date(user.ingreso) : undefined
+  );
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
     if (user.id === activeUserId) {
@@ -71,7 +83,7 @@ export function EditUserProfile({
 
   const [lastResult, formAction, isPending] = useActionState(
     wrapEditUser(String(id)),
-    undefined,
+    undefined
   );
 
   const [form, fields] = useForm({
@@ -222,7 +234,7 @@ export function EditUserProfile({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold ">
                     Información Personal
                   </h3>
                 </div>
@@ -232,7 +244,7 @@ export function EditUserProfile({
                   <div className="space-y-2">
                     <Label
                       htmlFor={fields.name.id}
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium "
                     >
                       Nombre completo
                     </Label>
@@ -251,7 +263,7 @@ export function EditUserProfile({
                   <div className="space-y-2">
                     <Label
                       htmlFor={fields.email.id}
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium"
                     >
                       Correo electrónico
                     </Label>
@@ -275,7 +287,7 @@ export function EditUserProfile({
                   <div className="space-y-2">
                     <Label
                       htmlFor={fields.celular?.id}
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium "
                     >
                       Número de teléfono
                     </Label>
@@ -296,7 +308,7 @@ export function EditUserProfile({
                   <div className="space-y-2">
                     <Label
                       htmlFor={fields.age?.id}
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium"
                     >
                       Edad
                     </Label>
@@ -315,24 +327,72 @@ export function EditUserProfile({
                 </div>
 
                 {/* Campo Dirección */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={fields.direccion.id}
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Dirección
-                  </Label>
-                  <Input
-                    id={fields.direccion.id}
-                    name={fields.direccion.name}
-                    key={fields.direccion.key}
-                    defaultValue={user.direccion}
-                    placeholder="Calle, número, colonia, ciudad"
-                    type="text"
-                  />
-                  <p className="text-sm text-red-500">
-                    {fields.direccion.errors}
-                  </p>
+                <div className="flex w-full gap-4">
+                  {/* Campo Dirección */}
+                  <div className="space-y-2 w-1/2">
+                    <Label
+                      htmlFor={fields.direccion.id}
+                      className="text-sm font-medium "
+                    >
+                      Dirección
+                    </Label>
+                    <Input
+                      id={fields.direccion.id}
+                      name={fields.direccion.name}
+                      key={fields.direccion.key}
+                      defaultValue={user.direccion}
+                      placeholder="Calle, número, colonia, ciudad"
+                      type="text"
+                    />
+                    <p className="text-sm text-red-500">
+                      {fields.direccion.errors}
+                    </p>
+                  </div>
+                  {/* Campo Fecha de ingreso */}
+                  <div className="space-y-2 w-1/2">
+                    {selectedDate && (
+                      <input
+                        type="hidden"
+                        name={fields.ingreso.name}
+                        key={fields.ingreso.key}
+                        value={selectedDate.toISOString()}
+                      />
+                    )}
+                    <Label
+                      htmlFor={fields.ingreso.id}
+                      className="text-sm font-medium "
+                    >
+                      Fecha de ingreso
+                    </Label>
+                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          {selectedDate ? (
+                            format(selectedDate, "eee dd/MM/yyyy", {
+                              locale: es,
+                            })
+                          ) : (
+                            <span>Seleccionar fecha</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent side="top" className="z-[999999] w-full">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          locale={es}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <p className="text-sm text-red-500">
+                      {fields.ingreso.errors}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -340,7 +400,7 @@ export function EditUserProfile({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold ">
                     Configuración Laboral
                   </h3>
                 </div>
@@ -348,9 +408,7 @@ export function EditUserProfile({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Campo Role */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Rol
-                    </Label>
+                    <Label className="text-sm font-medium ">Rol</Label>
                     <Select
                       name={fields.role.name}
                       key={fields.role.key}
@@ -385,9 +443,7 @@ export function EditUserProfile({
 
                   {/* Campo Oficina */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Oficina
-                    </Label>
+                    <Label className="text-sm font-medium ">Oficina</Label>
                     <Select
                       name={fields.oficina.name}
                       key={fields.oficina.key}
@@ -418,9 +474,7 @@ export function EditUserProfile({
 
                   {/* Campo Status */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Estado
-                    </Label>
+                    <Label className="text-sm font-medium ">Estado</Label>
                     <Select
                       defaultValue={user.State}
                       name={fields.status.name}
@@ -461,9 +515,7 @@ export function EditUserProfile({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1 h-6"></div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Imagen de Perfil
-                  </h3>
+                  <h3 className="text-lg font-semibold ">Imagen de Perfil</h3>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <UploadProfileImage userId={user.id} />
@@ -474,7 +526,7 @@ export function EditUserProfile({
         </div>
 
         {/* Footer con botones */}
-        <DialogFooter className="border-t border-gray-200 bg-gray-50/50 px-6 py-4">
+        <DialogFooter className="border-t px-6 py-4">
           <DialogClose asChild>
             <Button type="button" variant="outline" className="h-10">
               Cancelar

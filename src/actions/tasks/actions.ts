@@ -53,7 +53,7 @@ export const getTaskByDate = async (userId: string, date: string) => {
 export async function getTasksByMonth(
   userId: string,
   startDate: string,
-  endDate: string,
+  endDate: string
 ) {
   try {
     if (!userId || !startDate || !endDate) {
@@ -101,7 +101,7 @@ export const createTask = async (formData: FormData) => {
   const dueDate = formData.get("dueDate") as string;
   const notifyOnComplete = formData.get("notifyOnComplete") === "true";
   const notificationRecipients = formData.getAll(
-    "notificationRecipients",
+    "notificationRecipients"
   ) as string[];
 
   if (!userId) {
@@ -431,7 +431,7 @@ export const createTaskFromContactInteractionLinked = async ({
 export const createTaskFromContact = async (
   title: string,
   description: string,
-  dueDate: string,
+  dueDate: string
 ) => {
   const session = await checkSession();
 
@@ -473,6 +473,75 @@ export const createTaskFromContact = async (
     return {
       ok: false,
       message: "Error inesperado, revisa los logs",
+    };
+  }
+};
+
+// Función para obtener estadísticas de tareas del usuario
+export const getTaskStatistics = async (userId: string) => {
+  try {
+    // Obtener fecha actual y calcular inicio del mes
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
+    // 1. Tareas completadas este mes
+    const tasksCompletedThisMonth = await prisma.task.count({
+      where: {
+        assignedToId: userId,
+        status: TaskStatus.Done,
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+    });
+
+    // 2. Total de tareas completadas
+    const totalCompletedTasks = await prisma.task.count({
+      where: {
+        assignedToId: userId,
+        status: TaskStatus.Done,
+      },
+    });
+
+    // 3. Tareas vencidas (pendientes que ya pasaron su fecha de vencimiento)
+    const overdueTasks = await prisma.task.count({
+      where: {
+        assignedToId: userId,
+        status: TaskStatus.Pending,
+        dueDate: {
+          lt: now, // Fecha de vencimiento menor que la fecha actual
+        },
+      },
+    });
+
+    return {
+      ok: true,
+      statistics: {
+        tasksCompletedThisMonth,
+        totalCompletedTasks,
+        overdueTasks,
+      },
+    };
+  } catch (error) {
+    console.error("Error obteniendo estadísticas de tareas:", error);
+    return {
+      ok: false,
+      message: "Error al obtener estadísticas de tareas",
+      statistics: {
+        tasksCompletedThisMonth: 0,
+        totalCompletedTasks: 0,
+        overdueTasks: 0,
+      },
     };
   }
 };

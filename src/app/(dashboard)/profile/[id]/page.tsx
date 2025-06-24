@@ -18,6 +18,7 @@ import { LeadPerformanceChart } from "../components/PerformanceChart";
 import { unstable_noStore as noStore } from "next/cache";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskWithUsers } from "../../list/reclutamiento/components/ActivityProfileSheet";
+import { getTaskStatistics } from "@/actions/tasks/actions";
 
 const fetchDoneTasksByUserId = async (userId: string) => {
   noStore();
@@ -119,9 +120,32 @@ export default async function UserProfile({
     }
   };
 
+  const loadTaskStatistics = async () => {
+    try {
+      const result = await getTaskStatistics(id);
+      if (!result.ok) {
+        console.error("Error obteniendo estadísticas:", result.message);
+        return {
+          tasksCompletedThisMonth: 0,
+          totalCompletedTasks: 0,
+          overdueTasks: 0,
+        };
+      }
+      return result.statistics;
+    } catch (error) {
+      console.error("Error cargando estadísticas:", error);
+      return {
+        tasksCompletedThisMonth: 0,
+        totalCompletedTasks: 0,
+        overdueTasks: 0,
+      };
+    }
+  };
+
   const user = await loadProfile();
   const tasks = await loadTasks();
   const doneTasks = await fetchDoneTasksByUserId(id);
+  const taskStatistics = await loadTaskStatistics();
 
   return (
     <>
@@ -143,14 +167,16 @@ export default async function UserProfile({
                 <Card className="border">
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-500">Este mes</p>
-                    <p className="text-2xl font-medium mt-1">0</p>
+                    <p className="text-2xl font-medium mt-1">
+                      {taskStatistics.tasksCompletedThisMonth}
+                    </p>
                   </CardContent>
                 </Card>
                 <Card className="border">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">Tiempo Promedio</p>
+                    <p className="text-sm text-gray-500">Tareas Vencidas</p>
                     <p className="text-2xl font-medium mt-1">
-                      0 <span className="text-sm">(dias)</span>
+                      {taskStatistics.overdueTasks}
                     </p>
                   </CardContent>
                 </Card>
@@ -158,7 +184,7 @@ export default async function UserProfile({
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-500">Tareas Completadas</p>
                     <p className="text-2xl font-medium mt-1">
-                      {doneTasks.length || 0}
+                      {taskStatistics.totalCompletedTasks}
                     </p>
                   </CardContent>
                 </Card>

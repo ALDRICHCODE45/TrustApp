@@ -31,13 +31,23 @@ import { UserState, Role, Oficina } from "@prisma/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import UploadProfileImage from "@/components/comp-543";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function CreateProfile() {
   const [open, setOpen] = useState(false);
   const [lastResult, formAction, isPending] = useActionState(
     createUser,
-    undefined,
+    undefined
   );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const [form, fields] = useForm({
     lastResult,
@@ -262,6 +272,39 @@ export default function CreateProfile() {
                     {fields.celular.errors}
                   </p>
                 </div>
+              </div>
+
+              <div className="space-y-2 w-1/2">
+                {selectedDate && (
+                  <input
+                    type="hidden"
+                    name={fields.ingreso.name}
+                    key={fields.ingreso.key}
+                    value={selectedDate.toISOString()}
+                  />
+                )}
+
+                <Label>Fecha de ingreso</Label>
+                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" className="w-full">
+                      {selectedDate ? (
+                        format(selectedDate, "eee dd/MM/yyyy", {
+                          locale: es,
+                        })
+                      ) : (
+                        <span>Seleccionar fecha</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="top" className="z-[999999] w-full">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="*:not-first:mt-2">

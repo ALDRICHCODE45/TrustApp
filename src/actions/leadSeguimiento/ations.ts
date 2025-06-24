@@ -48,7 +48,7 @@ export const deleteInteractionById = async (interactionId: string) => {
       const fileKey = fileToDelete.attachmentUrl.split("/").pop();
       if (!fileKey) {
         throw new Error(
-          "Error al obtener el fileKey en deleteInteraccionById action",
+          "Error al obtener el fileKey en deleteInteraccionById action"
         );
       }
       const fileDeleted = await deleteFile(fileKey, interactionId);
@@ -62,7 +62,7 @@ export const deleteInteractionById = async (interactionId: string) => {
 
 export const editInteractionById = async (
   interactionId: string,
-  formData: FormData,
+  formData: FormData
 ) => {
   // 1. Validación y limpieza de datos
   const content = formData.get("content")?.toString().trim();
@@ -130,7 +130,7 @@ export const editInteractionById = async (
 };
 
 export const createInteraction = async (
-  formData: FormData,
+  formData: FormData
 ): Promise<ContactInteractionWithRelations> => {
   const content = formData.get("content") as string;
   const contactoId = formData.get("contactoId") as string;
@@ -190,7 +190,7 @@ export const createInteraction = async (
 };
 
 export const getAllContactInteractionsByContactId = async (
-  contactId: string,
+  contactId: string
 ): Promise<ContactInteractionWithRelations[]> => {
   try {
     const result = await prisma.contactInteraction.findMany({
@@ -212,7 +212,7 @@ export const getAllContactInteractionsByContactId = async (
 
 // Nueva función para obtener todas las interacciones de un lead
 export const getAllInteractionsByLeadId = async (
-  leadId: string,
+  leadId: string
 ): Promise<ContactInteractionWithRelations[]> => {
   try {
     const session = await auth();
@@ -258,7 +258,7 @@ export const getAllInteractionsByLeadId = async (
     throw new Error(
       err instanceof Error
         ? err.message
-        : "Error al obtener las interacciones del lead",
+        : "Error al obtener las interacciones del lead"
     );
   }
 };
@@ -335,7 +335,7 @@ export const getContactosByLeadId = async (leadId: string) => {
 
 // Nueva función para obtener las tareas vinculadas a una interacción
 export const getTasksByInteractionId = async (
-  interactionId: string,
+  interactionId: string
 ): Promise<TaskWithUsers[]> => {
   try {
     const session = await auth();
@@ -368,7 +368,7 @@ export const getTasksByInteractionId = async (
     throw new Error(
       err instanceof Error
         ? err.message
-        : "Error al obtener las tareas de la interacción",
+        : "Error al obtener las tareas de la interacción"
     );
   }
 };

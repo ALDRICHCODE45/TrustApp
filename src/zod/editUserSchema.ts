@@ -18,4 +18,9 @@ export const editUserSchema = z.object({
   celular: z.string().min(6, "El celular es requerido").optional(),
   role: z.enum(["reclutador", "GL", "Admin", "MK"]).optional(),
   image: z.string().optional(),
+  ingreso: z.coerce
+    .date({
+      invalid_type_error: "Debe ser una fecha válida",
+    })
+    .optional(),
 });

@@ -92,6 +92,7 @@ export const editUser = async (userId: string, formData: FormData) => {
       State: submission.value.status || existingUser.State,
       role: submission.value.role || existingUser.role,
       image: submission.value.image || existingUser.image,
+      ingreso: submission.value.ingreso || existingUser.ingreso,
     },
   });
 
@@ -142,6 +143,7 @@ export const createUser = async (prevState: any, formData: FormData) => {
         State: submission.value.status,
         role: submission.value.role,
         image: submission.value.image,
+        //ingreso: submission.value.ingreso,
       },
     });
 

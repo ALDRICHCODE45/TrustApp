@@ -13,6 +13,8 @@ import {
 } from "@/app/(dashboard)/list/reclutamiento/components/ActivityProfileSheet";
 import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/UserInfoCard";
 import { ChangePassword } from "@/app/(dashboard)/list/users/components/ChangePassword";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const oficinaMapper = {
   Oficina1: "Oficina 1",
@@ -80,7 +82,11 @@ export const UserProfileHeader = ({
               <Lightbox
                 slides={[
                   {
-                    src: `${user?.image ? user.image : "https://gremcorpsarpg.com/images/avatars/default.jpg"}`,
+                    src: `${
+                      user?.image
+                        ? user.image
+                        : "https://gremcorpsarpg.com/images/avatars/default.jpg"
+                    }`,
                   },
                 ]}
                 index={index}
@@ -98,6 +104,14 @@ export const UserProfileHeader = ({
                     </Badge>
                   </div>
                   <p className="text-muted-foreground">{user?.email}</p>
+                  {user?.ingreso && (
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Ingreso:{" "}
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {format(user?.ingreso, "EEE d/M/yyyy", { locale: es })}
+                      </Badge>
+                    </p>
+                  )}
                 </div>
                 {/* TODO: FUNCIONALIDAD PARA VER TODAS LAS TAREAS COMPARTIDAS */}
                 {/* <Button variant="outline"> */}
