@@ -34,6 +34,26 @@ import { Badge } from "@/components/ui/badge";
 import { Role, UsersData } from "../../../../../lib/data";
 import Link from "next/link";
 
+// Tipos para el formulario
+interface FormData {
+  // Información básica
+  tipoVacante: string;
+  estado: string;
+  puesto: string;
+  cliente: string;
+  fechaLimite: string;
+  reclutador: {
+    id: number | null;
+    name: string;
+  };
+  // Información financiera
+  salario: string;
+  valorFactura: string;
+  fee: string;
+  // Archivos
+  uploadedFiles: File[];
+}
+
 // Componente principal para crear una vacante
 export const CreateVacanteForm = () => {
   return (
@@ -141,6 +161,51 @@ const FileCard = ({ file }: { file: File }) => (
 
 // Componente principal del formulario de vacante
 function VacancyForm() {
+  // Estado global del formulario
+  const [formData, setFormData] = useState<FormData>({
+    tipoVacante: "",
+    estado: "",
+    puesto: "",
+    cliente: "",
+    fechaLimite: "",
+    reclutador: {
+      id: null,
+      name: "Seleccionar",
+    },
+    salario: "",
+    valorFactura: "",
+    fee: "",
+    uploadedFiles: [],
+  });
+
+  // Función para actualizar el estado del formulario
+  const updateFormData = (field: keyof FormData, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Función para actualizar campos anidados
+  const updateNestedFormData = (
+    parentField: keyof FormData,
+    childField: string,
+    value: any
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [parentField]: {
+        ...(prev[parentField] as any),
+        [childField]: value,
+      },
+    }));
+  };
+
+  const handleSave = () => {
+    console.log("Datos del formulario:", formData);
+    // Aquí puedes agregar la lógica para guardar los datos
+  };
+
   return (
     <Tabs defaultValue="basic" className="w-full">
       <TabsList className="grid w-full grid-cols-3 mb-4 mt-4">
@@ -151,21 +216,37 @@ function VacancyForm() {
 
       {/* Tab de Información Básica */}
       <TabsContent value="basic">
-        <BasicInformationTab />
+        <BasicInformationTab
+          formData={formData}
+          updateFormData={updateFormData}
+          updateNestedFormData={updateNestedFormData}
+        />
       </TabsContent>
 
       {/* Tab de Archivos */}
       <TabsContent value="files">
-        <FilesTab files={demoFiles} />
+        <FilesTab
+          files={demoFiles}
+          formData={formData}
+          updateFormData={updateFormData}
+        />
       </TabsContent>
 
       {/* Tab de Información Fiscal */}
       <TabsContent value="financial">
-        <FinancialInformationTab />
+        <FinancialInformationTab
+          formData={formData}
+          updateFormData={updateFormData}
+        />
       </TabsContent>
 
       {/* Botón de Guardar */}
-      <Button type="button" variant={"default"} className="w-full mt-4">
+      <Button
+        type="button"
+        variant={"default"}
+        className="w-full mt-4"
+        onClick={handleSave}
+      >
         Guardar Vacante
       </Button>
     </Tabs>
@@ -173,18 +254,24 @@ function VacancyForm() {
 }
 
 // Componente para la pestaña de información básica
-const BasicInformationTab = () => {
-  const [reclutador, setNewReclutador] = useState({
-    name: "Seleccionar",
-    id: null,
-  });
-
+const BasicInformationTab = ({
+  formData,
+  updateFormData,
+  updateNestedFormData,
+}: {
+  formData: FormData;
+  updateFormData: (field: keyof FormData, value: any) => void;
+  updateNestedFormData: (
+    parentField: keyof FormData,
+    childField: string,
+    value: any
+  ) => void;
+}) => {
   // Filter only recruiters from the UsersData array
   const recruiters = UsersData.filter((user) => user.rol === Role.reclutador);
 
   const handleReclutadorChange = (newReclutador: any) => {
-    setNewReclutador(newReclutador);
-    // Here you could also update your data source or call an API
+    updateFormData("reclutador", newReclutador);
   };
 
   return (
@@ -198,7 +285,10 @@ const BasicInformationTab = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <Label>Tipo de Vacante</Label>
-            <Select>
+            <Select
+              value={formData.tipoVacante}
+              onValueChange={(value) => updateFormData("tipoVacante", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar Tipo" />
               </SelectTrigger>
@@ -210,7 +300,10 @@ const BasicInformationTab = () => {
           </div>
           <div className="flex flex-col gap-2">
             <Label>Estado</Label>
-            <Select>
+            <Select
+              value={formData.estado}
+              onValueChange={(value) => updateFormData("estado", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar Estado" />
               </SelectTrigger>
@@ -228,11 +321,18 @@ const BasicInformationTab = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <Label>Puesto</Label>
-            <Input placeholder="Ej. Desarrollador Senior" />
+            <Input
+              placeholder="Ej. Desarrollador Senior"
+              value={formData.puesto}
+              onChange={(e) => updateFormData("puesto", e.target.value)}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label>Cliente</Label>
-            <Select>
+            <Select
+              value={formData.cliente}
+              onValueChange={(value) => updateFormData("cliente", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar Cliente" />
               </SelectTrigger>
@@ -258,7 +358,11 @@ const BasicInformationTab = () => {
           <div className="flex flex-col gap-2">
             <Label>Fecha Límite</Label>
             <div className="relative">
-              <Input type="date" />
+              <Input
+                type="date"
+                value={formData.fechaLimite}
+                onChange={(e) => updateFormData("fechaLimite", e.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -267,7 +371,7 @@ const BasicInformationTab = () => {
           <DropdownMenuTrigger asChild className="w-full">
             <Button variant="outline" size="sm" className="flex ">
               <User />
-              <span className="truncate">{reclutador.name}</span>
+              <span className="truncate">{formData.reclutador.name}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full max-h-[250px] overflow-y-auto z-[999]">
@@ -323,47 +427,102 @@ const BasicInformationTab = () => {
 };
 
 // Componente para la pestaña de archivos
-const FilesTab = ({ files }: { files: File[] }) => (
-  <Card className="w-full">
-    <CardHeader>
-      <CardTitle className="flex items-center justify-between">
-        <div className="flex items-center">Documentos de la Vacante</div>
-        <label htmlFor="file-upload" className="cursor-pointer">
-          <Button variant="outline" size="sm">
-            <Upload className="mr-2 h-4 w-4" />
-            Subir Archivo
-          </Button>
-          <input
-            type="file"
-            id="file-upload"
-            className="hidden"
-            accept=".pdf,.docx,.doc"
-          />
-        </label>
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-2 gap-4">
-        {files.map((file) => (
-          <FileCard key={file.id} file={file} />
-        ))}
-      </div>
+const FilesTab = ({
+  files,
+  formData,
+  updateFormData,
+}: {
+  files: File[];
+  formData: FormData;
+  updateFormData: (field: keyof FormData, value: any) => void;
+}) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFiles = event.target.files;
+    if (uploadedFiles) {
+      const newFiles = Array.from(uploadedFiles);
+      updateFormData("uploadedFiles", [...formData.uploadedFiles, ...newFiles]);
+    }
+  };
 
-      {files.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-          <p>No hay documentos subidos</p>
-          <p className="text-sm">
-            Sube tus archivos usando el botón Subir Archivo
-          </p>
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center">Documentos de la Vacante</div>
+          <label htmlFor="file-upload" className="cursor-pointer">
+            <Button variant="outline" size="sm">
+              <Upload className="mr-2 h-4 w-4" />
+              Subir Archivo
+            </Button>
+            <input
+              type="file"
+              id="file-upload"
+              className="hidden"
+              accept=".pdf,.docx,.doc"
+              multiple
+              onChange={handleFileUpload}
+            />
+          </label>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          {files.map((file) => (
+            <FileCard key={file.id} file={file} />
+          ))}
         </div>
-      )}
-    </CardContent>
-  </Card>
-);
+
+        {/* Mostrar archivos subidos por el usuario */}
+        {formData.uploadedFiles.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2">Archivos subidos:</h4>
+            <div className="space-y-2">
+              {formData.uploadedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                >
+                  <span className="text-sm">{file.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newFiles = formData.uploadedFiles.filter(
+                        (_, i) => i !== index
+                      );
+                      updateFormData("uploadedFiles", newFiles);
+                    }}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {files.length === 0 && formData.uploadedFiles.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <p>No hay documentos subidos</p>
+            <p className="text-sm">
+              Sube tus archivos usando el botón Subir Archivo
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 // Componente para la pestaña de información fiscal (mejorado visualmente)
-const FinancialInformationTab = () => (
+const FinancialInformationTab = ({
+  formData,
+  updateFormData,
+}: {
+  formData: FormData;
+  updateFormData: (field: keyof FormData, value: any) => void;
+}) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center">Detalles Financieros</CardTitle>
@@ -373,7 +532,12 @@ const FinancialInformationTab = () => (
         <div className="flex flex-col gap-2">
           <Label>Salario</Label>
           <div className="relative">
-            <Input type="number" placeholder="0" />
+            <Input
+              type="number"
+              placeholder="0"
+              value={formData.salario}
+              onChange={(e) => updateFormData("salario", e.target.value)}
+            />
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -383,13 +547,20 @@ const FinancialInformationTab = () => (
               type="number"
               placeholder="0"
               className="custom-number-input"
+              value={formData.valorFactura}
+              onChange={(e) => updateFormData("valorFactura", e.target.value)}
             />
           </div>
         </div>
         <div className="flex flex-col gap-2">
           <Label>Fee</Label>
           <div className="relative">
-            <Input type="number" placeholder="0" />
+            <Input
+              type="number"
+              placeholder="0"
+              value={formData.fee}
+              onChange={(e) => updateFormData("fee", e.target.value)}
+            />
           </div>
         </div>
       </div>
