@@ -103,6 +103,11 @@ export function EditUserProfile({
 
   const deleteImageProfile = async (userId: string) => {
     try {
+      const userHasAlreadyImage = user.image;
+      if (!userHasAlreadyImage) {
+        toast.error("El usuario no tiene una imagen de perfil");
+        return;
+      }
       const result = deleteUserProfileImage(user.id);
 
       toast.promise(result, {
@@ -204,7 +209,7 @@ export function EditUserProfile({
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => deleteUserProfileImage(user.id)}
+                      onClick={() => deleteImageProfile(user.id)}
                     >
                       Confirmar
                     </AlertDialogAction>

@@ -47,7 +47,7 @@ interface PerformanceData {
   citasAtendidas: number;
 }
 
-export const LeadPerformanceChart: React.FC = () => {
+export const LeadPerformanceChart = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [data, setData] = useState<PerformanceData[]>([]);
@@ -55,13 +55,13 @@ export const LeadPerformanceChart: React.FC = () => {
 
   // Configuración del gráfico
   const chartConfig = {
-    contactos: { label: "Contactos", color: "#94a3b8" },
-    socialSelling: { label: "S.S", color: "#6366f1" },
-    contactosCalidos: { label: "C.C", color: "#f59e0b" },
-    citasAgendadas: { label: "C.A", color: "#ec4899" },
-    citasValidadas: { label: "C.V", color: "#8b5cf6" },
-    citasAtendidas: { label: "C.At", color: "#94a3b8" },
-    asignadas: { label: "Asignadas", color: "#3b82f6" },
+    contactos: { label: "Contactos", color: "#e2e8f0" },
+    socialSelling: { label: "S.S", color: "#cbd5e1" },
+    contactosCalidos: { label: "C.C", color: "#94a3b8" },
+    citasAgendadas: { label: "C.A", color: "#64748b" },
+    citasValidadas: { label: "C.V", color: "#475569" },
+    citasAtendidas: { label: "C.At", color: "#334155" },
+    asignadas: { label: "Asignadas", color: "#1e293b" },
   };
 
   // Obtener usuarios cuando el componente se monta
@@ -114,17 +114,17 @@ export const LeadPerformanceChart: React.FC = () => {
 
   return (
     <Card className="shadow-sm h-full">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-4">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-base">Rendimiento de Leads</CardTitle>
-            <CardDescription>
-              Visualiza tu rendimiento y progreso
+            <CardTitle className="text-lg font-medium ">Rendimiento</CardTitle>
+            <CardDescription className="text-sm ">
+              Progreso mensual
             </CardDescription>
           </div>
           <div className="w-40">
             <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full border-gray-200 text-sm">
                 <SelectValue placeholder="Seleccionar usuario" />
               </SelectTrigger>
               <SelectContent>
@@ -138,12 +138,12 @@ export const LeadPerformanceChart: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-4">
         {/* Contenedor con altura fija para evitar el salto */}
-        <div className="w-full h-[378px] relative">
+        <div className="w-full h-[320px] relative">
           {isLoading ? (
-            <div className="absolute inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm z-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="absolute inset-0 flex justify-center items-center bg-white/90 backdrop-blur-sm z-10">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-300"></div>
             </div>
           ) : null}
 
@@ -152,33 +152,39 @@ export const LeadPerformanceChart: React.FC = () => {
               <AreaChart
                 data={data}
                 margin={{
-                  top: 10,
-                  right: 10,
+                  top: 5,
+                  right: 5,
                   left: 0,
-                  bottom: 0,
+                  bottom: 5,
                 }}
               >
                 <CartesianGrid
                   vertical={false}
-                  strokeDasharray="3 3"
-                  opacity={0.2}
+                  stroke="#f1f5f9"
+                  opacity={0.6}
                 />
                 <XAxis
                   dataKey="mes"
                   tickLine={false}
                   axisLine={false}
-                  tickMargin={10}
-                  tick={{ fontSize: 11, fill: "#64748b" }}
+                  tickMargin={8}
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tick={{ fontSize: 11, fill: "#64748b" }}
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  domain={[0, "dataMax + 10"]}
                 />
                 <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
+                  cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                  content={
+                    <ChartTooltipContent
+                      indicator="line"
+                      className="bg-white border border-gray-200 shadow-sm"
+                    />
+                  }
                 />
 
                 {Object.entries(chartConfig).map(([key, config]) => (
@@ -187,9 +193,9 @@ export const LeadPerformanceChart: React.FC = () => {
                     dataKey={key}
                     type="monotone"
                     fill={config.color}
-                    fillOpacity={0.2}
+                    fillOpacity={0.4}
                     stroke={config.color}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     stackId="a"
                     name={config.label}
                   />

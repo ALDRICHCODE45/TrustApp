@@ -27,7 +27,7 @@ interface Props {
 
 export const EventCalendar = ({ userId }: Props) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
+    new Date()
   );
   const [events, setEvents] = useState<Task[]>([]);
   const [monthEvents, setMonthEvents] = useState<Task[]>([]);
@@ -45,56 +45,62 @@ export const EventCalendar = ({ userId }: Props) => {
   };
 
   // Cargar eventos del mes
-  const loadMonthEvents = useCallback( async (date: Date) => {
-    setMonthLoading(true);
-    try {
-      const startDate = startOfMonth(date);
-      const endDate = endOfMonth(date);
+  const loadMonthEvents = useCallback(
+    async (date: Date) => {
+      setMonthLoading(true);
+      try {
+        const startDate = startOfMonth(date);
+        const endDate = endOfMonth(date);
 
-      // Usar startOfDay y endOfDay para obtener el rango completo
-      const startDateTime = startOfDay(startDate);
-      const endDateTime = endOfDay(endDate);
+        // Usar startOfDay y endOfDay para obtener el rango completo
+        const startDateTime = startOfDay(startDate);
+        const endDateTime = endOfDay(endDate);
 
-      const result = await getTasksByMonth(
-        userId,
-        startDateTime.toISOString(),
-        endDateTime.toISOString(),
-      );
+        const result = await getTasksByMonth(
+          userId,
+          startDateTime.toISOString(),
+          endDateTime.toISOString()
+        );
 
-      if (result.ok) {
-        setMonthEvents(result.tasks || []);
-      } else {
-        toast.error(result.error || "Error al cargar eventos del mes");
+        if (result.ok) {
+          setMonthEvents(result.tasks || []);
+        } else {
+          toast.error(result.error || "Error al cargar eventos del mes");
+        }
+      } catch (error) {
+        toast.error("Error al cargar eventos del mes");
+      } finally {
+        setMonthLoading(false);
       }
-    } catch (error) {
-      toast.error("Error al cargar eventos del mes");
-    } finally {
-      setMonthLoading(false);
-    }
-  },[userId])
+    },
+    [userId]
+  );
 
   // Cargar eventos para una fecha específica
-  const loadEventsForDate =useCallback( async (date: Date) => {
-    setLoading(true);
-    try {
-      // Usar formato YYYY-MM-DD para la fecha específica
-      const dateString = formatDateForServer(date);
+  const loadEventsForDate = useCallback(
+    async (date: Date) => {
+      setLoading(true);
+      try {
+        // Usar formato YYYY-MM-DD para la fecha específica
+        const dateString = formatDateForServer(date);
 
-      const result = await getTaskByDate(userId, dateString);
+        const result = await getTaskByDate(userId, dateString);
 
-      if (result.ok) {
-        setEvents(result.tasks || []);
-      } else {
-        toast.error(result.message || "Error al traer las tareas");
+        if (result.ok) {
+          setEvents(result.tasks || []);
+        } else {
+          toast.error(result.message || "Error al traer las tareas");
+          setEvents([]);
+        }
+      } catch (error) {
+        toast.error("Error al traer las tareas");
         setEvents([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("Error al traer las tareas");
-      setEvents([]);
-    } finally {
-      setLoading(false);
-    }
-  },[userId])
+    },
+    [userId]
+  );
 
   // Efecto inicial: cargar mes actual y eventos del día actual
   useEffect(() => {
@@ -111,7 +117,7 @@ export const EventCalendar = ({ userId }: Props) => {
     };
 
     initializeCalendar();
-  }, [userId, loadEventsForDate,loadMonthEvents]);
+  }, [userId, loadEventsForDate, loadMonthEvents]);
 
   // Efecto para cargar eventos cuando cambia la fecha seleccionada
   useEffect(() => {
@@ -141,7 +147,7 @@ export const EventCalendar = ({ userId }: Props) => {
     return new Date(
       eventDate.getFullYear(),
       eventDate.getMonth(),
-      eventDate.getDate(),
+      eventDate.getDate()
     );
   });
 
@@ -166,7 +172,7 @@ export const EventCalendar = ({ userId }: Props) => {
               selected={selectedDate}
               onSelect={handleDateSelect}
               onMonthChange={handleMonthChange}
-              className="rounded-md border-0"
+              className="rounded-md border-0  [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
               locale={es}
               modifiers={{
                 hasEvents: eventDates,

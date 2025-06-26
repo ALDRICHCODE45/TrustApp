@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Cliente, usuario_logeado } from "@/lib/data";
-import { ClientEditForm } from "./EditCliente";
+// import { ClientEditForm } from "./EditCliente";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import CreateVacanteForm from "../../../list/reclutamiento/components/CreateVacanteForm";
-import { NuevoComentarioForm } from "../../../list/reclutamiento/components/CommentSheet";
+import { PlusCircle, Edit3 } from "lucide-react";
+import { NuevoComentarioForm } from "@/app/(dashboard)/list/reclutamiento/components/CommentSheet";
+// import CreateVacanteForm from "../../../list/reclutamiento/components/CreateVacanteForm";
 
 export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
   const getClientStatus = () => {
@@ -29,7 +29,10 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
         <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5 relative">
           {usuario_logeado?.role === "admin" && (
             <div className="absolute top-4 right-4">
-              <ClientEditForm />
+              <Button variant="outline" size="sm">
+                <Edit3 className="h-4 w-4" />
+                Editar Cliente
+              </Button>
             </div>
           )}
         </div>
@@ -49,7 +52,7 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
                   {client.modalidad}
                 </Badge>
               </div>
-              <p className="text-muted-foreground">{client.usuario.name}</p>
+              <p className="text-muted-foreground">{client?.usuario?.name}</p>
             </div>
 
             <div className="sm:ml-auto flex flex-wrap gap-2 mt-2 sm:mt-0">
@@ -66,11 +69,16 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
                     <Separator />
                   </DialogHeader>
                   {/* Formulario dentro del diálogo */}
-                  <NuevoComentarioForm />
+                  <div className="text-muted-foreground">
+                    <NuevoComentarioForm />
+                  </div>
                 </DialogContent>
               </Dialog>
 
-              <CreateVacanteForm />
+              <Button variant="outline" size="sm">
+                <PlusCircle />
+                Nueva Vacante
+              </Button>
             </div>
           </div>
         </div>

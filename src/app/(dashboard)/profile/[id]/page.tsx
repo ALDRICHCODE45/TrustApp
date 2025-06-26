@@ -144,7 +144,6 @@ export default async function UserProfile({
 
   const user = await loadProfile();
   const tasks = await loadTasks();
-  const doneTasks = await fetchDoneTasksByUserId(id);
   const taskStatistics = await loadTaskStatistics();
 
   return (
