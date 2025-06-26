@@ -228,6 +228,11 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }
   };
 
+  // Función para verificar si el lead ya tiene los datos requeridos para ContactoCalido
+  const hasContactoCalidoData = (lead: LeadWithRelations): boolean => {
+    return !!(lead.numero_empleados && lead.ubicacion && lead.subSectorId);
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -242,8 +247,15 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     const leadToUpdate = leads.find((lead) => lead.id === leadId);
 
     if (leadToUpdate && leadToUpdate.status !== newStatus) {
-      // Si se intenta mover a ContactoCalido, mostrar el dialog
+      // Si se intenta mover a ContactoCalido, verificar si ya tiene los datos requeridos
       if (newStatus === LeadStatus.ContactoCalido) {
+        // Si ya tiene los datos requeridos, proceder directamente
+        if (hasContactoCalidoData(leadToUpdate)) {
+          await updateLeadStatus(leadId, newStatus, leadToUpdate);
+          return;
+        }
+
+        // Si no tiene los datos, mostrar el dialog
         setPendingLeadUpdate({
           leadId,
           newStatus,
