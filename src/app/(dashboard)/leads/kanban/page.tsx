@@ -13,6 +13,7 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
     sector: true;
     origen: true;
     generadorLeads: true;
+    SubSector: true;
     contactos: {
       include: {
         interactions: {
@@ -50,6 +51,7 @@ const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
         },
         sector: true,
         origen: true,
+        SubSector: true,
         statusHistory: {
           include: {
             changedBy: true,

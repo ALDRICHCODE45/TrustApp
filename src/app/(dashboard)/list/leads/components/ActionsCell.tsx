@@ -65,14 +65,12 @@ export const ActionsCell = ({ row }: { row: Row<LeadWithRelations> }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="z-40" align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleEditClick}
             className="cursor-pointer"
             onSelect={(e) => e.preventDefault()}
           >
-            <SquarePen className="mr-2 h-4 w-4" />
+            <SquarePen className="mr-2 h-4 w-4 text-gray-500" />
             Editar
           </DropdownMenuItem>
           <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
@@ -81,8 +79,8 @@ export const ActionsCell = ({ row }: { row: Row<LeadWithRelations> }) => {
                 onSelect={(e) => e.preventDefault()}
                 className="cursor-pointer"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Eliminar
+                <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+                <span className="text-red-500">Eliminar</span>
               </DropdownMenuItem>
             </AlertDialogTrigger>
             <AlertDialogContent>

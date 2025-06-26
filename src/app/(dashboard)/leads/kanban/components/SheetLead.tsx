@@ -39,10 +39,21 @@ export const getStatusColor = (status: LeadStatus) => {
   return statusColors[status];
 };
 
+// Función helper para mostrar el número de empleados en formato legible
+const getEmployeeCountDisplay = (count: number | null): string => {
+  if (!count) return "No especificado";
+
+  if (count <= 10) return "1-10 empleados";
+  if (count <= 50) return "11-50 empleados";
+  if (count <= 100) return "51-100 empleados";
+  if (count <= 500) return "101-500 empleados";
+  return "Más de 500 empleados";
+};
+
 export function LeadSheet({ lead }: Props) {
   const diffInDays = getDiffDays(lead.createdAt);
   const [contactos, setContactos] = useState<ContactWithRelations[]>(
-    lead?.contactos || [],
+    lead?.contactos || []
   );
   const [linkVerify, setLinkVerfy] = useState(lead.link);
 
@@ -54,7 +65,7 @@ export function LeadSheet({ lead }: Props) {
 
   return (
     <>
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent className="sm:max-w-md">
         <div className="flex flex-col h-full">
           {/* Sección de cabecera con título y descripción */}
           <SheetHeader className="border-b pb-4">
@@ -124,6 +135,33 @@ export function LeadSheet({ lead }: Props) {
                   </p>
                 </Badge>
               </div>
+
+              <div className="flex justify-between">
+                <h3 className="text-sm font-medium">Ubicacion</h3>
+                <Badge variant="outline">
+                  <p className="text-muted-foreground">
+                    {lead?.ubicacion || "No especificado"}
+                  </p>
+                </Badge>
+              </div>
+
+              <div className="flex justify-between">
+                <h3 className="text-sm font-medium">Numero de empleados</h3>
+                <Badge variant="outline">
+                  <p className="text-muted-foreground">
+                    {getEmployeeCountDisplay(lead?.numero_empleados)}
+                  </p>
+                </Badge>
+              </div>
+
+              <div className="flex justify-between">
+                <h3 className="text-sm font-medium">Subsector</h3>
+                <Badge variant="outline">
+                  <p className="text-muted-foreground">
+                    {lead?.SubSector?.nombre || "No especificado"}
+                  </p>
+                </Badge>
+              </div>
             </div>
 
             {lead?.link && (
@@ -152,75 +190,79 @@ export function LeadSheet({ lead }: Props) {
           </div>
 
           {/* Tabs para la información adicional */}
-          <div className="flex-grow ">
-            <Tabs defaultValue="contacts" className="mt-4 z-50">
+          <div className="flex-grow">
+            <Tabs defaultValue="contacts" className="mt-4">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="contacts">Contactos</TabsTrigger>
                 <TabsTrigger value="history">Historial</TabsTrigger>
               </TabsList>
-              <TabsContent value="contacts" className="py-4 z-[9999px]">
-                <ScrollArea className="h-[400px]">
-                  {contactos?.length > 0 ? (
-                    <div className="space-y-4">
-                      {contactos.map((contacto) => (
-                        <ContactoCard
-                          contacto={contacto}
-                          key={contacto.id}
-                          onUpdateContacts={setContactos}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col justify-center items-center gap-2 py-8">
-                      <UserX size={40} className="text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground text-center">
-                        No hay contactos disponibles.
-                      </p>
-                    </div>
-                  )}
-                </ScrollArea>
+              <TabsContent value="contacts" className="py-4">
+                <div className="h-[400px] rounded-md border">
+                  <ScrollArea className="h-full p-4">
+                    {contactos?.length > 0 ? (
+                      <div className="space-y-4 pr-4">
+                        {contactos.map((contacto) => (
+                          <ContactoCard
+                            contacto={contacto}
+                            key={contacto.id}
+                            onUpdateContacts={setContactos}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col justify-center items-center gap-2 py-8 h-full">
+                        <UserX size={40} className="text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground text-center">
+                          No hay contactos disponibles.
+                        </p>
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
               </TabsContent>
               <TabsContent value="history" className="py-4">
-                <ScrollArea className="h-80 rounded-md border p-3">
-                  {lead?.statusHistory?.length > 0 ? (
-                    <div className="space-y-3">
-                      {lead.statusHistory.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center text-sm border-b pb-3"
-                        >
-                          <div>
-                            <span className="font-medium">
-                              {leadStatusMap[item.status]}
+                <div className="h-[400px] rounded-md border">
+                  <ScrollArea className="h-full p-4">
+                    {lead?.statusHistory?.length > 0 ? (
+                      <div className="space-y-3 pr-4">
+                        {lead.statusHistory.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center text-sm border-b pb-3"
+                          >
+                            <div>
+                              <span className="font-medium">
+                                {leadStatusMap[item.status]}
+                              </span>
+                              <p className="text-muted-foreground text-xs">
+                                Por: {item.changedBy.name}
+                              </p>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {format(
+                                new Date(item.changedAt),
+                                "dd/MM/yy HH:mm",
+                                { locale: es }
+                              )}
                             </span>
-                            <p className="text-muted-foreground text-xs">
-                              Por: {item.changedBy.name}
-                            </p>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(item.changedAt),
-                              "dd/MM/yy HH:mm",
-                              { locale: es },
-                            )}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                        <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                        ))}
                       </div>
-                      <h3 className="font-medium mb-1">
-                        Sin historial de cambios
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Los cambios de estado se registrarán aquí.
-                      </p>
-                    </div>
-                  )}
-                </ScrollArea>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                          <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <h3 className="font-medium mb-1">
+                          Sin historial de cambios
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Los cambios de estado se registrarán aquí.
+                        </p>
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

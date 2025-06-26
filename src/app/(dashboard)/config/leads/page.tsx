@@ -5,9 +5,12 @@ import { SectoresSection } from "./components/SectoresSection";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
+import { CreateSubSectorForm } from "./components/CreateSubSectorForm";
 
 const getAllOrigenes = async () => {
   try {
@@ -69,6 +72,7 @@ const LeadsPage = async () => {
                 <CardHeader>En Construccion</CardHeader>
                 <CardContent>Seccion en Construccion.</CardContent>
                 <CardFooter>Pronta liberacion</CardFooter>
+                <CreateSubSectorForm />
               </Card>
             </TabsContent>
           </div>

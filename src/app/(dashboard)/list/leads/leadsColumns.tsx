@@ -24,6 +24,11 @@ declare module "@tanstack/react-table" {
   }
 }
 
+const oficinaMap = {
+  Oficina1: "Oficina 1",
+  Oficina2: "Oficina 2",
+};
+
 export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
   {
     id: "select",
@@ -140,7 +145,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
       const fechaUTC = new Date(row.createdAt);
       // Convertir a fecha local para el filtrado
       return new Date(
-        fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+        fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
       );
     },
     filterFn: "filterDateRange",
@@ -173,7 +178,13 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     header: () => <div className="text-center">Oficina</div>,
     cell: ({ row }) => {
       return (
-        <Button variant="outline">{row.original.generadorLeads.Oficina}</Button>
+        <Button variant="outline">
+          {
+            oficinaMap[
+              row.original.generadorLeads.Oficina as keyof typeof oficinaMap
+            ]
+          }
+        </Button>
       );
     },
     accessorFn: (row) => {

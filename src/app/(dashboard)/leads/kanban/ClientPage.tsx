@@ -17,17 +17,27 @@ import { toast } from "sonner";
 import { KanbanFilters, FilterState } from "./components/KanbanFilters";
 import { DroppableKanbanColumn } from "./components/KanbanColumn";
 import { useState, useEffect } from "react";
-import { Lead, LeadStatus, User } from "@prisma/client";
+import { Lead, LeadStatus, SubSector, User } from "@prisma/client";
 import { LeadWithRelations } from "./page";
 import { editLeadById } from "@/actions/leads/actions";
 import { useWindowSize } from "@/components/providers/ConfettiProvider";
 import { format, isSameDay } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import {
+  ContactoCalidoDialog,
+  ContactoCalidoFormData,
+} from "./components/ContactoCalidoDialog";
+import { getAllSubSectores } from "@/actions/subsectores/actions";
 
 interface Props {
   initialLeads: LeadWithRelations[];
   generadores: User[];
 }
+
+const getSubSectores = async () => {
+  const subSectores = await getAllSubSectores();
+  return subSectores;
+};
 
 export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const { width, height } = useWindowSize();
@@ -39,6 +49,24 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
   const [, setSelectedTask] = useState<Lead | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeLead, setActiveLead] = useState<LeadWithRelations | null>(null);
+  const [subSectores, setSubSectores] = useState<SubSector[]>([]);
+
+  useEffect(() => {
+    const fetchSubSectores = async () => {
+      const subSectores = await getSubSectores();
+      setSubSectores(subSectores);
+    };
+    fetchSubSectores();
+  }, []);
+
+  // Estados para el dialog de ContactoCalido
+  const [showContactoCalidoDialog, setShowContactoCalidoDialog] =
+    useState(false);
+  const [pendingLeadUpdate, setPendingLeadUpdate] = useState<{
+    leadId: string;
+    newStatus: LeadStatus;
+    leadToUpdate: LeadWithRelations;
+  } | null>(null);
 
   const [filters, setFilters] = useState<FilterState>({
     generadorId: null,
@@ -53,7 +81,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 5 },
-    }),
+    })
   );
 
   useEffect(() => {
@@ -64,21 +92,21 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       result = result.filter(
         (lead) =>
           lead.empresa.toLowerCase().includes(searchLower) ||
-          lead.sector.nombre.toLowerCase().includes(searchLower),
+          lead.sector.nombre.toLowerCase().includes(searchLower)
       );
     }
 
     // Filter by generator
     if (filters.generadorId) {
       result = result.filter(
-        (lead) => lead.generadorId === filters.generadorId,
+        (lead) => lead.generadorId === filters.generadorId
       );
     }
 
     // Filter by office
     if (filters.oficina) {
       result = result.filter(
-        (lead) => lead.generadorLeads.Oficina === filters.oficina,
+        (lead) => lead.generadorLeads.Oficina === filters.oficina
       );
     }
 
@@ -87,8 +115,12 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       result = result.filter((lead) => {
         if (!lead.createdAt) return false;
         const leadDate = new Date(lead.createdAt);
-        const fromDate = filters.fechaCreacion?.from ? new Date(filters.fechaCreacion.from) : null;
-        const toDate = filters.fechaCreacion?.to ? new Date(filters.fechaCreacion.to) : null;
+        const fromDate = filters.fechaCreacion?.from
+          ? new Date(filters.fechaCreacion.from)
+          : null;
+        const toDate = filters.fechaCreacion?.to
+          ? new Date(filters.fechaCreacion.to)
+          : null;
 
         if (fromDate && toDate) {
           return leadDate >= fromDate && leadDate <= toDate;
@@ -104,13 +136,10 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     setFilteredLeads(result);
   }, [filters, leads]);
 
-  const groupedLeads = Object.values(LeadStatus).reduce(
-    (acc, status) => {
-      acc[status] = filteredLeads.filter((lead) => lead.status === status);
-      return acc;
-    },
-    {} as Record<LeadStatus, LeadWithRelations[]>,
-  );
+  const groupedLeads = Object.values(LeadStatus).reduce((acc, status) => {
+    acc[status] = filteredLeads.filter((lead) => lead.status === status);
+    return acc;
+  }, {} as Record<LeadStatus, LeadWithRelations[]>);
 
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -121,6 +150,73 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       ...prev,
       [filterKey]: null,
     }));
+  };
+
+  // Funciones para manejar el dialog de ContactoCalido
+  const handleContactoCalidoConfirm = async (
+    formData: ContactoCalidoFormData
+  ) => {
+    if (pendingLeadUpdate) {
+      // Crear FormData con TODOS los datos incluyendo el nuevo status
+      const formDataToSend = new FormData();
+      formDataToSend.append("numero_empleados", formData.numeroEmpleados);
+      formDataToSend.append("ubicacion", formData.ubicacion);
+      formDataToSend.append("subSectorId", formData.subsector);
+      formDataToSend.append("status", pendingLeadUpdate.newStatus);
+
+      // Buscar el subsector seleccionado para incluir el objeto completo
+      const selectedSubSector = subSectores.find(
+        (sub) => sub.id === formData.subsector
+      );
+
+      // Actualizar el estado local optimistamente con todos los cambios
+      setLeads((currentLeads) =>
+        currentLeads.map((lead) =>
+          lead.id === pendingLeadUpdate.leadId
+            ? {
+                ...lead,
+                status: pendingLeadUpdate.newStatus,
+                numero_empleados:
+                  formData.numeroEmpleados === "500+"
+                    ? 500
+                    : parseInt(formData.numeroEmpleados.split("-")[0]) ||
+                      lead.numero_empleados,
+                ubicacion: formData.ubicacion,
+                subSectorId: formData.subsector,
+                SubSector: selectedSubSector || null,
+              }
+            : lead
+        )
+      );
+
+      // Hacer una sola llamada que actualice todo
+      const promise = editLeadById(pendingLeadUpdate.leadId, formDataToSend);
+
+      toast.promise(promise, {
+        loading: "Guardando cambios...",
+        success: () =>
+          `Lead actualizado a Contacto Cálido con información adicional`,
+        error: () => {
+          // Revertir el cambio si hay un error
+          setLeads((currentLeads) =>
+            currentLeads.map((lead) =>
+              lead.id === pendingLeadUpdate.leadId
+                ? { ...lead, status: pendingLeadUpdate.leadToUpdate.status }
+                : lead
+            )
+          );
+          return `Error al actualizar`;
+        },
+      });
+
+      setShowContactoCalidoDialog(false);
+      setPendingLeadUpdate(null);
+    }
+  };
+
+  const handleContactoCalidoCancel = () => {
+    setShowContactoCalidoDialog(false);
+    setPendingLeadUpdate(null);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -146,38 +242,57 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     const leadToUpdate = leads.find((lead) => lead.id === leadId);
 
     if (leadToUpdate && leadToUpdate.status !== newStatus) {
-      // Actualizar optimistamente el estado local
-      setLeads((currentLeads) =>
-        currentLeads.map((lead) =>
-          lead.id === leadId ? { ...lead, status: newStatus } : lead,
-        ),
-      );
-
-      // llamar accion para ACTUALIZAR lead
-      const formData = new FormData();
-      formData.append("status", newStatus);
-
-      const promise = editLeadById(leadId, formData);
-
-      toast.promise(promise, {
-        loading: "Guardando cambios...",
-        success: () => `Lead actualizado a ${newStatus}`,
-        error: () => {
-          // Revertir el cambio si hay un error
-          setLeads((currentLeads) =>
-            currentLeads.map((lead) =>
-              lead.id === leadId
-                ? { ...lead, status: leadToUpdate.status }
-                : lead,
-            ),
-          );
-          return `Error al actualizar`;
-        },
-      });
-      if (newStatus === LeadStatus.Asignadas) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 10000);
+      // Si se intenta mover a ContactoCalido, mostrar el dialog
+      if (newStatus === LeadStatus.ContactoCalido) {
+        setPendingLeadUpdate({
+          leadId,
+          newStatus,
+          leadToUpdate,
+        });
+        setShowContactoCalidoDialog(true);
+        return;
       }
+
+      // Para otros estados, proceder normalmente
+      await updateLeadStatus(leadId, newStatus, leadToUpdate);
+    }
+  };
+
+  const updateLeadStatus = async (
+    leadId: string,
+    newStatus: LeadStatus,
+    leadToUpdate: LeadWithRelations
+  ) => {
+    // Actualizar optimistamente el estado local
+    setLeads((currentLeads) =>
+      currentLeads.map((lead) =>
+        lead.id === leadId ? { ...lead, status: newStatus } : lead
+      )
+    );
+
+    // llamar accion para ACTUALIZAR lead
+    const formData = new FormData();
+    formData.append("status", newStatus);
+
+    const promise = editLeadById(leadId, formData);
+
+    toast.promise(promise, {
+      loading: "Guardando cambios...",
+      success: () => `Lead actualizado a ${newStatus}`,
+      error: () => {
+        // Revertir el cambio si hay un error
+        setLeads((currentLeads) =>
+          currentLeads.map((lead) =>
+            lead.id === leadId ? { ...lead, status: leadToUpdate.status } : lead
+          )
+        );
+        return `Error al actualizar`;
+      },
+    });
+
+    if (newStatus === LeadStatus.Asignadas) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 10000);
     }
   };
 
@@ -265,13 +380,22 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
               <span>
                 Fecha:{" "}
                 {filters.fechaCreacion?.from && filters.fechaCreacion?.to
-                  ? `${format(new Date(filters.fechaCreacion.from), "dd/MM/yyyy")} - ${format(
+                  ? `${format(
+                      new Date(filters.fechaCreacion.from),
+                      "dd/MM/yyyy"
+                    )} - ${format(
                       new Date(filters.fechaCreacion.to),
                       "dd/MM/yyyy"
                     )}`
                   : filters.fechaCreacion?.from
-                  ? `Desde ${format(new Date(filters.fechaCreacion.from), "dd/MM/yyyy")}`
-                  : `Hasta ${format(new Date(filters.fechaCreacion.to!), "dd/MM/yyyy")}`}
+                  ? `Desde ${format(
+                      new Date(filters.fechaCreacion.from),
+                      "dd/MM/yyyy"
+                    )}`
+                  : `Hasta ${format(
+                      new Date(filters.fechaCreacion.to!),
+                      "dd/MM/yyyy"
+                    )}`}
               </span>
               <X
                 className="size-4 ml-1 cursor-pointer hover:text-red-500"
@@ -319,6 +443,16 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
           )}
         </DragOverlay>
       </DndContext>
+
+      {/* Dialog para ContactoCalido */}
+      <ContactoCalidoDialog
+        open={showContactoCalidoDialog}
+        onOpenChange={setShowContactoCalidoDialog}
+        lead={pendingLeadUpdate?.leadToUpdate || null}
+        onConfirm={handleContactoCalidoConfirm}
+        onCancel={handleContactoCalidoCancel}
+        subSectores={subSectores}
+      />
     </div>
   );
 }

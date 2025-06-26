@@ -30,7 +30,6 @@ import { createUserSchema } from "@/zod/createUserSchema";
 import { UserState, Role, Oficina } from "@prisma/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import UploadProfileImage from "@/components/comp-543";
 import {
   Popover,
   PopoverContent,
@@ -67,11 +66,11 @@ export default function CreateProfile() {
     if (!lastResult) return;
 
     if (lastResult.status === "error" && lastResult.error) {
-      toast("Error", { description: "Ocurrio un error" });
+      toast.error("Error", { description: "Ocurrio un error" });
     }
 
     if (lastResult.status === "success" && !lastResult.error) {
-      toast("Operacion Exitosa", {
+      toast.success("Operacion Exitosa", {
         description: "Usuario creado correctamente",
       });
     }
@@ -274,7 +273,7 @@ export default function CreateProfile() {
                 </div>
               </div>
 
-              <div className="space-y-2 w-1/2">
+              <div className="space-y-2 w-full">
                 {selectedDate && (
                   <input
                     type="hidden"

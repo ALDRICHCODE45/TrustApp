@@ -75,6 +75,12 @@ model Sector {
   leads  Lead[]
 }
 
+model SubSector {
+  id     String @id @default(cuid())
+  nombre String @unique
+  leads  Lead[]
+}
+
 model LeadOrigen {
   id        String    @id @default(cuid())
   createdAt DateTime? @default(now())
@@ -96,13 +102,16 @@ enum LeadStatus {
 }
 
 model Lead {
-  id             String              @id @default(cuid())
-  empresa        String
-  link           String
-  status         LeadStatus          @default(Contacto)
-  contactos      Person[]
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  id               String     @id @default(cuid())
+  empresa          String
+  link             String
+  status           LeadStatus @default(Contacto)
+  contactos        Person[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  numero_empleados Int?
+  ubicacion        String?
+
   // Relaciones con Sector y Origen
   sectorId       String
   sector         Sector              @relation(fields: [sectorId], references: [id])
@@ -112,6 +121,9 @@ model Lead {
   generadorId    String
   generadorLeads User                @relation(fields: [generadorId], references: [id], onDelete: Cascade)
   statusHistory  LeadStatusHistory[]
+  //Relaciones con subsector
+  SubSector      SubSector?          @relation(fields: [subSectorId], references: [id])
+  subSectorId    String?
 }
 
 //modelo de contacto para todos los moodulos

@@ -21,6 +21,7 @@ const fetchData = async (): Promise<{
       generadorLeads: true,
       origen: true,
       sector: true,
+      SubSector: true,
       contactos: {
         include: {
           interactions: {

@@ -76,7 +76,7 @@ const filterAnything: FilterFn<LeadWithRelations> = (
   row: Row<LeadWithRelations>,
   columnId: string,
   filterValue: any,
-  addMeta: (meta: any) => void,
+  addMeta: (meta: any) => void
 ) => {
   if (!filterValue || filterValue === "") return true;
 
@@ -91,7 +91,7 @@ const filterAnything: FilterFn<LeadWithRelations> = (
 const filterDateRange: FilterFn<LeadWithRelations> = (
   row: Row<LeadWithRelations>,
   columnId: string,
-  filterValue: { from: Date | undefined; to: Date | undefined },
+  filterValue: { from: Date | undefined; to: Date | undefined }
 ) => {
   if (!filterValue?.from && !filterValue?.to) return true;
 
@@ -99,7 +99,7 @@ const filterDateRange: FilterFn<LeadWithRelations> = (
   const fechaUTC = new Date(row.original.createdAt);
   // Convertir a fecha local para comparación
   const fechaLocal = new Date(
-    fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" }),
+    fechaUTC.toLocaleString("en-US", { timeZone: "America/Mexico_City" })
   );
 
   // Convertir las fechas del filtro a la zona horaria local
@@ -107,14 +107,14 @@ const filterDateRange: FilterFn<LeadWithRelations> = (
     ? new Date(
         filterValue.from.toLocaleString("en-US", {
           timeZone: "America/Mexico_City",
-        }),
+        })
       )
     : undefined;
   const to = filterValue.to
     ? new Date(
         filterValue.to.toLocaleString("en-US", {
           timeZone: "America/Mexico_City",
-        }),
+        })
       )
     : undefined;
 
@@ -137,6 +137,18 @@ const filterDateRange: FilterFn<LeadWithRelations> = (
   return true;
 };
 
+// Tipos para paginación híbrida
+interface HybridPaginationData {
+  currentPage: number;
+  totalPages: number;
+  totalLocalRecords: number;
+  totalServerRecords: number;
+  hasMoreInServer: boolean;
+  pageSize: number;
+  goToPage: (page: number) => void;
+  setPageSize: (size: number) => void;
+}
+
 // Tipos
 export interface DataTableProps<LeadWithRelations, TValue> {
   columns: ColumnDef<LeadWithRelations, TValue>[];
@@ -145,6 +157,13 @@ export interface DataTableProps<LeadWithRelations, TValue> {
   filterPlaceholder?: string;
   generadores: User[];
   origenes?: LeadOrigen[];
+  // Props para paginación híbrida
+  hybridPagination?: HybridPaginationData;
+  onHybridParamsChange?: (params: any) => void;
+  currentHybridParams?: any;
+  isHybridLoading?: boolean;
+  isFiltering?: boolean;
+  onHybridRefresh?: () => void;
 }
 
 // Componente de filtro y selector de columnas
@@ -245,7 +264,7 @@ function TableFilters<TData extends { id: string }, TValue>({
               if (typeof value === "string") return `"${value}"`;
               return value ?? "";
             })
-            .join(","),
+            .join(",")
         ),
       ].join("\n");
 
@@ -416,7 +435,9 @@ function TableFilters<TData extends { id: string }, TValue>({
                   {currentDateRange.from &&
                     format(currentDateRange.from, "dd/MM/yyyy", { locale: es })}
                   {currentDateRange.to &&
-                    ` - ${format(currentDateRange.to, "dd/MM/yyyy", { locale: es })}`}
+                    ` - ${format(currentDateRange.to, "dd/MM/yyyy", {
+                      locale: es,
+                    })}`}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -595,8 +616,6 @@ function TablePagination<TData>({
                 <SelectContent>
                   <SelectItem value="5">5</SelectItem>
                   <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -659,15 +678,134 @@ function TablePagination<TData>({
   );
 }
 
+// Componente de paginación híbrida
+interface HybridPaginationProps {
+  hybridData: HybridPaginationData;
+}
+
+function HybridPagination({ hybridData }: HybridPaginationProps) {
+  const {
+    currentPage,
+    totalPages,
+    totalLocalRecords,
+    totalServerRecords,
+    hasMoreInServer,
+    goToPage,
+    setPageSize,
+    pageSize, // Agregamos pageSize para usar el valor actual
+  } = hybridData;
+
+  return (
+    <Card className="mt-4">
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Información de paginación */}
+          <div className="flex-1 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <span className="font-medium">
+                Página {currentPage} de {totalPages}
+              </span>
+              <span className="text-muted-foreground">
+                ({totalLocalRecords} cargados de {totalServerRecords} totales)
+              </span>
+              {hasMoreInServer && (
+                <Badge variant="outline" className="text-xs">
+                  🔄 Pre-cargando más...
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Selector de filas por página y navegación */}
+          <div className="flex items-center gap-4">
+            {/* Selector de filas por página */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="hybrid-page-size" className="text-sm">
+                Filas por página:
+              </Label>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => setPageSize(parseInt(value, 10))}
+              >
+                <SelectTrigger id="hybrid-page-size" className="w-[80px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Navegación de páginas */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+                title="Primera página"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 -ml-2" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                title="Página anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Indicador de página actual */}
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-sm font-medium">{currentPage}</span>
+                <span className="text-sm text-muted-foreground">/</span>
+                <span className="text-sm text-muted-foreground">
+                  {totalPages}
+                </span>
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                title="Página siguiente"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+                title="Última página"
+              >
+                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 -ml-2" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Componente de la tabla
 interface DataGridProps<TData, TValue> {
   table: ReturnType<typeof useReactTable<TData>>;
   columns: ColumnDef<TData, TValue>[];
+  isFiltering?: boolean;
 }
 
 function DataGrid<TData, TValue>({
   table,
   columns,
+  isFiltering,
 }: DataGridProps<TData, TValue>) {
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -695,8 +833,14 @@ function DataGrid<TData, TValue>({
                     className={`
                       font-semibold transition-all duration-200
                       ${isDraggable ? "cursor-move" : ""}
-                      ${draggedColumn === header.id ? "opacity-50 scale-95" : ""}
-                      ${dropTarget === header.id ? "bg-primary/20 border-2 border-primary" : ""}
+                      ${
+                        draggedColumn === header.id ? "opacity-50 scale-95" : ""
+                      }
+                      ${
+                        dropTarget === header.id
+                          ? "bg-primary/20 border-2 border-primary"
+                          : ""
+                      }
                       hover:bg-muted/70
                     `}
                     draggable={isDraggable}
@@ -756,7 +900,7 @@ function DataGrid<TData, TValue>({
                             newColumnOrder.splice(
                               dropIndex,
                               0,
-                              draggedColumnId,
+                              draggedColumnId
                             );
                             setColumnOrder(newColumnOrder);
                             table.setColumnOrder(newColumnOrder);
@@ -772,7 +916,7 @@ function DataGrid<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </div>
                   </TableHead>
@@ -812,19 +956,30 @@ function DataGrid<TData, TValue>({
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <p className="text-muted-foreground">
-                    No se encontraron resultados.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      table.resetColumnFilters();
-                      table.resetGlobalFilter();
-                    }}
-                  >
-                    Limpiar filtros
-                  </Button>
+                  {isFiltering ? (
+                    <>
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-muted-foreground">
+                        Aplicando filtros...
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-muted-foreground">
+                        No se encontraron resultados.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          table.resetColumnFilters();
+                          table.resetGlobalFilter();
+                        }}
+                      >
+                        Limpiar filtros
+                      </Button>
+                    </>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -843,6 +998,12 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   filterPlaceholder = "Busqueda Global...",
   generadores,
   origenes,
+  hybridPagination,
+  onHybridParamsChange,
+  currentHybridParams,
+  isHybridLoading,
+  isFiltering,
+  onHybridRefresh,
 }: DataTableProps<TData, TValue>) {
   // Estados
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -923,78 +1084,141 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
 
   // Función para actualizar los datos
   const refreshData = useCallback(async () => {
-    try {
-      setIsRefreshing(true);
-      const response = await fetch("/api/leads");
-      const newData = await response.json();
-      setTableData(newData);
-    } catch (error) {
-      console.error("Error al actualizar los datos:", error);
-      toast.error("Error al actualizar los datos");
-    } finally {
-      setIsRefreshing(false);
+    if (onHybridRefresh) {
+      // Usar paginación híbrida
+      onHybridRefresh();
+    } else {
+      // Fallback al método original
+      try {
+        setIsRefreshing(true);
+        const response = await fetch("/api/leads");
+        const newData = await response.json();
+        setTableData(newData);
+      } catch (error) {
+        console.error("Error al actualizar los datos:", error);
+        toast.error("Error al actualizar los datos");
+      } finally {
+        setIsRefreshing(false);
+      }
     }
-  }, []);
+  }, [onHybridRefresh]);
 
   // Memoize handlers to prevent unnecessary re-renders
-  const handlePageSizeChange = useCallback((value: string) => {
-    const newSize = parseInt(value, 10);
-    setPageSize(newSize);
-    table.setPageSize(newSize);
-  }, [table]);
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      const newSize = parseInt(value, 10);
+      if (hybridPagination) {
+        // Usar la función del hook de paginación híbrida
+        hybridPagination.setPageSize(newSize);
+      } else {
+        // Fallback al método original
+        setPageSize(newSize);
+        table.setPageSize(newSize);
+      }
+    },
+    [table, hybridPagination]
+  );
 
-  const handleGlobalFilterChange = useCallback((value: string) => {
-    setGlobalFilter(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const handleGlobalFilterChange = useCallback(
+    (value: string) => {
+      if (onHybridParamsChange) {
+        // Usar paginación híbrida
+        const debounceTimer = setTimeout(() => {
+          onHybridParamsChange({ search: value });
+        }, 300);
+        return () => clearTimeout(debounceTimer);
+      } else {
+        // Fallback al método original
+        setGlobalFilter(value);
+        table.setPageIndex(0);
+      }
+    },
+    [table, onHybridParamsChange]
+  );
 
-  const handleStatusChange = useCallback((value: string) => {
-    if (value === "all") {
-      table.getColumn("status")?.setFilterValue(undefined);
-      setCurrentStatus("all");
-      return;
-    }
-    setCurrentStatus(value as LeadStatus);
-    table.getColumn("status")?.setFilterValue(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      setCurrentStatus(value as LeadStatus | "all");
+      if (onHybridParamsChange) {
+        // Usar paginación híbrida
+        onHybridParamsChange({
+          status: value === "all" ? undefined : (value as LeadStatus),
+        });
+      } else {
+        // Fallback al método original
+        if (value === "all") {
+          table.getColumn("status")?.setFilterValue(undefined);
+          return;
+        }
+        table.getColumn("status")?.setFilterValue(value);
+        table.setPageIndex(0);
+      }
+    },
+    [table, onHybridParamsChange]
+  );
 
-  const handleGlChange = useCallback((value: string) => {
-    if (value === "all") {
-      table.getColumn("generadorLeads")?.setFilterValue(undefined);
-      setCurrentGl("all");
-      return;
-    }
-    setCurrentGl(value);
-    table.getColumn("generadorLeads")?.setFilterValue(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const handleGlChange = useCallback(
+    (value: string) => {
+      setCurrentGl(value);
+      if (onHybridParamsChange) {
+        // Usar paginación híbrida
+        onHybridParamsChange({
+          generadorId: value === "all" ? undefined : value,
+        });
+      } else {
+        // Fallback al método original
+        if (value === "all") {
+          table.getColumn("generadorLeads")?.setFilterValue(undefined);
+          return;
+        }
+        table.getColumn("generadorLeads")?.setFilterValue(value);
+        table.setPageIndex(0);
+      }
+    },
+    [table, onHybridParamsChange]
+  );
 
   const handleOrigenChange = useCallback(
     (value: string) => {
-      if (value === "all") {
-        table.getColumn("Origen")?.setFilterValue(undefined);
-        setCurrentOrigen("all");
-        return;
-      }
       setCurrentOrigen(value);
-      table.getColumn("Origen")?.setFilterValue(value);
-      table.setPageIndex(0);
+      if (onHybridParamsChange) {
+        // Usar paginación híbrida
+        onHybridParamsChange({
+          origenId: value === "all" ? undefined : value,
+        });
+      } else {
+        // Fallback al método original
+        if (value === "all") {
+          table.getColumn("Origen")?.setFilterValue(undefined);
+          return;
+        }
+        table.getColumn("Origen")?.setFilterValue(value);
+        table.setPageIndex(0);
+      }
     },
-    [table],
+    [table, onHybridParamsChange]
   );
 
   const handleDateRangeChange = useCallback(
     (range: { from: Date | undefined; to: Date | undefined }) => {
       setCurrentDateRange(range);
-      if (!range.from && !range.to) {
-        table.getColumn("createdAt")?.setFilterValue(undefined);
-        return;
+      if (onHybridParamsChange) {
+        // Usar paginación híbrida
+        onHybridParamsChange({
+          dateFrom: range.from?.toISOString(),
+          dateTo: range.to?.toISOString(),
+        });
+      } else {
+        // Fallback al método original
+        if (!range.from && !range.to) {
+          table.getColumn("createdAt")?.setFilterValue(undefined);
+          return;
+        }
+        table.getColumn("createdAt")?.setFilterValue(range);
+        table.setPageIndex(0);
       }
-      table.getColumn("createdAt")?.setFilterValue(range);
-      table.setPageIndex(0);
     },
-    [table],
+    [table, onHybridParamsChange]
   );
 
   return (
@@ -1005,15 +1229,17 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
           <Button
             variant="outline"
             onClick={refreshData}
-            disabled={isRefreshing}
+            disabled={isHybridLoading || isRefreshing}
             className="flex items-center gap-2"
           >
-            {isRefreshing ? (
+            {isHybridLoading || isRefreshing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            {isRefreshing ? "Actualizando..." : "Actualizar datos"}
+            {isHybridLoading || isRefreshing
+              ? "Actualizando..."
+              : "Actualizar datos"}
           </Button>
         </div>
       </div>
@@ -1021,7 +1247,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         setCurrentDateRange={handleDateRangeChange}
         currentDateRange={currentDateRange}
         generadores={generadores}
-        origenes={origenes ?? []}         
+        origenes={origenes ?? []}
         table={table}
         filterPlaceholder={filterPlaceholder}
         onGlobalFilterChange={handleGlobalFilterChange}
@@ -1033,20 +1259,36 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
         setCurrentOrigen={handleOrigenChange}
       />
 
-      <div className="mb-5">
+      <div className="mb-5 flex items-center gap-2">
         <Badge variant="outline" className="text-xs">
-          {table.getFilteredRowModel().rows.length} leads
+          {hybridPagination
+            ? `${hybridPagination.totalLocalRecords} cargados de ${hybridPagination.totalServerRecords} totales`
+            : `${table.getFilteredRowModel().rows.length} leads`}
         </Badge>
+        {isFiltering && (
+          <Badge
+            variant="secondary"
+            className="text-xs flex items-center gap-1"
+          >
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Aplicando filtros...
+          </Badge>
+        )}
       </div>
       <DataGrid
         table={table}
         columns={columns as ColumnDef<LeadWithRelations>[]}
+        isFiltering={isFiltering}
       />
-      <TablePagination
-        table={table}
-        pageSize={pageSize}
-        onPageSizeChange={handlePageSizeChange}
-      />
+      {hybridPagination ? (
+        <HybridPagination hybridData={hybridPagination} />
+      ) : (
+        <TablePagination
+          table={table}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
     </div>
   );
 }

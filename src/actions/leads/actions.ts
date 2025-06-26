@@ -323,6 +323,18 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     const newStatus = submission.value.status;
     const statusChanged = newStatus && newStatus !== existingLead.status;
 
+    // Convertir numero_empleados de string a number si está presente
+    let numeroEmpleados = existingLead.numero_empleados;
+    if (submission.value.numero_empleados) {
+      // Extraer solo los números del string "1-10" -> 10, "11-50" -> 50, etc.
+      const match = submission.value.numero_empleados.match(/(\d+)[-+]/);
+      if (match) {
+        numeroEmpleados = parseInt(match[1]);
+      } else if (submission.value.numero_empleados === "500+") {
+        numeroEmpleados = 500;
+      }
+    }
+
     // Actualizamos el lead
     await prisma.lead.update({
       where: { id: leadId },
@@ -333,6 +345,9 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
         origenId: submission.value.origen || existingLead.origenId,
         sectorId: submission.value.sector || existingLead.sectorId,
         status: submission.value.status || existingLead.status,
+        numero_empleados: numeroEmpleados,
+        ubicacion: submission.value.ubicacion || existingLead.ubicacion,
+        subSectorId: submission.value.subSectorId || existingLead.subSectorId,
       },
     });
 

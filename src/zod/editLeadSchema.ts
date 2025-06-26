@@ -25,4 +25,7 @@ export const editLeadZodSchema = z.object({
     .optional(),
 
   generadorId: z.string().cuid().nullable().optional(),
+  numero_empleados: z.string().nullable().optional(),
+  ubicacion: z.string().nullable().optional(),
+  subSectorId: z.string().nullable().optional(),
 });
