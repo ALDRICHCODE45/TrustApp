@@ -1,5 +1,5 @@
 "use client";
-import { LucideIcon } from "lucide-react";
+import { Calendar, LucideIcon } from "lucide-react";
 import * as React from "react";
 import {
   AudioWaveform,

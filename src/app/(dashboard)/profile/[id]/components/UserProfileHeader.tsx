@@ -15,6 +15,9 @@ import { UserInfoCard } from "@/app/(dashboard)/list/reclutamiento/components/Us
 import { ChangePassword } from "@/app/(dashboard)/list/users/components/ChangePassword";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "lucide-react";
+import Link from "next/link";
 
 const oficinaMapper = {
   Oficina1: "Oficina 1",
@@ -119,7 +122,13 @@ export const UserProfileHeader = ({
                 {/*   Compartidas */}
                 {/* </Button> */}
                 {/* Actividades del usuario */}
-                <ActivityProfileSheet user={user} tasks={tasks} />
+                {/* <ActivityProfileSheet user={user} tasks={tasks} /> */}
+                <Button variant="outline" className="mt-2" asChild>
+                  <Link href={`/tasks/${user.id}`}>
+                    <Calendar />
+                    Actividades
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

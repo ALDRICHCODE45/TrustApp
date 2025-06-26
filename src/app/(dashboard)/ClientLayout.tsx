@@ -33,6 +33,8 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
 
   if (pathName.split("/").at(1) === "profile") {
     currentUrl = "Usuario";
+  } else if (pathName.split("/").at(1) === "tasks") {
+    currentUrl = "Tareas";
   }
 
   return (

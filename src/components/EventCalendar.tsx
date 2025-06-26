@@ -172,7 +172,7 @@ export const EventCalendar = ({ userId }: Props) => {
               selected={selectedDate}
               onSelect={handleDateSelect}
               onMonthChange={handleMonthChange}
-              className="rounded-md border-0  [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
+              className="rounded-md border-0 "
               locale={es}
               modifiers={{
                 hasEvents: eventDates,

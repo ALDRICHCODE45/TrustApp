@@ -545,3 +545,61 @@ export const getTaskStatistics = async (userId: string) => {
     };
   }
 };
+
+// Función para obtener tareas compartidas con el usuario
+export const getSharedTasks = async (userId: string) => {
+  try {
+    if (!userId) {
+      return {
+        ok: false,
+        message: "UserId es requerido",
+        tasks: [],
+      };
+    }
+
+    // Obtener tareas donde el usuario esté en los notificationRecipients pero no sea el assignedTo
+    const sharedTasks = await prisma.task.findMany({
+      where: {
+        AND: [
+          {
+            notificationRecipients: {
+              some: {
+                id: userId,
+              },
+            },
+          },
+          {
+            NOT: {
+              assignedToId: userId,
+            },
+          },
+        ],
+      },
+      include: {
+        assignedTo: true,
+        notificationRecipients: true,
+        linkedInteraction: {
+          include: {
+            contacto: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      ok: true,
+      message: "Tareas compartidas obtenidas correctamente",
+      tasks: sharedTasks,
+    };
+  } catch (error) {
+    console.error("Error obteniendo tareas compartidas:", error);
+    return {
+      ok: false,
+      message: "Error al obtener las tareas compartidas",
+      tasks: [],
+    };
+  }
+};

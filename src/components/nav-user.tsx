@@ -1,5 +1,5 @@
 "use client";
-import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
+import { Calendar, ChevronsUpDown, LogOut, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -125,6 +125,13 @@ export function NavUser({
                   <Link href={`/profile/${user.id}`} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     Perfil
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href={`/tasks/${user.id}`} className="cursor-pointer">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Tareas
                   </Link>
                 </DropdownMenuItem>
 
