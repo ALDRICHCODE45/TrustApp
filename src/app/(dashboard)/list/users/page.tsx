@@ -10,6 +10,9 @@ import { Metadata } from "next";
 export interface pageProps {}
 
 const fetchUsers = async () => {
+  // Retardo artificial para ver el loader
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   const users = await prisma.user.findMany({
     orderBy: {
       updatedAt: "desc",

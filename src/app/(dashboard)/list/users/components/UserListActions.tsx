@@ -22,7 +22,7 @@ import { User } from "@prisma/client";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { Row } from "@tanstack/react-table";
 import {
-  Eye,
+  Calendar,
   Loader2,
   MoreHorizontal,
   Trash,
@@ -37,26 +37,29 @@ interface Props {
 }
 
 export const UserListActions = ({ row }: Props) => {
-  const teacherId = row.original.id;
+  const userId = row.original.id;
   const [isDialogOpen, setisDialogOpen] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const handleDeleteUser = useCallback(async (userId: string) => {
-    if (isDeleting) return;
-    try {
-      setIsDeleting(true);
-      const { ok } = await deleteUserById(userId);
-      if (!ok) {
+  const handleDeleteUser = useCallback(
+    async (userId: string) => {
+      if (isDeleting) return;
+      try {
+        setIsDeleting(true);
+        const { ok } = await deleteUserById(userId);
+        if (!ok) {
+          toast.error("Erorr al eliminar al usuario");
+          return;
+        }
+        toast.success("Usuario eliminado correctamente");
+      } catch (err) {
         toast.error("Erorr al eliminar al usuario");
-        return;
+      } finally {
+        setIsDeleting(false);
       }
-      toast.success("Usuario eliminado correctamente");
-    } catch (err) {
-      toast.error("Erorr al eliminar al usuario");
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [isDeleting]);
+    },
+    [isDeleting]
+  );
 
   return (
     <>
@@ -71,7 +74,7 @@ export const UserListActions = ({ row }: Props) => {
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href={`/profile/${teacherId}`} className="cursor-pointer">
+            <Link href={`/profile/${userId}`} className="cursor-pointer">
               <UserRoundCog />
               Ver más
             </Link>
@@ -82,6 +85,12 @@ export const UserListActions = ({ row }: Props) => {
           >
             <Trash />
             Eliminar
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/tasks/${userId}`}>
+              <Calendar />
+              Tareas
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
