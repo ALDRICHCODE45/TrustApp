@@ -589,14 +589,14 @@ export interface Vacante {
   id: number;
   fechaAsignacion: Date;
   reclutador: User;
-  tipo: "Nueva" | "Garantia";
+  tipo: string;
   estado: "Hunting" | "Cancelada" | "Entrevistas" | "Perdida" | "Placement";
   puesto: string;
   comentarios: Comentario[]; // Múltiples comentarios por vacante
-  tiempoTranscurrido: number; // Días transcurridos
   prioridad: "Alta" | "Media" | "Baja";
   fechaEntrega: string;
   fechaUltimaTerna: Date | null;
+  tiempoTranscurrido: number; // Días transcurridos
   duracionTotal: number; // Tiempo total en días
   fechaOferta: Date | null;
   candidatoContratado?: {
@@ -614,11 +614,17 @@ export interface Vacante {
   ternaFinal: Candidato[]; // Lista de 3 candidatos con su información
 }
 
+interface TipoVacante {
+  Nueva: "Nueva";
+  Garantia: "Garantia";
+}
+
 export const vacantes: Vacante[] = [
   {
     id: 10,
     fechaAsignacion: new Date(),
-    reclutador: UsersData[1],
+    reclutador:
+      UsersData.find((u) => u.rol === Role.reclutador) || UsersData[11],
     tipo: "Nueva",
     estado: "Hunting",
     puesto: "Project Manager",
@@ -1038,9 +1044,10 @@ export const vacantes: Vacante[] = [
   {
     id: 20,
     fechaAsignacion: new Date(),
-    reclutador: UsersData[3],
+    reclutador:
+      UsersData.find((u) => u.rol === Role.reclutador) || UsersData[11],
     tipo: "Nueva",
-    cliente: clientesData[1],
+    cliente: clientesData[0],
     estado: "Hunting",
     puesto: "Frontend",
     comentarios: [
@@ -1117,7 +1124,8 @@ export const vacantes: Vacante[] = [
   {
     id: 21,
     fechaAsignacion: new Date(),
-    reclutador: UsersData[12],
+    reclutador:
+      UsersData.find((u) => u.rol === Role.reclutador) || UsersData[11],
     tipo: "Garantia",
     cliente: clientesData[0],
     estado: "Entrevistas",

@@ -33,7 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectItem,
@@ -41,15 +40,12 @@ import {
   SelectContent,
   SelectValue,
   SelectGroup,
-  SelectLabel,
 } from "@/components/ui/select";
 import {
-  CheckSquare,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  FileText,
   Filter,
   FolderSearch,
   Layers,
@@ -427,11 +423,8 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los tipos</SelectItem>
-                  {["Nueva", "Garantia"].map((tipo) => (
-                    <SelectItem key={tipo} value={tipo}>
-                      {tipo}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Nueva">Nueva</SelectItem>
+                  <SelectItem value="Garantia">Garantia</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -871,16 +864,7 @@ export function RecruiterTable<TData, TValue>({
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
     onColumnOrderChange: setColumnOrder,
-    onPaginationChange: (updater) => {
-      if (typeof updater === "function") {
-        const newState = updater(pagination);
-        setCurrentPage(newState.pageIndex);
-        setPagination(newState);
-      } else {
-        setCurrentPage(updater.pageIndex);
-        setPagination(updater);
-      }
-    },
+    onPaginationChange: setPagination,
     filterFns: {
       filterDateRange: dateRangeFilterFn,
     },
@@ -949,20 +933,6 @@ export function RecruiterTable<TData, TValue>({
     [table]
   );
 
-  const handleClientChange = useCallback(
-    (value: string) => {
-      if (value === "all") {
-        table.getColumn("cliente")?.setFilterValue(undefined);
-        setCurrentClient("all");
-        return;
-      }
-      setCurrentClient(value);
-      table.getColumn("cliente")?.setFilterValue(value);
-      table.setPageIndex(0);
-    },
-    [table]
-  );
-
   const handleRecruiterChange = useCallback(
     (value: string) => {
       if (value === "all") {
@@ -971,7 +941,27 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
       setCurrentRecruiter(value);
-      table.getColumn("reclutador")?.setFilterValue(value);
+      table.getColumn("reclutador")?.setFilterValue((row: Row<Vacante>) => {
+        const reclutador = row.getValue<string>("reclutador");
+        return reclutador?.toLowerCase() === value.toLowerCase();
+      });
+      table.setPageIndex(0);
+    },
+    [table]
+  );
+
+  const handleClientChange = useCallback(
+    (value: string) => {
+      if (value === "all") {
+        table.getColumn("cliente")?.setFilterValue(undefined);
+        setCurrentClient("all");
+        return;
+      }
+      setCurrentClient(value);
+      table.getColumn("cliente")?.setFilterValue((row: Row<Vacante>) => {
+        const cliente = row.getValue<string>("cliente");
+        return cliente?.toLowerCase() === value.toLowerCase();
+      });
       table.setPageIndex(0);
     },
     [table]
@@ -985,7 +975,12 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
       setCurrentTipo(value);
-      table.getColumn("tipo")?.setFilterValue(value);
+      // Usar una función de filtro personalizada para comparación case insensitive
+      table.getColumn("tipo")?.setFilterValue((row: Row<Vacante>) => {
+        const tipo = row.getValue("tipo");
+        if (!tipo) return false;
+        return tipo.toString().toLowerCase() === value.toLowerCase();
+      });
       table.setPageIndex(0);
     },
     [table]
@@ -998,9 +993,18 @@ export function RecruiterTable<TData, TValue>({
         setCurrentOficina("all");
         return;
       }
-      setCurrentOficina(value as Oficina);
-      table.getColumn("oficina")?.setFilterValue(value);
-      table.setPageIndex(0);
+
+      if (value in Oficina) {
+        setCurrentOficina(value as Oficina);
+        table.getColumn("oficina")?.setFilterValue((row: Row<Vacante>) => {
+          if (!row.original.reclutador) return false;
+          return row.original.reclutador.oficina === value;
+        });
+        table.setPageIndex(0);
+      } else {
+        console.error("Valor de oficina inválido:", value);
+        toast.error("Error al filtrar por oficina");
+      }
     },
     [table]
   );

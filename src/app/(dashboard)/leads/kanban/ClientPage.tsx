@@ -19,7 +19,10 @@ import { DroppableKanbanColumn } from "./components/KanbanColumn";
 import { useState, useEffect } from "react";
 import { Lead, LeadStatus, SubSector, User } from "@prisma/client";
 import { LeadWithRelations } from "./page";
-import { editLeadById } from "@/actions/leads/actions";
+import {
+  editLeadById,
+  editLeadByIdAndCreatePreClient,
+} from "@/actions/leads/actions";
 import { useWindowSize } from "@/components/providers/ConfettiProvider";
 import { format, isSameDay } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -190,9 +193,14 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       );
 
       // Hacer una sola llamada que actualice todo
-      const promise = editLeadById(pendingLeadUpdate.leadId, formDataToSend);
+      //const promise = editLeadById(pendingLeadUpdate.leadId, formDataToSend);
+      //TODO: Crear un precliente en la base de datos con una funcion aparte
+      const preClientPromise = editLeadByIdAndCreatePreClient(
+        formDataToSend,
+        pendingLeadUpdate.leadId
+      );
 
-      toast.promise(promise, {
+      toast.promise(preClientPromise, {
         loading: "Guardando cambios...",
         success: () =>
           `Lead actualizado a Contacto Cálido con información adicional`,

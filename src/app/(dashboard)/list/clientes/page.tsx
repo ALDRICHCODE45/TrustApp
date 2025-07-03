@@ -1,13 +1,14 @@
 import { ReactElement } from "react";
 import { DataTable } from "@/components/Table";
-import { clientesColumns } from "./columns";
-import { Cliente, clientesData } from "@/lib/data";
+import { clientesColumns, ClientWithRelations } from "./columns";
 import { ColumnDef } from "@tanstack/react-table";
 import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
+import prisma from "@/lib/db";
+import { CreateClientModal } from "./components/CreateClienteModal";
 
 interface pageProps {}
 
@@ -15,17 +16,31 @@ export const metadata: Metadata = {
   title: "Trust | Clientes",
 };
 
-const fetchUsers = async () => {
-  return new Promise<{ columns: ColumnDef<Cliente>[]; data: Cliente[] }>(
-    (resolve) => {
-      setTimeout(() => {
-        resolve({
-          columns: clientesColumns,
-          data: clientesData,
-        });
-      }, 2000);
-    },
-  );
+const fetchUsers = async (): Promise<{
+  columns: ColumnDef<ClientWithRelations>[];
+  data: ClientWithRelations[];
+}> => {
+  try {
+    const clients = await prisma.client.findMany({
+      include: {
+        lead: {
+          include: {
+            origen: true,
+          },
+        },
+        contactos: true,
+        usuario: true,
+      },
+    });
+
+    return {
+      columns: clientesColumns,
+      data: clients,
+    };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error al obtener los clientes");
+  }
 };
 
 export default async function ClientesList({}: pageProps): Promise<ReactElement> {
@@ -39,6 +54,9 @@ export default async function ClientesList({}: pageProps): Promise<ReactElement>
   return (
     <>
       {/* LIST */}
+      <div className="flex justify-end mb-4">
+        <CreateClientModal />
+      </div>
       <DataTable columns={columns} data={data} />
     </>
   );

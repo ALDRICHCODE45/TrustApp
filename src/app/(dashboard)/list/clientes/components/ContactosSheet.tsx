@@ -24,13 +24,13 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Cliente } from "@/lib/data";
 import { Mail, PlusIcon, Users } from "lucide-react";
+import { ClientWithRelations } from "../columns";
 
 export function ContactosSheet({
   contactos,
 }: {
-  contactos: Cliente["contactos"];
+  contactos: ClientWithRelations["contactos"];
 }) {
   return (
     <Sheet>
@@ -128,13 +128,13 @@ export function ContactosSheet({
               <CardHeader className="p-3 pb-1">
                 <div className="space-y-1">
                   <CardTitle className="text-base font-medium flex justify-between items-center">
-                    {contacto.nombre}
+                    {contacto.name}
                     <span className="font-light text-sm">
-                      {contacto.puesto}
+                      {contacto.position}
                     </span>
                   </CardTitle>
                   <CardDescription className="text-xs text-gray-400">
-                    {contacto.celular}
+                    {contacto.phone}
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -146,7 +146,7 @@ export function ContactosSheet({
                   <div className="flex gap-1 items-center">
                     <Mail size={14} className="text-gray-400" />
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {contacto.correo}
+                      {contacto.email}
                     </p>
                   </div>
                 </div>

@@ -1,5 +1,4 @@
 "use client";
-import { Cliente } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import { RazonSocialPopOver } from "./components/RazonSocialPopOver";
 import { ContactosSheet } from "./components/ContactosSheet";
@@ -9,8 +8,22 @@ import { ComentariosSheet } from "../../cliente/[id]/components/ComentariosSheet
 import { FacturacionSheet } from "./components/Facturacion_instrucciones";
 import { ClientesActions } from "./components/ClientesActions";
 import { UserClientDropDown } from "./components/UserClientDropDown";
+import { Client, Prisma } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 
-export const clientesColumns: ColumnDef<Cliente>[] = [
+export type ClientWithRelations = Prisma.ClientGetPayload<{
+  include: {
+    lead: {
+      include: {
+        origen: true;
+      };
+    };
+    contactos: true;
+    usuario: true;
+  };
+}>;
+
+export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -35,10 +48,10 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
   },
 
   {
-    accessorKey: "origen",
+    id: "origen",
     header: "Origen",
     cell: ({ row }) => {
-      const origenCompleto = row.original.origen;
+      const origenCompleto = row.original.lead?.origen?.nombre ?? "N/A";
       const firstWord = origenCompleto.split(" ").at(0);
       return <span>{firstWord}</span>;
     },
@@ -53,6 +66,14 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
   {
     accessorKey: "cuenta",
     header: "Cuenta",
+    cell: ({ row }) => {
+      const cuenta = row.original.cuenta;
+      return (
+        <Button variant="outline" className="font-bold">
+          {cuenta}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "asignadas",
@@ -95,7 +116,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     accessorKey: "tp_placement",
     header: "T.P",
     cell: ({ row }) => {
-      const tp = row.original.tp_placement;
+      const tp = row.original.tp_placement ?? 0;
       return (
         <div className="flex gap-1 items-center">
           $<span>{tp}</span>
@@ -131,7 +152,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
       const credito = row.original.dias_credito;
       return (
         <div className="flex gap-2 items-center">
-          <span>{credito}</span>
+          <span>{credito ?? "N/A"}</span>
           dias
         </div>
       );
@@ -145,8 +166,8 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     accessorKey: "razon_social",
     header: "RS",
     cell: ({ row }) => {
-      const razon_social = row.original.razon_social;
-      const firstWord = razon_social.split(" ").at(0);
+      const razon_social = row.original.razon_social ?? "N/A";
+      const firstWord = razon_social?.split(" ").at(0);
       return <span>{firstWord}</span>;
     },
   },
@@ -154,7 +175,7 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
     accessorKey: "regimen",
     header: "Regimen",
     cell: ({ row }) => {
-      const regimen = row.original.regimen;
+      const regimen = row.original?.regimen ?? "N/A";
       return <RazonSocialPopOver razon_social={regimen} />;
     },
   },
@@ -180,7 +201,8 @@ export const clientesColumns: ColumnDef<Cliente>[] = [
   {
     id: "comentarios",
     header: "Comentarios",
-    cell: ({ row }) => <ComentariosSheet comments={row.original.comentarios} />,
+    //TODO: Agregar comentarios
+    cell: ({ row }) => <ComentariosSheet comments={[]} />,
   },
   {
     id: "actions",

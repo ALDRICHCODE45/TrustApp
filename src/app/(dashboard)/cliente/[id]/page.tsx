@@ -1,29 +1,11 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
 import { Cliente, clientesData } from "@/lib/data";
-import { Separator } from "@/components/ui/separator";
-import { AttendanceChart } from "@/components/AttendanceChart";
-import { EmployeeDistribution } from "@/components/CountCharts";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, X, Check, AlertCircle, PlusCircle } from "lucide-react";
+import { TrendingUp, X, Check, AlertCircle } from "lucide-react";
 import { ClientProfileHeader } from "./components/ClientProfileHeader";
 import { CardGeneralInformation } from "./components/CardGeneralInformation";
-import { CardFiscalInformation } from "./components/CardFiscalInformation";
-import { ClientesComentariosSections } from "./components/ClientesComentariosSction";
 import { ResumenFinancieroCard } from "./components/ResumenFinancieroCard";
 import { ClientesContactosCard } from "./components/ClientesContactosCard";
-import { CardCommercialInformation } from "./components/CardCommercialInformation";
 import { ClientTabsWrapper } from "./components/ClientTabsWrapper";
-// import { NuevoComentarioForm } from "../../list/reclutamiento/components/CommentSheet";
 
 interface PageProps {
   params: Promise<{ id: string }>;

@@ -152,7 +152,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <ClientesDropDown row={row} />;
     },
-    accessorFn: (row) => row.cliente.cuenta,
+    accessorFn: (row) => row.cliente?.cuenta,
     enableGlobalFilter: true,
   },
   {
@@ -343,7 +343,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     id: "oficina",
     cell: () => null,
     header: () => null,
-    accessorFn: (row) => row.reclutador.oficina,
+    accessorFn: (row) => row.reclutador?.oficina,
     enableGlobalFilter: true,
   },
   {

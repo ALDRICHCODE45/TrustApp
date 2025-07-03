@@ -35,6 +35,7 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
 
 const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
   try {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     const leads = await prisma.lead.findMany({
       include: {
         generadorLeads: true,

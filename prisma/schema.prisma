@@ -29,29 +29,42 @@ enum UserState {
 }
 
 model User {
-  id                 String               @id @default(cuid())
-  name               String
-  email              String               @unique
-  Oficina            Oficina              @default(Oficina1)
-  password           String
-  age                Int
-  direccion          String
-  State              UserState            @default(ACTIVO)
-  celular            String
-  emailVerified      DateTime?
-  image              String?
-  role               Role                 @default(reclutador) // Valor por defecto
-  ingreso            DateTime?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  Oficina       Oficina   @default(Oficina1)
+  password      String
+  age           Int
+  direccion     String
+  State         UserState @default(ACTIVO)
+  celular       String
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(reclutador) // Valor por defecto
+  ingreso       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones existentes
   Lead               Lead[]
-  Comment            Comment[]
   Task               Task[]
   LeadStatusHistory  LeadStatusHistory[] // Nueva relación
   ContactInteraction ContactInteraction[] // Nueva relación para las interacciones con contactos
   Logs               Log[]
   notifications      Notification[]
   taskNotifications  Task[]               @relation("TaskNotificationRecipients")
+
+  // Relaciones específicas con nombres únicos para Vacancy
+  vacanciesReclutador          Vacancy[] @relation("VacancyReclutador")
+  vacanciesCheckListAuthor     Vacancy[] @relation("VacancyCheckListAuthor")
+  vacanciesMuestraPerfilAuthor Vacancy[] @relation("VacancyMuestraPerfilAuthor")
+  VacancyJobDescriptionAuthor  Vacancy[] @relation("VacancyJobDescriptionAuthor")
+
+  // Relación específica con nombre único para Comment
+  comments Comment[] @relation("CommentAuthor")
+  Vacancy  Vacancy[]
+  Comment  Comment[]
+  Client   Client[]
 }
 
 // Modelo para registrar historial de cambios de estado de leads
@@ -87,6 +100,7 @@ model LeadOrigen {
   updatedAt DateTime? @updatedAt
   nombre    String    @unique
   leads     Lead[]
+  Client    Client[]
 }
 
 enum LeadStatus {
@@ -124,9 +138,10 @@ model Lead {
   //Relaciones con subsector
   SubSector      SubSector?          @relation(fields: [subSectorId], references: [id])
   subSectorId    String?
+  Client         Client[]
 }
 
-//modelo de contacto para todos los moodulos
+//modelo de contacto para todos los modulos
 model Person {
   id       String  @id @default(cuid())
   name     String
@@ -135,17 +150,138 @@ model Person {
   position String?
   linkedin String?
   cv       String? // solo para candidatos o en un futuro para donde se necesite
+
   //relaciones -> contacto de leads
-  Lead     Lead?   @relation(fields: [leadId], references: [id])
-  leadId   String?
+  Lead   Lead?   @relation(fields: [leadId], references: [id])
+  leadId String?
 
   // Nueva relación para las interacciones/conversaciones
   interactions ContactInteraction[]
+
+  // Relaciones específicas con Vacancy
+  vacanciesContratado Vacancy[] @relation("VacancyCandidatoContratado")
+  vacanciesTernaFinal Vacancy[] @relation("VacancyTernaFinal")
+  Client              Client?   @relation(fields: [clientId], references: [id])
+  clientId            String?
+}
+
+enum VacancyTipo {
+  Nueva
+  Garantia
+}
+
+enum VacancyEstado {
+  Hunting
+  Cancelada
+  Entrevistas
+  Perdida
+  Placement
+}
+
+enum VacancyPrioridad {
+  Alta
+  Media
+  Baja
 }
 
 model Vacancy {
-  id      String    @id @default(uuid())
-  Comment Comment[]
+  //Data necesaria
+  id                    String           @id @default(uuid())
+  fechaAsignacion       DateTime
+  reclutadorId          String
+  reclutador            User             @relation("VacancyReclutador", fields: [reclutadorId], references: [id])
+  tipo                  VacancyTipo      @default(Nueva)
+  estado                VacancyEstado    @default(Hunting)
+  posicion              String
+  tiempoTranscurrido    Int?
+  Comments              Comment[]
+  prioridad             VacancyPrioridad @default(Alta)
+  fechaEntrega          DateTime?
+  fechaUltimaTerna      DateTime?
+  duracionTotal         Int?
+  fechaOferta           DateTime?
+  candidatoContratado   Person?          @relation("VacancyCandidatoContratado", fields: [candidatoContratadoId], references: [id])
+  candidatoContratadoId String?
+  salario               Int?
+  fechaComision         DateTime?
+  monto                 Int?
+  valorFactura          Int?
+  fee                   Int?
+  ternaFinal            Person[]         @relation("VacancyTernaFinal")
+
+  //Data del checklist
+  checkListUrl       String?
+  checkListName      String?
+  checkListType      String?
+  checkListSize      Int?
+  checkListCreatedAt DateTime?
+  checkListUpdatedAt DateTime?
+  checkListAuthor    User?     @relation("VacancyCheckListAuthor", fields: [checkListAuthorId], references: [id], onDelete: Cascade)
+  checkListAuthorId  String?
+
+  //Data del perfil muestra
+  muestraPerfilUrl       String?
+  muestraPerfilName      String?
+  muestraPerfilType      String?
+  muestraPerfilSize      Int?
+  muestraPerfilCreatedAt DateTime?
+  muestraPerfilUpdatedAt DateTime?
+  muestraPerfilAuthor    User?     @relation("VacancyMuestraPerfilAuthor", fields: [muestraPerfilAuthorId], references: [id], onDelete: Cascade)
+  muestraPerfilAuthorId  String?
+
+  //Datos del job description
+  jobDescriptionUrl       String?
+  jobDescriptionName      String?
+  jobDescriptionType      String?
+  jobDescriptionSize      Int?
+  jobDescriptionCreatedAt DateTime?
+  jobDescriptionUpdatedAt DateTime?
+  jobDescriptionAuthor    User?     @relation("VacancyJobDescriptionAuthor", fields: [jobDescriptionAuthorId], references: [id], onDelete: Cascade)
+  jobDescriptionAuthorId  String?
+
+  //Datos del usuario que creo la vacante
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+enum ClienteEtiqueta {
+  PreCliente
+  Cliente
+}
+
+model Client {
+  //Data principal
+  id            String          @id @default(cuid())
+  //Relacion con el lead
+  leadId        String?
+  lead          Lead?           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  //Etiqueta del cliente
+  etiqueta      ClienteEtiqueta @default(PreCliente)
+  //Data de la cuenta y estadisticas
+  cuenta        String?
+  asignadas     Int?
+  perdidas      Int?
+  canceladas    Int?
+  placements    Int?
+  tp_placement  Int?
+  contactos     Person[]
+  modalidad     String?
+  fee           Int?
+  dias_credito  Int?
+  tipo_factura  String?
+  razon_social  String?
+  regimen       String?
+  rfc           String?
+  codigo_postal String?
+  como_factura  String?
+  portal_site   String?
+  comentarios   Comment[]
+  //Origen en caso de que no haya lead
+  origenId      String?
+  origen        LeadOrigen?     @relation(fields: [origenId], references: [id])
+  //Relacion con el usuario
+  usuarioId     String
+  usuario       User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
@@ -156,9 +292,13 @@ model Comment {
   taskId    String?  @unique
   vacancy   Vacancy  @relation(fields: [vacancyId], references: [id])
   vacancyId String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  Client    Client?  @relation(fields: [clientId], references: [id])
+  clientId  String?
 }
 
 enum TaskStatus {

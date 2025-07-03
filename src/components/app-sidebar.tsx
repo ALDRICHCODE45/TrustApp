@@ -74,17 +74,17 @@ const data: {
       title: "Reclutamiento",
       url: "#",
       icon: UserSearch,
-      roles: [Role.reclutador],
+      roles: [Role.reclutador, Role.Admin],
       items: [
         {
           title: "Vacantes",
           url: "/reclutador",
-          roles: [Role.reclutador],
+          roles: [Role.reclutador, Role.Admin],
         },
         {
           title: "Kanban",
           url: "/reclutador/kanban",
-          roles: [Role.reclutador],
+          roles: [Role.reclutador, Role.Admin],
         },
       ],
     },
@@ -92,17 +92,17 @@ const data: {
       title: "Generacion de Leads",
       url: "#",
       icon: HandCoins,
-      roles: [Role.GL, Role.MK],
+      roles: [Role.GL, Role.MK, Role.Admin],
       items: [
         {
           title: "Prospecciones",
           url: "/leads",
-          roles: [Role.GL, Role.MK],
+          roles: [Role.GL, Role.MK, Role.Admin],
         },
         {
           title: "Kanban Board",
           url: "/leads/kanban",
-          roles: [Role.GL, Role.MK],
+          roles: [Role.GL, Role.MK, Role.Admin],
         },
       ],
     },
@@ -123,11 +123,6 @@ const data: {
         //   url: "/list/clientes",
         //   roles: [Role.Admin],
         // },
-        {
-          title: "Leads",
-          url: "/list/leads",
-          roles: [Role.Admin],
-        },
       ],
     },
     {
@@ -147,11 +142,6 @@ const data: {
         //   url: "/list/reclutamiento",
         //   roles: [Role.Admin],
         // },
-        {
-          title: "kanban Board - Leads",
-          url: "/leads/kanban",
-          roles: [Role.Admin],
-        },
         {
           title: "Configuracion",
           url: "/config",

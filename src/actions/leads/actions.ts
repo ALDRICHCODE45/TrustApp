@@ -5,8 +5,61 @@ import { parseWithZod } from "@conform-to/zod";
 import { checkSession } from "@/hooks/auth/checkSession";
 import { editLeadZodSchema } from "@/zod/editLeadSchema";
 import { revalidatePath } from "next/cache";
-import { User, Role } from "@prisma/client";
+import { User, Role, LeadStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
+
+export const editLeadByIdAndCreatePreClient = async (
+  formData: FormData,
+  leadId: string
+) => {
+  if (!leadId) {
+    throw new Error("Lead id is required");
+  }
+
+  const numeroEmpleados = formData.get("numero_empleados") as string;
+  const ubicacion = formData.get("ubicacion") as string;
+  const subSectorId = formData.get("subSectorId") as string;
+  const status = formData.get("status") as string;
+
+  try {
+    //Buscamos el lead
+    const existingLead = await prisma.lead.findUnique({
+      where: {
+        id: leadId,
+      },
+      include: {
+        origen: true,
+        sector: true,
+      },
+    });
+
+    if (!existingLead) {
+      throw Error("Lead does not exists");
+    }
+    // Actualizamos el lead
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        numero_empleados:
+          parseInt(numeroEmpleados) || existingLead.numero_empleados,
+        ubicacion: ubicacion || existingLead.ubicacion,
+        subSectorId: subSectorId || existingLead.subSectorId,
+        status: (status as LeadStatus) || existingLead.status,
+      },
+    });
+
+    //Creamos el precliente
+    await prisma.client.create({
+      data: {
+        leadId: leadId,
+        usuarioId: existingLead.generadorId,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error al editar el lead y crear el precliente");
+  }
+};
 
 export const createNewSector = async (formData: FormData) => {
   const session = await auth();
