@@ -33,7 +33,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Comentario } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import {
   CalendarIcon,
@@ -64,6 +63,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { z } from "zod";
+import { Comment, Prisma } from "@prisma/client";
+
+export type CommentWithRelations = Prisma.CommentGetPayload<{
+  include: {
+    author: true;
+  };
+}>;
 
 // Schema para validación del formulario
 const comentarioFormSchema = z.object({
@@ -76,19 +82,22 @@ const comentarioFormSchema = z.object({
 
 // Tipo derivado del schema
 
-interface ComentarioFormProps {
+interface CommentFormProps {
   isEditing?: boolean;
-  comentarioInicial?: Comentario | null;
+  comentarioInicial?: CommentWithRelations | null;
   onSubmitSuccess?: () => void;
 }
 
-export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
-  const [commentToDelete, setCommentToDelete] = useState<Comentario | null>(
-    null,
-  );
+export const CommentSheet = ({
+  comments,
+}: {
+  comments: CommentWithRelations[];
+}) => {
+  const [commentToDelete, setCommentToDelete] =
+    useState<CommentWithRelations | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const handleDelete = (comment: Comentario) => {
+  const handleDelete = (comment: CommentWithRelations) => {
     setCommentToDelete(comment);
     setIsDeleteDialogOpen(true);
   };
@@ -154,26 +163,27 @@ export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
                       variant="outline"
                       className={cn(
                         "flex items-center gap-1",
-                        comentario.tipo === "Tarea"
+                        comentario.isTask
                           ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-                          : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700",
+                          : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700"
                       )}
                     >
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full",
-                          comentario.tipo === "Tarea"
+                          comentario.isTask
                             ? "bg-blue-600 dark:bg-blue-400"
-                            : "bg-gray-500 dark:bg-gray-400",
+                            : "bg-gray-500 dark:bg-gray-400"
                         )}
                       ></div>
-                      {comentario.tipo}
+                      {comentario.isTask ? "Tarea" : "Comentario"}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-gray-400" />
                     <p className="text-xs text-gray-400">
-                      Lun {comentario.fecha} • {comentario.hora}
+                      Lun {format(comentario.createdAt, "EEE dd/MM/yy")} •{" "}
+                      {format(comentario.createdAt, "HH:mm")}
                     </p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -195,21 +205,21 @@ export const CommentSheet = ({ comments }: { comments: Comentario[] }) => {
                 </CardHeader>
                 <CardContent className="p-3 pt-1">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {comentario.texto}
+                    {comentario.content}
                   </p>
                 </CardContent>
                 <CardFooter className="flex flex-row items-center justify-between w-full p-3 pt-2 border-t border-gray-100 dark:border-gray-800">
                   <p className="text-xs text-gray-400">
                     By:{" "}
                     <span className="text-gray-500 dark:text-gray-300">
-                      {comentario.autor.name} {comentario.autor.rol}
+                      {comentario.author.name} {comentario.author.role}
                     </span>
                   </p>
-                  {comentario.tipo === "Tarea" && comentario.fechaEntrega && (
+                  {comentario.isTask && comentario.taskId && (
                     <p className="text-xs text-gray-400">
                       Entrega:{" "}
                       <span className="font-medium text-gray-600 dark:text-gray-300">
-                        {comentario.fechaEntrega}
+                        {format(comentario.createdAt, "EEE dd/MM/yy")}
                       </span>
                     </p>
                   )}
@@ -254,13 +264,13 @@ export const NuevoComentarioForm = ({
   isEditing = false,
   comentarioInicial = null,
   onSubmitSuccess = () => {},
-}: ComentarioFormProps) => {
+}: CommentFormProps) => {
   const form = useForm({
     defaultValues: {
-      texto: comentarioInicial?.texto || "",
-      esTarea: comentarioInicial?.tipo === "Tarea" || false,
-      fechaEntrega: comentarioInicial?.fechaEntrega
-        ? new Date(comentarioInicial.fechaEntrega)
+      texto: comentarioInicial?.content || "",
+      esTarea: comentarioInicial?.isTask || false,
+      fechaEntrega: comentarioInicial?.createdAt
+        ? new Date(comentarioInicial.createdAt)
         : undefined,
     },
   });
@@ -325,7 +335,7 @@ export const NuevoComentarioForm = ({
                       variant="outline"
                       className={cn(
                         "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground",
+                        !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value ? (

@@ -503,7 +503,7 @@ const TablePagination = ({
 
     return Array.from(
       { length: endPage - startPage + 1 },
-      (_, i) => startPage + i,
+      (_, i) => startPage + i
     );
   };
 
@@ -668,14 +668,14 @@ export function RecruiterTable<TData, TValue>({
     const dateOnly = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate(),
+      date.getDate()
     );
 
     const fromDate = filterValue.from
       ? new Date(
           filterValue.from.getFullYear(),
           filterValue.from.getMonth(),
-          filterValue.from.getDate(),
+          filterValue.from.getDate()
         )
       : null;
 
@@ -683,7 +683,7 @@ export function RecruiterTable<TData, TValue>({
       ? new Date(
           filterValue.to.getFullYear(),
           filterValue.to.getMonth(),
-          filterValue.to.getDate(),
+          filterValue.to.getDate()
         )
       : null;
 
@@ -736,7 +736,8 @@ export function RecruiterTable<TData, TValue>({
     filterFns: {
       filterDateRange: (row: any, id: any, filterValue: any) => {
         const oficina = row.getValue(id);
-        if (filterValue === "all" || !filterValue || oficina === null) return true;
+        if (filterValue === "all" || !filterValue || oficina === null)
+          return true;
         return oficina === filterValue;
       },
     },
@@ -755,7 +756,6 @@ export function RecruiterTable<TData, TValue>({
         </h2>
 
         <div className="flex items-center gap-2">
-          <CreateVacanteForm />
           {/* Selector de visibilidad de columnas */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -835,7 +835,7 @@ export function RecruiterTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -855,7 +855,7 @@ export function RecruiterTable<TData, TValue>({
                     <TableCell key={cell.id} className="py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}

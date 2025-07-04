@@ -24,14 +24,10 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Candidato } from "@/lib/data";
 import { Ban, FileText, Mail, PlusIcon, UploadIcon, Users } from "lucide-react";
+import { Person } from "@prisma/client";
 
-export const FinalTernaSheet = ({
-  ternaFinal,
-}: {
-  ternaFinal: Candidato[];
-}) => {
+export const FinalTernaSheet = ({ ternaFinal }: { ternaFinal: Person[] }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -139,10 +135,10 @@ export const FinalTernaSheet = ({
                 <CardHeader className="p-3 pb-1">
                   <div className="space-y-1">
                     <CardTitle className="text-base font-medium">
-                      {candidato.nombre}
+                      {candidato.name}
                     </CardTitle>
                     <CardDescription className="text-xs text-gray-400">
-                      {candidato.telefono}
+                      {candidato.phone}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -154,11 +150,11 @@ export const FinalTernaSheet = ({
                     <div className="flex gap-1 items-center">
                       <Mail size={14} className="text-gray-400" />
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {candidato.correo}
+                        {candidato.email}
                       </p>
                     </div>
                     <a
-                      href={candidato.cv}
+                      href={candidato.cv || ""}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1"

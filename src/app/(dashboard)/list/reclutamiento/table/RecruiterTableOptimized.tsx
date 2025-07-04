@@ -1027,7 +1027,6 @@ export function RecruiterTable<TData, TValue>({
       {/* Panel superior con acciones principales */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <CreateVacanteForm />
           <Button
             variant="outline"
             onClick={refreshData}

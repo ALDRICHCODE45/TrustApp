@@ -1,7 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -55,16 +54,15 @@ model User {
   taskNotifications  Task[]               @relation("TaskNotificationRecipients")
 
   // Relaciones específicas con nombres únicos para Vacancy
-  vacanciesReclutador          Vacancy[] @relation("VacancyReclutador")
-  vacanciesCheckListAuthor     Vacancy[] @relation("VacancyCheckListAuthor")
-  vacanciesMuestraPerfilAuthor Vacancy[] @relation("VacancyMuestraPerfilAuthor")
-  VacancyJobDescriptionAuthor  Vacancy[] @relation("VacancyJobDescriptionAuthor")
+  vacanciesReclutador Vacancy[] @relation("VacancyReclutador")
+  vacanciesCreated    Vacancy[] @relation("VacancyCreator") // Renombrado para claridad
 
   // Relación específica con nombre único para Comment
   comments Comment[] @relation("CommentAuthor")
-  Vacancy  Vacancy[]
-  Comment  Comment[]
-  Client   Client[]
+
+  // Otras relaciones
+  Client       Client[]
+  vacancyFiles VacancyFile[] @relation("VacancyFileAuthor")
 }
 
 // Modelo para registrar historial de cambios de estado de leads
@@ -151,6 +149,9 @@ model Person {
   linkedin String?
   cv       String? // solo para candidatos o en un futuro para donde se necesite
 
+  //etiqueta del contacto
+  etiqueta LeadStatus @default(Contacto)
+
   //relaciones -> contacto de leads
   Lead   Lead?   @relation(fields: [leadId], references: [id])
   leadId String?
@@ -185,7 +186,6 @@ enum VacancyPrioridad {
 }
 
 model Vacancy {
-  //Data necesaria
   id                    String           @id @default(uuid())
   fechaAsignacion       DateTime
   reclutadorId          String
@@ -209,39 +209,37 @@ model Vacancy {
   fee                   Int?
   ternaFinal            Person[]         @relation("VacancyTernaFinal")
 
-  //Data del checklist
-  checkListUrl       String?
-  checkListName      String?
-  checkListType      String?
-  checkListSize      Int?
-  checkListCreatedAt DateTime?
-  checkListUpdatedAt DateTime?
-  checkListAuthor    User?     @relation("VacancyCheckListAuthor", fields: [checkListAuthorId], references: [id], onDelete: Cascade)
-  checkListAuthorId  String?
+  // Relación con el cliente
+  cliente   Client @relation(fields: [clienteId], references: [id])
+  clienteId String
 
-  //Data del perfil muestra
-  muestraPerfilUrl       String?
-  muestraPerfilName      String?
-  muestraPerfilType      String?
-  muestraPerfilSize      Int?
-  muestraPerfilCreatedAt DateTime?
-  muestraPerfilUpdatedAt DateTime?
-  muestraPerfilAuthor    User?     @relation("VacancyMuestraPerfilAuthor", fields: [muestraPerfilAuthorId], references: [id], onDelete: Cascade)
-  muestraPerfilAuthorId  String?
+  // Relación con archivos
+  files VacancyFile[]
 
-  //Datos del job description
-  jobDescriptionUrl       String?
-  jobDescriptionName      String?
-  jobDescriptionType      String?
-  jobDescriptionSize      Int?
-  jobDescriptionCreatedAt DateTime?
-  jobDescriptionUpdatedAt DateTime?
-  jobDescriptionAuthor    User?     @relation("VacancyJobDescriptionAuthor", fields: [jobDescriptionAuthorId], references: [id], onDelete: Cascade)
-  jobDescriptionAuthorId  String?
+  // Datos del usuario que creo la vacante
+  creator   User?   @relation("VacancyCreator", fields: [creatorId], references: [id]) // Renombrado para claridad
+  creatorId String?
+}
 
-  //Datos del usuario que creo la vacante
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String?
+model VacancyFile {
+  id        String  @id @default(uuid())
+  vacancyId String
+  vacancy   Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  // Datos del archivo
+  url       String
+  name      String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Autor del archivo
+  authorId String?
+  author   User?   @relation("VacancyFileAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([vacancyId])
+  @@index([authorId]) // Índice agregado
 }
 
 enum ClienteEtiqueta {
@@ -282,6 +280,7 @@ model Client {
   //Relacion con el usuario
   usuarioId     String
   usuario       User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  Vacancy       Vacancy[]
 }
 
 model Comment {
@@ -290,13 +289,11 @@ model Comment {
   isTask    Boolean  @default(false)
   task      Task?    @relation(fields: [taskId], references: [id])
   taskId    String?  @unique
-  vacancy   Vacancy  @relation(fields: [vacancyId], references: [id])
-  vacancyId String
+  vacancy   Vacancy? @relation(fields: [vacancyId], references: [id]) // Hecho opcional
+  vacancyId String?
   author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   createdAt DateTime @default(now())
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
   Client    Client?  @relation(fields: [clientId], references: [id])
   clientId  String?
 }

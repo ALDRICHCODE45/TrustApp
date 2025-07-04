@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Vacante } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   BookCheck,
@@ -19,6 +18,7 @@ import { ActionsRecruitment } from "./components/ActionsRecruitment";
 import { PosicionPopOver } from "./components/PosicionPopOver";
 import { ClientesDropDown } from "./components/ClientesDropdown";
 import { ChangeDateComponent } from "./components/AsignacionDatePickerComponent";
+import { VacancyWithRelations } from "../../reclutador/components/ReclutadorColumns";
 
 // headers ordenables
 const SortableHeader = ({ column, title }: { column: any; title: string }) => {
@@ -38,7 +38,7 @@ const SortableHeader = ({ column, title }: { column: any; title: string }) => {
     </div>
   );
 };
-export const vacantesColumns: ColumnDef<Vacante>[] = [
+export const vacantesColumns: ColumnDef<VacancyWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -170,14 +170,14 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <PosicionPopOver row={row} />;
     },
-    accessorFn: (row) => row.puesto,
+    accessorFn: (row) => row.posicion,
     enableGlobalFilter: true,
   },
   {
     id: "comentarios",
     header: "Comentarios",
-    cell: ({ row }) => <CommentSheet comments={row.original.comentarios} />,
-    accessorFn: (row) => row.comentarios?.map((c) => c.texto).join(" ") || "",
+    cell: ({ row }) => <CommentSheet comments={row.original.Comments} />,
+    accessorFn: (row) => row.Comments?.map((c) => c.content).join(" ") || "",
     enableGlobalFilter: true,
   },
   {
@@ -232,13 +232,13 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => (
       <div>
         {row.original.candidatoContratado ? (
-          <p>{row.original.candidatoContratado.nombre}</p>
+          <p>{row.original.candidatoContratado.name}</p>
         ) : (
           <p className="text-red-500">N.A</p>
         )}
       </div>
     ),
-    accessorFn: (row) => row.candidatoContratado?.nombre || "N.A",
+    accessorFn: (row) => row.candidatoContratado?.name || "N.A",
     enableGlobalFilter: true,
   },
   {
@@ -292,41 +292,41 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     accessorFn: (row) => row.monto?.toString(),
     enableGlobalFilter: true,
   },
-  {
-    accessorKey: "checklist",
-    header: "Checklist",
-    cell: ({ row }) => (
-      <a
-        href={row.original.checklist}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Button variant="outline">
-          <BookCheck />
-        </Button>
-      </a>
-    ),
-  },
-  {
-    accessorKey: "muestraPerfil",
-    header: "Job Description",
-    cell: ({ row }) => (
-      <a
-        href={row.original.muestraPerfil}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Button variant="outline">
-          <UserPen />
-        </Button>
-      </a>
-    ),
-  },
-  {
-    accessorKey: "ternaFinal",
-    header: "Terna Final",
-    cell: ({ row }) => <FinalTernaSheet ternaFinal={row.original.ternaFinal} />,
-  },
+  // {
+  //   accessorKey: "checklist",
+  //   header: "Checklist",
+  //   cell: ({ row }) => (
+  //     <a
+  //       href={row.original.checklist}
+  //       target="_blank"
+  //       rel="noopener noreferrer"
+  //     >
+  //       <Button variant="outline">
+  //         <BookCheck />
+  //       </Button>
+  //     </a>
+  //   ),
+  // },
+  // {
+  //   accessorKey: "muestraPerfil",
+  //   header: "Job Description",
+  //   cell: ({ row }) => (
+  //     <a
+  //       href={row.original.muestraPerfil}
+  //       target="_blank"
+  //       rel="noopener noreferrer"
+  //     >
+  //       <Button variant="outline">
+  //         <UserPen />
+  //       </Button>
+  //     </a>
+  //   ),
+  // },
+  // {
+  //   accessorKey: "ternaFinal",
+  //   header: "Terna Final",
+  //   cell: ({ row }) => <FinalTernaSheet ternaFinal={row.original.ternaFinal} />,
+  // },
   {
     accessorKey: "duracionTotal",
     header: ({ column }) => (
@@ -343,7 +343,7 @@ export const vacantesColumns: ColumnDef<Vacante>[] = [
     id: "oficina",
     cell: () => null,
     header: () => null,
-    accessorFn: (row) => row.reclutador?.oficina,
+    accessorFn: (row) => row.reclutador?.Oficina,
     enableGlobalFilter: true,
   },
   {

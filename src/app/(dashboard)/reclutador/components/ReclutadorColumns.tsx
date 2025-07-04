@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Vacante } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   BookCheck,
@@ -19,6 +18,21 @@ import { PosicionPopOver } from "../../list/reclutamiento/components/PosicionPop
 import { CommentSheet } from "../../list/reclutamiento/components/CommentSheet";
 import { FinalTernaSheet } from "../../list/reclutamiento/components/FinalTernaSheet";
 import { ActionsRecruitment } from "../../list/reclutamiento/components/ActionsRecruitment";
+import { Prisma, Vacancy } from "@prisma/client";
+
+export type VacancyWithRelations = Prisma.VacancyGetPayload<{
+  include: {
+    reclutador: true;
+    cliente: true;
+    candidatoContratado: true;
+    ternaFinal: true;
+    Comments: {
+      include: {
+        author: true;
+      };
+    };
+  };
+}>;
 
 // headers ordenables
 const SortableHeader = ({ column, title }: { column: any; title: string }) => {
@@ -38,7 +52,7 @@ const SortableHeader = ({ column, title }: { column: any; title: string }) => {
     </div>
   );
 };
-export const reclutadorColumns: ColumnDef<Vacante>[] = [
+export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -135,7 +149,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => {
       return <RecruiterDropDown row={row} />;
     },
-    accessorFn: (row) => row.reclutador?.name,
+    accessorFn: (row) => row.reclutador.name,
   },
   {
     id: "tipo",
@@ -176,7 +190,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
     id: "comentarios",
     accessorKey: "comentarios",
     header: "Comentarios",
-    cell: ({ row }) => <CommentSheet comments={row.original.comentarios} />,
+    cell: ({ row }) => <CommentSheet comments={row.original.Comments} />,
   },
   {
     accessorKey: "fechaUltimaTerna",
@@ -229,7 +243,7 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
     cell: ({ row }) => (
       <div>
         {row.original.candidatoContratado ? (
-          <p>{row.original.candidatoContratado.nombre}</p>
+          <p>{row.original.candidatoContratado.name}</p>
         ) : (
           <p className="text-red-500">N.A</p>
         )}
@@ -261,36 +275,36 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
       );
     },
   },
-  {
-    accessorKey: "checklist",
-    header: "Checklist",
-    cell: ({ row }) => (
-      <a
-        href={row.original.checklist}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Button variant="outline">
-          <BookCheck />
-        </Button>
-      </a>
-    ),
-  },
-  {
-    accessorKey: "muestraPerfil",
-    header: "Job Description",
-    cell: ({ row }) => (
-      <a
-        href={row.original.muestraPerfil}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Button variant="outline">
-          <UserPen />
-        </Button>
-      </a>
-    ),
-  },
+  // {
+  //   accessorKey: "checklist",
+  //   header: "Checklist",
+  //   cell: ({ row }) => (
+  //     <a
+  //       href={row.original.checklist}
+  //       target="_blank"
+  //       rel="noopener noreferrer"
+  //     >
+  //       <Button variant="outline">
+  //         <BookCheck />
+  //       </Button>
+  //     </a>
+  //   ),
+  // },
+  // {
+  //   accessorKey: "muestraPerfil",
+  //   header: "Job Description",
+  //   cell: ({ row }) => (
+  //     <a
+  //       href={row.original.muestraPerfil}
+  //       target="_blank"
+  //       rel="noopener noreferrer"
+  //     >
+  //       <Button variant="outline">
+  //         <UserPen />
+  //       </Button>
+  //     </a>
+  //   ),
+  // },
   {
     accessorKey: "ternaFinal",
     header: "Terna Final",
@@ -312,9 +326,9 @@ export const reclutadorColumns: ColumnDef<Vacante>[] = [
     accessorKey: "oficina",
     header: ({ column }) => <SortableHeader column={column} title="Oficina" />,
     cell: ({ row }) => {
-      return <span>{row.original.reclutador?.oficina || "Sin oficina"}</span>;
+      return <span>{row.original.reclutador?.Oficina || "Sin oficina"}</span>;
     },
-    accessorFn: (row) => row.reclutador?.oficina,
+    accessorFn: (row) => row.reclutador?.Oficina,
     enableSorting: true,
     enableHiding: true,
   },

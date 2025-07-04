@@ -1,3 +1,4 @@
+import { VacancyWithRelations } from "@/app/(dashboard)/reclutador/components/ReclutadorColumns";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,14 +6,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Vacante } from "@/lib/data";
 import { Row } from "@tanstack/react-table";
 import { Hotel } from "lucide-react";
 import { useState } from "react";
 
-export const ClientesDropDown = ({ row }: { row: Row<Vacante> }) => {
+export const ClientesDropDown = ({
+  row,
+}: {
+  row: Row<VacancyWithRelations>;
+}) => {
   const [cliente, setCliente] = useState(
-    row.original.cliente?.cuenta ? row.original.cliente.cuenta : "Cliente",
+    row.original.cliente?.cuenta ? row.original.cliente.cuenta : "Cliente"
   );
   const handleClienteChange = (newCliente: string) => {
     setCliente(newCliente);
