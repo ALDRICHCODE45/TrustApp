@@ -149,7 +149,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     cell: ({ row }) => {
       return <RecruiterDropDown row={row} />;
     },
-    accessorFn: (row) => row.reclutador.name,
+    accessorFn: (row) => row.reclutador.id,
   },
   {
     id: "tipo",

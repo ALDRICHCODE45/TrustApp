@@ -117,6 +117,11 @@ const data: {
           url: "/list/users",
           roles: [Role.Admin], // Solo visible para administradores
         },
+        {
+          title: "Clientes",
+          url: "/list/clientes",
+          roles: [Role.Admin], // Solo visible para administradores
+        },
         // {
         //   title: "Clientes",
         //   url: "/list/clientes",

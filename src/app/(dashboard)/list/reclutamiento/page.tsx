@@ -79,7 +79,12 @@ export default async function ReclutamientoPage({}: pageProps): Promise<ReactEle
 
       <div className="flex flex-col gap-4">
         <CreateVacanteForm reclutadores={reclutadores} clientes={clientes} />
-        <RecruiterTable columns={reclutadorColumns} data={vacantes} />
+        <RecruiterTable
+          columns={reclutadorColumns}
+          data={vacantes}
+          reclutadores={reclutadores}
+          clientes={clientes}
+        />
       </div>
     </>
   );

@@ -247,23 +247,29 @@ enum ClienteEtiqueta {
   Cliente
 }
 
+enum ClienteModalidad {
+  Exito
+  Anticipo
+}
+
 model Client {
   //Data principal
-  id            String          @id @default(cuid())
+  id           String            @id @default(cuid())
   //Relacion con el lead
-  leadId        String?
-  lead          Lead?           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId       String?
+  lead         Lead?             @relation(fields: [leadId], references: [id], onDelete: Cascade)
   //Etiqueta del cliente
-  etiqueta      ClienteEtiqueta @default(PreCliente)
+  etiqueta     ClienteEtiqueta   @default(PreCliente)
   //Data de la cuenta y estadisticas
-  cuenta        String?
-  asignadas     Int?
-  perdidas      Int?
-  canceladas    Int?
-  placements    Int?
-  tp_placement  Int?
-  contactos     Person[]
-  modalidad     String?
+  cuenta       String?
+  asignadas    Int?
+  perdidas     Int?
+  canceladas   Int?
+  placements   Int?
+  tp_placement Int?
+  contactos    Person[]
+  modalidad    ClienteModalidad? @default(Exito)
+
   fee           Int?
   dias_credito  Int?
   tipo_factura  String?
@@ -276,10 +282,10 @@ model Client {
   comentarios   Comment[]
   //Origen en caso de que no haya lead
   origenId      String?
-  origen        LeadOrigen?     @relation(fields: [origenId], references: [id])
+  origen        LeadOrigen? @relation(fields: [origenId], references: [id])
   //Relacion con el usuario
   usuarioId     String
-  usuario       User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario       User        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   Vacancy       Vacancy[]
 }
 

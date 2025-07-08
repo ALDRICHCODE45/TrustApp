@@ -77,7 +77,7 @@ const allowLeadStatus = [
     description: "¿Quieres cambiar el status a Cliente?",
     onConfirmValule: LeadStatus.Asignadas,
     oficeNumber: "Cliente",
-    status: "Cliente",
+    status: "Asignadas",
     icon: Award,
   },
   {

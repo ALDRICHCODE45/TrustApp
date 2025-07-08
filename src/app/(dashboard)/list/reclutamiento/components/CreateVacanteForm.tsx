@@ -481,10 +481,14 @@ const BasicInformationTab = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-full max-h-[250px] overflow-y-auto z-[999]">
                     {reclutadores.length === 0 && (
-                      <Card className="w-full flex justify-center items-center gap-2">
-                        <CircleOff />
-                        <span>No hay reclutadores disponibles</span>
-                      </Card>
+                      <div className="w-full h-[200px] flex justify-center items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
+                          <CircleOff className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            No hay reclutadores disponibles
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {reclutadores.length > 0 &&
@@ -556,10 +560,14 @@ const BasicInformationTab = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-full max-h-[250px] overflow-y-auto z-[999]">
                     {clientes.length === 0 && (
-                      <Card className="w-full flex justify-center items-center gap-2">
-                        <CircleOff />
-                        <span>No hay clientes disponibles</span>
-                      </Card>
+                      <div className="w-full h-[200px] flex justify-center items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
+                          <CircleOff className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            No hay clientes disponibles
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {clientes.length > 0 &&

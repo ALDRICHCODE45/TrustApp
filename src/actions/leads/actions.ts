@@ -376,16 +376,6 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     const newStatus = submission.value.status;
     const statusChanged = newStatus && newStatus !== existingLead.status;
 
-    //verificamos si el estado cambio a Asignadas y creamos el precliente
-    if (newStatus === "Asignadas") {
-      await prisma.client.create({
-        data: {
-          leadId: leadId,
-          usuarioId: sesion.user.id,
-        },
-      });
-    }
-
     // Convertir numero_empleados de string a number si está presente
     let numeroEmpleados = existingLead.numero_empleados;
     if (submission.value.numero_empleados) {
@@ -399,7 +389,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
     }
 
     // Actualizamos el lead
-    await prisma.lead.update({
+    const updatedLead = await prisma.lead.update({
       where: { id: leadId },
       data: {
         empresa: submission.value.empresa || existingLead.empresa,
@@ -422,6 +412,19 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
           status: newStatus,
           changedById: sesion.user.id,
           // La fecha se establecerá automáticamente con @default(now())
+        },
+      });
+    }
+
+    const clientName = updatedLead.empresa;
+
+    //verificamos si el estado cambio a Asignadas y creamos el precliente
+    if (newStatus === "Asignadas") {
+      await prisma.client.create({
+        data: {
+          leadId: leadId,
+          usuarioId: sesion.user.id,
+          cuenta: clientName,
         },
       });
     }

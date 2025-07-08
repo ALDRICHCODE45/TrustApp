@@ -43,7 +43,7 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
       <header className="sticky z-10 top-0 flex justify-between h-16 shrink-0 items-center border-b bg-white dark:bg-[#121212] px-4">
         <div className="flex items-center gap-3">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <SidebarTrigger className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition-colors" />
             </TooltipTrigger>
             <TooltipContent>

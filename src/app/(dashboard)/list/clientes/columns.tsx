@@ -2,14 +2,28 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { RazonSocialPopOver } from "./components/RazonSocialPopOver";
 import { ContactosSheet } from "./components/ContactosSheet";
-import { ArrowRightToLine } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowRightToLine,
+  CircleCheck,
+  CircleOff,
+  HandCoins,
+  Link as LinkIcon,
+  ThumbsUp,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ComentariosSheet } from "../../cliente/[id]/components/ComentariosSheet";
 import { FacturacionSheet } from "./components/Facturacion_instrucciones";
 import { ClientesActions } from "./components/ClientesActions";
 import { UserClientDropDown } from "./components/UserClientDropDown";
-import { Client, Prisma } from "@prisma/client";
+import { Client, ClienteModalidad, Prisma } from "@prisma/client";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
 
 export type ClientWithRelations = Prisma.ClientGetPayload<{
   include: {
@@ -69,8 +83,8 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     cell: ({ row }) => {
       const cuenta = row.original.cuenta;
       return (
-        <Button variant="outline" className="font-bold">
-          {cuenta}
+        <Button variant="outline">
+          <p className="text-foreground">{cuenta}</p>
         </Button>
       );
     },
@@ -81,10 +95,19 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     cell: ({ row }) => {
       const asignadas = row.original.asignadas;
       return (
-        <div className="flex gap-1 items-center">
-          <ArrowRightToLine size={15} />
-          <span>{asignadas}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="flex gap-1 items-center">
+              <ArrowRightToLine size={15} className="text-gray-500" />
+              <span>
+                {asignadas ?? <span className="text-red-500">N/A</span>}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Vacantes asignadas</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
@@ -93,7 +116,21 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     header: "Perdidas",
     cell: ({ row }) => {
       const perdidas = row.original.perdidas;
-      return <span className="font-bold">{perdidas}</span>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                <ArrowDownToLine size={15} className="text-gray-500" />
+                {perdidas ?? <span className="text-red-500">N/A</span>}
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Vacantes perdidas</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
@@ -101,7 +138,24 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     header: "Canceladas",
     cell: ({ row }) => {
       const canceladas = row.original.canceladas;
-      return <span className="font-bold">{canceladas}</span>;
+
+      return (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline">
+                <p className="text-foreground flex gap-1 items-center">
+                  <CircleOff size={15} className="text-gray-500" />
+                  {canceladas ?? <span className="text-red-500">N/A</span>}
+                </p>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Vacantes canceladas</p>
+            </TooltipContent>
+          </Tooltip>
+        </>
+      );
     },
   },
   {
@@ -109,7 +163,21 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     header: "Placements",
     cell: ({ row }) => {
       const placements = row.original.placements;
-      return <span className="font-bold">{placements}</span>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                <CircleCheck size={15} className="text-gray-500" />
+                {placements ?? <span className="text-red-500">N/A</span>}
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Vacantes reclutadas</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
@@ -132,6 +200,29 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
   {
     accessorKey: "modalidad",
     header: "Modalidad",
+    cell: ({ row }) => {
+      const modalidad = row.original.modalidad as ClienteModalidad;
+      const modalidadIcon = {
+        Exito: <ThumbsUp size={15} className="text-gray-500" />,
+        Anticipo: <HandCoins size={15} className="text-gray-500" />,
+      };
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <div className="flex gap-2 items-center">
+                {modalidadIcon[modalidad]}
+                <span>{modalidad ?? "N/A"}</span>
+              </div>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Modalidad de pago</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: "fee",
@@ -203,6 +294,36 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     header: "Comentarios",
     //TODO: Agregar comentarios
     cell: ({ row }) => <ComentariosSheet comments={[]} />,
+  },
+  {
+    accessorKey: "portal_site",
+    header: "Portal",
+    //TODO: Agregar comentarios
+    cell: ({ row }) => {
+      const portal_site = row.original.portal_site;
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                {portal_site ? (
+                  <Link href={portal_site} target="_blank">
+                    <LinkIcon size={15} className="text-gray-500" />
+                    <span className="text-foreground">{portal_site}</span>
+                  </Link>
+                ) : (
+                  <span className="text-red-500">N/A</span>
+                )}
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Portal del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     id: "actions",

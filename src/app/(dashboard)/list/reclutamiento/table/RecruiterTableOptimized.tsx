@@ -67,6 +67,7 @@ import {
 } from "../../../../../lib/data";
 import { toast } from "sonner";
 import CreateVacanteForm from "../components/CreateVacanteForm";
+import { Client, User } from "@prisma/client";
 
 // Función de filtro personalizada para rangos de fechas
 const dateRangeFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
@@ -125,6 +126,8 @@ export interface DataTableProps<TData, TValue> {
   data: TData[];
   defaultPageSize?: number;
   filterPlaceholder?: string;
+  reclutadores: User[];
+  clientes: Client[];
 }
 
 // Componente de filtros integrado
@@ -144,6 +147,8 @@ interface TableFiltersProps<TData, TValue> {
   setDateRange: (newRange: DateRange | undefined) => void;
   currentOficina: Oficina | "all";
   setCurrentOficina: (newOficina: Oficina | "all") => void;
+  reclutadores: User[];
+  clientes: Client[];
 }
 
 function TableFilters<TData, TValue>({
@@ -162,14 +167,10 @@ function TableFilters<TData, TValue>({
   setDateRange,
   currentOficina,
   setCurrentOficina,
+  reclutadores,
+  clientes,
 }: TableFiltersProps<TData, TValue>) {
   const [isExporting, setIsExporting] = useState(false);
-
-  // Memoizar los reclutadores
-  const recruites = useMemo(
-    () => UsersData.filter((user) => user.rol === Role.reclutador),
-    []
-  );
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -376,8 +377,8 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los clientes</SelectItem>
-                  {clientesData.map((cliente) => (
-                    <SelectItem key={cliente.id} value={cliente.cuenta}>
+                  {clientes.map((cliente) => (
+                    <SelectItem key={cliente.id} value={cliente.id}>
                       {cliente.cuenta}
                     </SelectItem>
                   ))}
@@ -401,8 +402,8 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los reclutadores</SelectItem>
-                  {recruites.map((user) => (
-                    <SelectItem key={user.id} value={user.name}>
+                  {reclutadores.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
                       {user.name}
                     </SelectItem>
                   ))}
@@ -823,6 +824,8 @@ export function RecruiterTable<TData, TValue>({
   data,
   defaultPageSize = 10,
   filterPlaceholder = "Buscar vacantes...",
+  reclutadores,
+  clientes,
 }: DataTableProps<TData, TValue>) {
   // Estados
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -941,10 +944,7 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
       setCurrentRecruiter(value);
-      table.getColumn("reclutador")?.setFilterValue((row: Row<Vacante>) => {
-        const reclutador = row.getValue<string>("reclutador");
-        return reclutador?.toLowerCase() === value.toLowerCase();
-      });
+      table.getColumn("reclutador")?.setFilterValue(value);
       table.setPageIndex(0);
     },
     [table]
@@ -1045,6 +1045,8 @@ export function RecruiterTable<TData, TValue>({
 
       {/* Componente de filtros optimizado */}
       <TableFilters
+        reclutadores={reclutadores}
+        clientes={clientes}
         table={table}
         filterPlaceholder={filterPlaceholder}
         onGlobalFilterChange={handleGlobalFilterChange}

@@ -77,7 +77,12 @@ export default async function VacantesPage({}: PageProps): Promise<ReactElement>
         <CreateVacanteForm reclutadores={reclutadores} clientes={clientes} />
       </div>
 
-      <RecruiterTable columns={reclutadorColumns} data={vacantes} />
+      <RecruiterTable
+        columns={reclutadorColumns}
+        clientes={clientes}
+        data={vacantes}
+        reclutadores={reclutadores}
+      />
     </>
   );
 }
