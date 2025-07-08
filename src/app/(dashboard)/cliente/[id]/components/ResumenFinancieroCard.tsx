@@ -1,8 +1,12 @@
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cliente } from "@/lib/data";
 import { TrendingUp } from "lucide-react";
 
-export const ResumenFinancieroCard = ({ client }: { client: Cliente }) => {
+export const ResumenFinancieroCard = ({
+  client,
+}: {
+  client: ClientWithRelations;
+}) => {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -29,7 +33,7 @@ export const ResumenFinancieroCard = ({ client }: { client: Cliente }) => {
                 Valor Promedio
               </p>
               <p className="text-xl font-semibold">
-                ${client.tp_placement.toFixed(2)}
+                ${client.tp_placement?.toFixed(2) ?? 0}
               </p>
             </div>
           </div>

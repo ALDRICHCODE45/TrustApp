@@ -17,10 +17,10 @@ import { PlusCircle } from "lucide-react";
 import { CardFiscalInformation } from "./CardFiscalInformation";
 import { ClientesComentariosSections } from "./ClientesComentariosSction";
 import { CardCommercialInformation } from "./CardCommercialInformation";
-import { Cliente } from "@/lib/data";
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 
 interface ClientTabsWrapperProps {
-  cliente: Cliente;
+  cliente: ClientWithRelations;
 }
 
 export function ClientTabsWrapper({ cliente }: ClientTabsWrapperProps) {

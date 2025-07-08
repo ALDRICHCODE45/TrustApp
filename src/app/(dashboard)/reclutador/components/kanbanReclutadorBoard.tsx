@@ -45,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { KanbanFilters } from "./KanbanFilters";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 // Types
 interface ColumnProps {
@@ -90,24 +91,24 @@ const getTipoColor = (tipo: string) => {
 // Components
 const VacanteCard: React.FC<VacanteCardProps> = ({ vacante, onClick }) => (
   <Card
-    className="cursor-pointer hover:shadow-md transition-shadow"
+    className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
     onClick={onClick}
   >
-    <CardHeader className="p-4 pb-2">
+    <CardHeader className="p-5 pb-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-sm line-clamp-2">{vacante.puesto}</h3>
+        <h3 className="font-medium text-base line-clamp-2">{vacante.puesto}</h3>
         <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
           {vacante.tipo}
         </Badge>
       </div>
-      <div className="flex items-center text-sm text-muted-foreground mt-1">
-        <Building className="h-3.5 w-3.5 mr-1" />
+      <div className="flex items-center text-sm text-muted-foreground mt-2">
+        <Building className="h-4 w-4 mr-2" />
         <span>{vacante.cliente?.cuenta || "Sin cliente"}</span>
       </div>
     </CardHeader>
-    <CardContent className="p-4 pt-0 pb-2">
-      <div className="flex items-center text-sm mt-2">
-        <Avatar className="h-6 w-6 mr-2">
+    <CardContent className="p-5 pt-0 pb-3">
+      <div className="flex items-center text-sm mt-3">
+        <Avatar className="h-7 w-7 mr-3">
           <AvatarImage
             src={vacante.reclutador?.photo}
             alt={vacante.reclutador?.name || "Reclutador"}
@@ -121,19 +122,19 @@ const VacanteCard: React.FC<VacanteCardProps> = ({ vacante, onClick }) => (
           {vacante.reclutador?.name || "Sin reclutador"}
         </span>
       </div>
-      <div className="flex items-center text-sm mt-2">
-        <Calendar className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+      <div className="flex items-center text-sm mt-3">
+        <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
         <span className="text-muted-foreground">
           Entrega: {vacante.fechaEntrega}
         </span>
       </div>
     </CardContent>
-    <CardFooter className="p-4 pt-2 flex justify-between">
+    <CardFooter className="p-5 pt-3 flex justify-between">
       <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
         {vacante.tipo}
       </Badge>
       <div className="flex items-center text-sm text-muted-foreground">
-        <Clock className="h-3.5 w-3.5 mr-1" />
+        <Clock className="h-4 w-4 mr-2" />
         <span>{vacante.tiempoTranscurrido} días</span>
       </div>
     </CardFooter>
@@ -146,31 +147,37 @@ const KanbanColumn: React.FC<ColumnProps> = ({
   vacantes,
   onVacanteClick,
 }) => (
-  <div className="flex flex-col space-y-4">
-    <div className="flex items-center justify-between">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <Badge variant="outline">{vacantes.length}</Badge>
+  <div className="w-[320px] flex-shrink-0 bg-[#f1f5f9] dark:bg-gray-800 rounded-3xl p-3 h-full flex flex-col border border-slate-200 dark:border-gray-700">
+    <div className="p-3 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-gray-800 ">{title}</h2>
+        <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+          {vacantes.length}
+        </span>
+      </div>
     </div>
-    <div className="bg-muted/40 rounded-lg p-3 h-screen overflow-auto">
-      {vacantes.map((vacante, idx) => (
-        <Dialog key={idx}>
-          <DialogTrigger asChild>
-            <div>
-              <VacanteCard
-                vacante={vacante}
-                onClick={() => onVacanteClick(vacante)}
-              />
-            </div>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px]">
-            <DialogHeader>
-              <DialogTitle className="text-xl">{vacante.puesto}</DialogTitle>
-            </DialogHeader>
-            <VacanteTabs vacante={vacante} />
-          </DialogContent>
-        </Dialog>
-      ))}
-    </div>
+    <ScrollArea className="pt-2 pb-2 h-[calc(100vh-180px)]">
+      <div className="space-y-2">
+        {vacantes.map((vacante, idx) => (
+          <Dialog key={idx}>
+            <DialogTrigger asChild>
+              <div>
+                <VacanteCard
+                  vacante={vacante}
+                  onClick={() => onVacanteClick(vacante)}
+                />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[700px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl">{vacante.puesto}</DialogTitle>
+              </DialogHeader>
+              <VacanteTabs vacante={vacante} />
+            </DialogContent>
+          </Dialog>
+        ))}
+      </div>
+    </ScrollArea>
   </div>
 );
 
@@ -703,22 +710,32 @@ export const KanbanBoardPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-10">
+    <div className="flex flex-col h-[calc(100vh-120px)]">
       <KanbanFilters />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 w-full">
-        {columns.map(
-          (column) =>
-            (mobileView === null || mobileView === column.id) && (
-              <KanbanColumn
-                key={column.id}
-                id={column.id}
-                title={column.title}
-                vacantes={validVacantes.filter((v) => v.estado === column.id)}
-                onVacanteClick={setSelectedVacante}
-              />
-            )
-        )}
-      </div>
+      <ScrollArea className="flex-1 pt-4">
+        <div className="flex gap-14 h-full">
+          {columns.map(
+            (column) =>
+              (mobileView === null || mobileView === column.id) && (
+                <div
+                  className="h-[calc(100vh-230px)] flex flex-col"
+                  key={column.id}
+                >
+                  <KanbanColumn
+                    key={column.id}
+                    id={column.id}
+                    title={column.title}
+                    vacantes={validVacantes.filter(
+                      (v) => v.estado === column.id
+                    )}
+                    onVacanteClick={setSelectedVacante}
+                  />
+                </div>
+              )
+          )}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 };

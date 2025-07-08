@@ -33,7 +33,11 @@ export default async function LogsPage({}: pageProps): Promise<ReactElement> {
   return (
     <>
       {/* LOGS LIST */}
-      <DataTable columns={logsColumns} data={logs} />
+      <DataTable
+        columns={logsColumns}
+        data={logs}
+        globalFilterPlaceholder="Buscar por usuario, acción, módulo..."
+      />
     </>
   );
 }

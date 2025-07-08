@@ -7,19 +7,35 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Cliente, usuario_logeado } from "@/lib/data";
 // import { ClientEditForm } from "./EditCliente";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit3 } from "lucide-react";
 import { NuevoComentarioForm } from "@/app/(dashboard)/list/reclutamiento/components/CommentSheet";
+import { Prisma, Role } from "@prisma/client";
 // import CreateVacanteForm from "../../../list/reclutamiento/components/CreateVacanteForm";
 
-export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
+type ClienteWithRelatin = Prisma.ClientGetPayload<{
+  include: {
+    usuario: true;
+  };
+}>;
+
+export const ClientProfileHeader = ({
+  client,
+  user,
+}: {
+  client: ClienteWithRelatin;
+  user: {
+    name: string;
+    id: string;
+    role: string;
+  };
+}) => {
   const getClientStatus = () => {
-    if (client.placements > 5) return "outline";
-    if (client.placements > 2) return "destructive";
+    if (client.placements && client.placements > 5) return "outline";
+    if (client.placements && client.placements > 2) return "destructive";
     return "default";
   };
 
@@ -27,7 +43,7 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
     <div className="mb-6">
       <Card className="overflow-hidden border-none shadow-sm">
         <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5 relative">
-          {usuario_logeado?.role === "admin" && (
+          {user?.role === Role.Admin && (
             <div className="absolute top-4 right-4">
               <Button variant="outline" size="sm">
                 <Edit3 className="h-4 w-4" />
@@ -41,7 +57,7 @@ export const ClientProfileHeader = ({ client }: { client: Cliente }) => {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center -mt-12">
             <Avatar className="w-24 h-24 border-4 border-background shadow-md">
               <AvatarFallback className="text-3xl bg-primary/10 text-primary">
-                {client.cuenta.charAt(0)}
+                {client.cuenta?.charAt(0)}
               </AvatarFallback>
             </Avatar>
 

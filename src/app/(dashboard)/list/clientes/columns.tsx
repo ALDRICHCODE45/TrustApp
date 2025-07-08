@@ -34,6 +34,7 @@ export type ClientWithRelations = Prisma.ClientGetPayload<{
     };
     contactos: true;
     usuario: true;
+    comentarios: true;
   };
 }>;
 

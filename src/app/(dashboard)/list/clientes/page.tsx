@@ -30,6 +30,7 @@ const fetchUsers = async (): Promise<{
         },
         contactos: true,
         usuario: true,
+        comentarios: true,
       },
     });
 

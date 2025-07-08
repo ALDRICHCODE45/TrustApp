@@ -1,8 +1,12 @@
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cliente } from "@/lib/data";
 import { CreditCard } from "lucide-react";
 
-export const CardCommercialInformation = ({ client }: { client: Cliente }) => {
+export const CardCommercialInformation = ({
+  client,
+}: {
+  client: ClientWithRelations;
+}) => {
   return (
     <>
       <Card>
@@ -15,23 +19,23 @@ export const CardCommercialInformation = ({ client }: { client: Cliente }) => {
         <CardContent className="space-y-4 pt-2">
           <div>
             <p className="text-sm text-muted-foreground">ID del Cliente</p>
-            <p className="font-medium">{client.clienteId}</p>
+            <p className="font-medium">{client.id}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Origen</p>
-            <p className="font-medium">{client.origen}</p>
+            <p className="font-medium">{client.lead?.origen.nombre}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Fee</p>
-            <p className="font-medium">${client.fee.toFixed(2)}</p>
+            <p className="font-medium">${client.fee?.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Días de Crédito</p>
-            <p className="font-medium">{client.dias_credito} días</p>
+            <p className="font-medium">{client.dias_credito ?? 0} días</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Tipo de Factura</p>
-            <p className="font-medium">{client.tipo_factura}</p>
+            <p className="font-medium">{client.modalidad}</p>
           </div>
         </CardContent>
       </Card>

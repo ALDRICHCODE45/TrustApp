@@ -3,14 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Cliente } from "@/lib/data";
 import { MessageSquare } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 
 export const ClientesComentariosSections = ({
   client,
 }: {
-  client: Cliente;
+  client: ClientWithRelations;
 }) => {
   return (
     <ScrollArea className="h-96 pr-4">
@@ -22,7 +22,9 @@ export const ClientesComentariosSections = ({
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">SP</AvatarFallback>
+                      <AvatarFallback className="text-xs">
+                        {comentario.authorId}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">Salvador Perea</p>
@@ -30,19 +32,21 @@ export const ClientesComentariosSections = ({
                         <p className="text-xs text-muted-foreground">
                           lun 23-1-2025
                         </p>
-                        {comentario.tipo === "Tarea" ? (
+                        {comentario.isTask ? (
                           <p className="text-xs text-muted-foreground">
-                            entrega: mie 21/03/25
+                            entrega: {comentario.createdAt.getFullYear()}
                           </p>
                         ) : null}
                       </div>
                     </div>
                   </div>
-                  <Badge variant="outline">{comentario.tipo || "Nota"}</Badge>
+                  <Badge variant="outline">
+                    {comentario.isTask ? "Tarea" : "Nota"}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="py-3">
-                <p className="text-sm">{comentario.texto}</p>
+                <p className="text-sm">{comentario.content}</p>
               </CardContent>
             </Card>
           ))

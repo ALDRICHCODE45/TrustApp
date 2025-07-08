@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Cliente } from "@/lib/data";
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 import { Mail, Phone, PlusIcon, Users } from "lucide-react";
 import {
   Dialog,
@@ -17,7 +17,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-export const ClientesContactosCard = ({ client }: { client: Cliente }) => {
+export const ClientesContactosCard = ({
+  client,
+}: {
+  client: ClientWithRelations;
+}) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -111,13 +115,13 @@ export const ClientesContactosCard = ({ client }: { client: Cliente }) => {
                   <div className="flex gap-3">
                     <Avatar className="h-10 w-10 hidden md:block">
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {contacto.nombre.charAt(0)}
+                        {contacto.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{contacto.nombre}</p>
+                      <p className="font-medium truncate">{contacto.name}</p>
                       <p className="text-sm text-muted-foreground truncate">
-                        {contacto.puesto}
+                        {contacto.position}
                       </p>
                       <div className="mt-2 space-y-1">
                         <div className="flex items-center gap-2 text-sm">
@@ -125,14 +129,14 @@ export const ClientesContactosCard = ({ client }: { client: Cliente }) => {
                             size={14}
                             className="text-muted-foreground flex-shrink-0"
                           />
-                          <p className="truncate">{contacto.correo}</p>
+                          <p className="truncate">{contacto.email}</p>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone
                             size={14}
                             className="text-muted-foreground flex-shrink-0"
                           />
-                          <p className="truncate">{contacto.celular}</p>
+                          <p className="truncate">{contacto.phone}</p>
                         </div>
                       </div>
                     </div>

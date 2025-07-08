@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cliente } from "@/lib/data";
 import { FileText } from "lucide-react";
+import { ClientWithRelations } from "@/app/(dashboard)/list/clientes/columns";
 
-export const CardFiscalInformation = ({ client }: { client: Cliente }) => {
+export const CardFiscalInformation = ({
+  client,
+}: {
+  client: ClientWithRelations;
+}) => {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -14,23 +18,23 @@ export const CardFiscalInformation = ({ client }: { client: Cliente }) => {
       <CardContent className="space-y-4 pt-2">
         <div>
           <p className="text-sm text-muted-foreground">Razón Social</p>
-          <p className="font-medium">{client.razon_social}</p>
+          <p className="font-medium">{client.razon_social ?? "N/A"}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Régimen</p>
-          <p className="font-medium">{client.regimen}</p>
+          <p className="font-medium">{client.regimen ?? "N/A"}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">RFC</p>
-          <p className="font-medium">{client.rfc}</p>
+          <p className="font-medium">{client.rfc ?? "N/A"}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Código Postal</p>
-          <p className="font-medium">{client.cp}</p>
+          <p className="font-medium">{client.codigo_postal ?? "N/A"}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Cómo Factura</p>
-          <p className="font-medium">{client.como_factura}</p>
+          <p className="font-medium">{client.como_factura ?? "N/A"}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Portal</p>
