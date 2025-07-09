@@ -81,7 +81,6 @@ const comentarioFormSchema = z.object({
 });
 
 // Tipo derivado del schema
-
 interface CommentFormProps {
   isEditing?: boolean;
   comentarioInicial?: CommentWithRelations | null;
@@ -111,9 +110,11 @@ export const CommentSheet = ({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">
-          <MessageCircleMore />
-        </Button>
+        <div className="flex justify-center items-center w-full">
+          <Button variant="outline">
+            <MessageCircleMore />
+          </Button>
+        </div>
       </SheetTrigger>
       <SheetContent className="p-4">
         {/* Botón para abrir el diálogo */}

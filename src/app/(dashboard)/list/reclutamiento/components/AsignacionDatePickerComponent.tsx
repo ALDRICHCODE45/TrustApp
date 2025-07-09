@@ -30,7 +30,7 @@ export const ChangeDateComponent = ({
   onFechaChange,
 }: DatePickerCellProps) => {
   const [date, setDate] = useState<Date | undefined>(
-    fecha instanceof Date ? fecha : undefined,
+    fecha instanceof Date ? fecha : undefined
   );
   const [tempDate, setTempDate] = useState<Date | undefined>(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -67,7 +67,7 @@ export const ChangeDateComponent = ({
             {fecha instanceof Date ? (
               <span>{format(fecha, "EEE dd/MM/yy", { locale: es })}</span>
             ) : (
-              <span>Fecha</span>
+              <span className="text-red-500">N/A</span>
             )}
           </Button>
         </PopoverTrigger>

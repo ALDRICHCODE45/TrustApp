@@ -29,7 +29,13 @@ const oficinaMap = {
   Oficina2: "Oficina 2",
 };
 
-export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
+// Función para crear las columnas con la función de actualización
+export const createLeadsColumns = (
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void
+): ColumnDef<LeadWithRelations>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -110,7 +116,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
         link = `https://${link}`;
       }
       return (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link href={link} target="_blank" className="underline">
@@ -158,6 +164,7 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
         contactos={row.original.contactos}
         leadId={row.original.id}
         empresaName={row.original.empresa}
+        updateLeadInState={updateLeadInState}
       />
     ),
   },
@@ -204,3 +211,6 @@ export const leadsColumns: ColumnDef<LeadWithRelations>[] = [
     },
   },
 ];
+
+// Exportar las columnas por defecto para compatibilidad
+export const leadsColumns = createLeadsColumns();

@@ -1,13 +1,15 @@
+import { VacancyWithRelations } from "@/app/(dashboard)/reclutador/components/ReclutadorColumns";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Row } from "@tanstack/react-table";
 import { BriefcaseBusiness, Info } from "lucide-react";
 
-export function PosicionPopOver({ row }: { row: any }) {
-  const puesto = row.original.puesto;
+export function PosicionPopOver({ row }: { row: Row<VacancyWithRelations> }) {
+  const puesto = row.original.posicion;
 
   return (
     <div className="flex items-center gap-2">

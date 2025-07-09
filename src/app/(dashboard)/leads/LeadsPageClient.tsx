@@ -1,6 +1,6 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-import { leadsColumns } from "../list/leads/leadsColumns";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { createLeadsColumns } from "../list/leads/leadsColumns";
 import { CommercialTable } from "./table/CommercialTable";
 import { CreateLeadForm } from "../list/leads/components/CreateLeadForm";
 import { LeadWithRelations } from "./kanban/page";
@@ -14,7 +14,6 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface LeadsPageClientProps {
   initialData?: LeadWithRelations[];
-  columns: typeof leadsColumns;
   generadores: any[];
   sectores: any[];
   origenes: LeadOrigen[];
@@ -24,7 +23,6 @@ interface LeadsPageClientProps {
 
 export function LeadsPageClient({
   initialData = [],
-  columns,
   generadores,
   sectores,
   origenes,
@@ -50,10 +48,16 @@ export function LeadsPageClient({
     updateParams,
     refetch,
     currentParams,
+    updateLeadInState,
   } = useHybridPaginationLeads({
     pageSize: 10, // Mostrar 10 por página
     prefetchSize: 200, // Cargar 200 del servidor por vez
   });
+
+  // Crear las columnas dinámicamente con la función de actualización
+  const columns = useMemo(() => {
+    return createLeadsColumns(updateLeadInState);
+  }, [updateLeadInState]);
 
   // Callback cuando se crea un nuevo lead
   const handleLeadCreated = useCallback(() => {
@@ -125,6 +129,7 @@ export function LeadsPageClient({
         isHybridLoading={loading}
         isFiltering={isFiltering}
         onHybridRefresh={refetch}
+        updateLeadInState={updateLeadInState}
       />
     </>
   );

@@ -38,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AllLeadInteractionsDialog } from "./AllLeadInteractionsDialog";
 import { getContactosByLeadId } from "@/actions/leadSeguimiento/ations";
+import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
 
 type FormData = z.infer<typeof createLeadPersonSchema>;
 
@@ -45,10 +46,15 @@ export function LeadContactosSheet({
   contactos,
   leadId,
   empresaName,
+  updateLeadInState,
 }: {
   contactos: ContactWithRelations[];
   leadId: string;
   empresaName?: string;
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -80,7 +86,7 @@ export function LeadContactosSheet({
       email: "",
       phone: "",
     }),
-    [],
+    []
   );
 
   const {
@@ -127,9 +133,16 @@ export function LeadContactosSheet({
           // Actualizar solo los contactos del lead actual
           try {
             const updatedContacts = await getContactosByLeadId(
-              leadIdRef.current,
+              leadIdRef.current
             );
             setDisplayedContacts(updatedContacts);
+
+            // Actualizar el estado global si la función está disponible
+            if (updateLeadInState) {
+              updateLeadInState(leadIdRef.current, {
+                contactos: updatedContacts,
+              });
+            }
           } catch (error) {
             console.error("Error al actualizar los contactos:", error);
           }
@@ -145,7 +158,7 @@ export function LeadContactosSheet({
         setIsCreatingContact(false);
       }
     },
-    [reset, defaultValues],
+    [reset, defaultValues, updateLeadInState]
   );
 
   // Handlers memoizados para evitar recreaciones
@@ -157,7 +170,7 @@ export function LeadContactosSheet({
         reset(defaultValues);
       }
     },
-    [reset, defaultValues],
+    [reset, defaultValues]
   );
 
   const handleSheetOpenChange = useCallback((newOpen: boolean) => {
@@ -288,7 +301,7 @@ export function LeadContactosSheet({
         </div>
       </form>
     ),
-    [register, handleSubmit, onSubmit, errors, isSubmitting, handleCancelClick],
+    [register, handleSubmit, onSubmit, errors, isSubmitting, handleCancelClick]
   );
 
   return (
@@ -355,6 +368,7 @@ export function LeadContactosSheet({
                     key={contacto.id}
                     contacto={contacto}
                     onUpdateContacts={setDisplayedContacts}
+                    updateLeadInState={updateLeadInState}
                   />
                 ))
               ) : (

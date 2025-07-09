@@ -1,10 +1,8 @@
-import { leadsColumns } from "./leadsColumns";
 import { auth } from "@/lib/auth";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
 import { Role } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Metadata } from "next";
-import { ColumnDef } from "@tanstack/react-table";
 import { LeadWithRelations } from "../../leads/kanban/page";
 import { LeadsPageClient } from "../../leads/LeadsPageClient";
 
@@ -16,7 +14,6 @@ export const metadata: Metadata = {
 
 const fetchData = async (): Promise<{
   data: LeadWithRelations[];
-  columns: ColumnDef<LeadWithRelations>[];
 }> => {
   const leads = await prisma.lead.findMany({
     include: {
@@ -46,7 +43,6 @@ const fetchData = async (): Promise<{
   });
 
   return {
-    columns: leadsColumns,
     data: leads,
   };
 };
@@ -84,7 +80,7 @@ const fetchOrigenes = async () => {
 };
 
 export default async function LeadsPage({}: pageProps) {
-  const { columns, data } = await fetchData();
+  const { data } = await fetchData();
   const session = await auth();
 
   const generadores = await fetchGeneradores();
@@ -109,7 +105,6 @@ export default async function LeadsPage({}: pageProps) {
     <>
       <LeadsPageClient
         initialData={data}
-        columns={columns}
         generadores={generadores}
         sectores={sectores}
         origenes={origenes}

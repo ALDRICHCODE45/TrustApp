@@ -49,6 +49,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ContactInteractionWithRelations,
   createInteraction,
+  getContactosByLeadId,
 } from "@/actions/leadSeguimiento/ations";
 import { InteractionCard } from "./InteractionCard";
 import { uploadFile } from "@/actions/files/actions";
@@ -79,6 +80,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LeadWithRelations } from "../kanban/page";
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -86,6 +88,10 @@ interface ContactoCardProps {
   onUpdateContacts: React.Dispatch<
     React.SetStateAction<ContactWithRelations[]>
   >;
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }
 
 export type ContactWithRelations = Prisma.PersonGetPayload<{
@@ -103,7 +109,7 @@ export type ContactWithRelations = Prisma.PersonGetPayload<{
 async function createContactInteraction(
   contactoId: string,
   content: string,
-  attachment?: Attachment,
+  attachment?: Attachment
 ) {
   try {
     const formData = new FormData();
@@ -126,6 +132,7 @@ async function createContactInteraction(
 export const ContactoCard = ({
   contacto,
   onUpdateContacts,
+  updateLeadInState,
 }: ContactoCardProps) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
@@ -162,8 +169,8 @@ export const ContactoCard = ({
       // Actualizar la lista de contactos reemplazando el contacto editado
       onUpdateContacts((prev) =>
         prev.map((contact) =>
-          contact.id === contacto.id ? updatedContacto : contact,
-        ),
+          contact.id === contacto.id ? updatedContacto : contact
+        )
       );
     } catch (error) {
       toast.error("Algo salio mal..");
@@ -182,7 +189,7 @@ export const ContactoCard = ({
         success: () => {
           // Actualizar la lista local eliminando el contacto
           onUpdateContacts((prev) =>
-            prev.filter((contact) => contact.id !== id),
+            prev.filter((contact) => contact.id !== id)
           );
           return "Contacto eliminado con exito";
         },
@@ -311,6 +318,7 @@ export const ContactoCard = ({
         onOpenChange={setOpenSeguimiento}
         open={openSeguimiento}
         contacto={contacto}
+        updateLeadInState={updateLeadInState}
       />
 
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -411,6 +419,10 @@ interface SeguimientoContactoProps {
   onOpenChange: (open: boolean) => void;
   contacto: Person;
   initialInteractions: ContactInteractionWithRelations[];
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }
 
 export interface Attachment {
@@ -431,6 +443,7 @@ export const SeguimientoContacto = ({
   onOpenChange,
   contacto,
   initialInteractions,
+  updateLeadInState,
 }: SeguimientoContactoProps) => {
   const [interactions, setInteractions] =
     useState<ContactInteractionWithRelations[]>(initialInteractions);
@@ -458,13 +471,26 @@ export const SeguimientoContacto = ({
       const newInteraction = await createContactInteraction(
         contacto.id,
         newContent,
-        attachment || undefined,
+        attachment || undefined
       );
 
       setInteractions((prev) => [...prev, newInteraction]);
       setNewContent("");
       setAttachment(null);
       toast.success("Interacción registrada con éxito");
+
+      // Actualizar el estado global si la función está disponible
+      if (updateLeadInState && contacto.leadId) {
+        // Obtener los contactos actualizados del lead
+        try {
+          const updatedContacts = await getContactosByLeadId(contacto.leadId);
+          updateLeadInState(contacto.leadId, {
+            contactos: updatedContacts,
+          });
+        } catch (error) {
+          console.error("Error al actualizar el estado global:", error);
+        }
+      }
     } catch (error) {
       toast.error("Error al registrar la interacción");
     } finally {
@@ -668,7 +694,7 @@ export const CreateTaskDialog = ({
       const result = await createTaskFromContact(
         title,
         description,
-        dueDate.toISOString(),
+        dueDate.toISOString()
       );
 
       if (!result.ok) {
@@ -735,7 +761,7 @@ export const CreateTaskDialog = ({
                   variant="outline"
                   className={cn(
                     "justify-start text-left font-normal w-full",
-                    !dueDate && "text-muted-foreground",
+                    !dueDate && "text-muted-foreground"
                   )}
                   disabled={isSubmitting}
                 >

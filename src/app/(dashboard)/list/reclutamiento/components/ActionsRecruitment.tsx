@@ -34,18 +34,17 @@ export const ActionsRecruitment = ({ row }: { row: any }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuItem className="cursor-pointer">
             <Clipboard />
             Copiar Usuario
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
             <SquarePen />
             Editar
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="cursor-pointer flex items-center gap-2"
+            className="cursor-pointer flex items-center gap-2 text-red-500"
             onClick={() => setOpen(true)} // Abre el AlertDialog al hacer clic
           >
             <Trash2 />

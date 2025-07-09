@@ -1,5 +1,4 @@
 import { type ReactElement } from "react";
-import { leadsColumns } from "../list/leads/leadsColumns";
 import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { checkRoleRedirect } from "@/app/helpers/checkRoleRedirect";
@@ -12,7 +11,6 @@ export interface pageProps {}
 
 const fetchData = async (): Promise<{
   data: LeadWithRelations[];
-  columns: typeof leadsColumns;
 }> => {
   noStore();
 
@@ -48,7 +46,6 @@ const fetchData = async (): Promise<{
     ],
   });
   return {
-    columns: leadsColumns,
     data: leads,
   };
 };
@@ -93,7 +90,7 @@ const fetchOrigenes = async () => {
 };
 
 export default async function page({}: pageProps): Promise<ReactElement> {
-  const { columns, data } = await fetchData();
+  const { data } = await fetchData();
 
   const session = await auth();
 
@@ -118,7 +115,6 @@ export default async function page({}: pageProps): Promise<ReactElement> {
     <>
       <LeadsPageClient
         initialData={data}
-        columns={columns}
         generadores={generadores}
         sectores={sectores}
         origenes={origenes}

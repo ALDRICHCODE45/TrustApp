@@ -3,6 +3,7 @@ import {
   ContactInteractionWithRelations,
   deleteInteractionById,
   editInteractionById,
+  getContactosByLeadId,
   getTasksByInteractionId,
   TaskWithUsers,
 } from "@/actions/leadSeguimiento/ations";
@@ -87,7 +88,8 @@ import {
 import { User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import {useCallback} from 'react'
+import { useCallback } from "react";
+import { LeadWithRelations } from "../kanban/page";
 
 interface Props {
   interaction: ContactInteractionWithRelations;
@@ -95,9 +97,17 @@ interface Props {
     React.SetStateAction<ContactInteractionWithRelations[]>
   >;
   setOpenTaskDialog?: React.Dispatch<React.SetStateAction<boolean>>;
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }
 
-export const InteractionCard = ({ interaction, setInteractions }: Props) => {
+export const InteractionCard = ({
+  interaction,
+  setInteractions,
+  updateLeadInState,
+}: Props) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const [newContent, setNewContent] = useState<string>(interaction.content);
@@ -108,7 +118,7 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
           attachmentType: interaction.attachmentType || "",
           attachmentUrl: interaction.attachmentUrl,
         }
-      : null,
+      : null
   );
   const [isAttachmentChanged, setIsAttachmentChanged] =
     useState<boolean>(false);
@@ -118,7 +128,14 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
       <InteractionCardView
         interaction={interaction}
         setOpenDialog={setOpenDialog}
-        deleteInteraction={(id) => handleDeleteInteraction(id, setInteractions)}
+        deleteInteraction={(id) =>
+          handleDeleteInteraction(
+            id,
+            setInteractions,
+            updateLeadInState,
+            interaction
+          )
+        }
       />
 
       <EditInteractionDialog
@@ -140,6 +157,7 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
             setIsPending,
             setOpenDialog,
             setIsAttachmentChanged,
+            updateLeadInState
           )
         }
         handleNewFileChange={(e) =>
@@ -147,7 +165,7 @@ export const InteractionCard = ({ interaction, setInteractions }: Props) => {
             e,
             setIsPending,
             setAttachmentInfo,
-            setIsAttachmentChanged,
+            setIsAttachmentChanged
           )
         }
         handleDeleteFile={() => {
@@ -174,7 +192,7 @@ const InteractionCardView = ({
       key={interaction.id}
       className={cn(
         "border-l-4 relative group hover:shadow-md transition-all duration-200 w-full min-h-fit overflow-hidden",
-        interaction.attachmentUrl ? "border-l-blue-500" : "border-l-primary",
+        interaction.attachmentUrl ? "border-l-blue-500" : "border-l-primary"
       )}
     >
       <CardHeader className="py-3 px-4 pb-2 pr-12">
@@ -213,9 +231,19 @@ const InteractionAuthorInfo = ({
 }: {
   interaction: ContactInteractionWithRelations;
 }) => {
-  const getTimeAgo = (date: Date) => {
+  const getTimeAgo = (date: Date | string) => {
+    // Asegurar que date sea un objeto Date válido
+    const dateObj = date instanceof Date ? date : new Date(date);
+
+    // Validar que la fecha sea válida
+    if (isNaN(dateObj.getTime())) {
+      return "Fecha inválida";
+    }
+
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInSeconds = Math.floor(
+      (now.getTime() - dateObj.getTime()) / 1000
+    );
 
     if (diffInSeconds < 60) return `hace ${diffInSeconds} segundos`;
 
@@ -226,7 +254,7 @@ const InteractionAuthorInfo = ({
     if (diffInHours < 24) return `hace ${diffInHours} horas`;
 
     // Si es más de un día, mostrar la fecha formateada
-    return format(date, "eee dd/MM/yyyy", { locale: es });
+    return format(dateObj, "eee dd/MM/yyyy", { locale: es });
   };
 
   return (
@@ -257,9 +285,13 @@ const InteractionAuthorInfo = ({
                 <TooltipContent>
                   <p className="text-xs">
                     Editado:{" "}
-                    {format(interaction.updatedAt, "dd/MM/yyyy HH:mm", {
-                      locale: es,
-                    })}
+                    {format(
+                      new Date(interaction.updatedAt),
+                      "dd/MM/yyyy HH:mm",
+                      {
+                        locale: es,
+                      }
+                    )}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -494,7 +526,8 @@ const CreateTaskDialog = ({
     setSelectedUsers(selectedUsers.filter((id) => id !== userIdToRemove));
   };
 
-  const canSubmit = title.trim() && description.trim() && dueDate && !isSubmitting;
+  const canSubmit =
+    title.trim() && description.trim() && dueDate && !isSubmitting;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -540,7 +573,7 @@ const CreateTaskDialog = ({
                   variant="outline"
                   className={cn(
                     "justify-start text-left font-normal w-full",
-                    !dueDate && "text-muted-foreground",
+                    !dueDate && "text-muted-foreground"
                   )}
                   disabled={isSubmitting}
                 >
@@ -760,7 +793,7 @@ const EditInteractionDialog = ({
   interaction: ContactInteractionWithRelations;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   handleNewFileChange: (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => Promise<void>;
   handleDeleteFile: () => void;
 }) => {
@@ -890,7 +923,7 @@ const FileUploadArea = ({
 }: {
   isPending: boolean;
   handleNewFileChange: (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => Promise<void>;
 }) => {
   return (
@@ -899,7 +932,7 @@ const FileUploadArea = ({
         htmlFor="new-file"
         className={cn(
           "cursor-pointer",
-          isPending && "opacity-50 cursor-not-allowed",
+          isPending && "opacity-50 cursor-not-allowed"
         )}
       >
         <div className="flex flex-col items-center gap-2 py-4">
@@ -929,21 +962,32 @@ const handleDeleteInteraction = async (
   setInteractions: React.Dispatch<
     React.SetStateAction<ContactInteractionWithRelations[]>
   >,
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void,
+  interaction?: ContactInteractionWithRelations
 ) => {
   try {
-    const promise = deleteInteractionById(interactionId);
-    toast.promise(promise, {
-      loading: "Eliminando interacción...",
-      success: () => {
-        setInteractions((prevItems) =>
-          prevItems.filter((item) => item.id !== interactionId),
+    await deleteInteractionById(interactionId);
+    setInteractions((prev) => prev.filter((i) => i.id !== interactionId));
+
+    // Actualizar el estado global si la función está disponible
+    if (updateLeadInState && interaction?.contacto.leadId) {
+      try {
+        const updatedContacts = await getContactosByLeadId(
+          interaction.contacto.leadId
         );
-        return "Interacción eliminada con éxito";
-      },
-      error: "Error al eliminar la interacción",
-    });
-  } catch (err) {
-    toast.error("Error inesperado");
+        updateLeadInState(interaction.contacto.leadId, {
+          contactos: updatedContacts,
+        });
+      } catch (error) {
+        console.error("Error al actualizar el estado global:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting interaction:", error);
+    toast.error("Error al eliminar la interacción");
   }
 };
 
@@ -959,6 +1003,10 @@ const handleSubmit = async (
   setIsPending: React.Dispatch<React.SetStateAction<boolean>>,
   setOpenDialog: React.Dispatch<React.SetStateAction<boolean>>,
   setIsAttachmentChanged: React.Dispatch<React.SetStateAction<boolean>>,
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void
 ) => {
   e.preventDefault();
   setIsPending(true);
@@ -975,7 +1023,7 @@ const handleSubmit = async (
   try {
     const interactionUpdated = await editInteractionById(
       interaction.id,
-      formData,
+      formData
     );
 
     if (!interactionUpdated) {
@@ -994,12 +1042,26 @@ const handleSubmit = async (
               attachmentType: attachmentInfo?.attachmentType || null,
               updatedAt: new Date(),
             }
-          : item,
-      ),
+          : item
+      )
     );
 
     setIsAttachmentChanged(false);
     toast.success("Interacción actualizada correctamente");
+
+    // Actualizar el estado global si la función está disponible
+    if (updateLeadInState && interaction.contacto.leadId) {
+      try {
+        const updatedContacts = await getContactosByLeadId(
+          interaction.contacto.leadId
+        );
+        updateLeadInState(interaction.contacto.leadId, {
+          contactos: updatedContacts,
+        });
+      } catch (error) {
+        console.error("Error al actualizar el estado global:", error);
+      }
+    }
   } catch (err) {
     console.error(err);
     toast.error("Algo salió mal al actualizar la interacción");
@@ -1013,7 +1075,7 @@ const handleNewFileChange = async (
   e: React.ChangeEvent<HTMLInputElement>,
   setIsPending: React.Dispatch<React.SetStateAction<boolean>>,
   setAttachmentInfo: React.Dispatch<React.SetStateAction<Attachment | null>>,
-  setIsAttachmentChanged: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsAttachmentChanged: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -1055,7 +1117,7 @@ const handleDeleteFileCompletely = async (
   setAttachmentInfo: React.Dispatch<React.SetStateAction<Attachment | null>>,
   setInteractions: React.Dispatch<
     React.SetStateAction<ContactInteractionWithRelations[]>
-  >,
+  >
 ) => {
   if (!fileName || fileName.length < 5) {
     throw new Error("");
@@ -1087,8 +1149,8 @@ const handleDeleteFileCompletely = async (
             attachmentName: null,
             attachmentType: null,
           }
-        : item,
-    ),
+        : item
+    )
   );
 };
 
@@ -1124,7 +1186,7 @@ const LinkedTasksDialog = ({
     } finally {
       setLoading(false);
     }
-  },[interactionId, open])
+  }, [interactionId, open]);
 
   // Cargar tareas cuando se abre el diálogo
   useEffect(() => {
@@ -1232,7 +1294,7 @@ const LinkedTasksDialog = ({
                         className={cn(
                           "border-l-4 transition-colors hover:bg-muted/50",
                           statusInfo.borderColor,
-                          statusInfo.bgColor,
+                          statusInfo.bgColor
                         )}
                       >
                         <CardHeader className="pb-3">
@@ -1282,7 +1344,7 @@ const LinkedTasksDialog = ({
                                 {format(
                                   new Date(task.dueDate),
                                   "d 'de' MMMM, yyyy",
-                                  { locale: es },
+                                  { locale: es }
                                 )}
                               </span>
                             </div>

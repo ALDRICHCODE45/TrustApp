@@ -18,7 +18,7 @@ import { PosicionPopOver } from "../../list/reclutamiento/components/PosicionPop
 import { CommentSheet } from "../../list/reclutamiento/components/CommentSheet";
 import { FinalTernaSheet } from "../../list/reclutamiento/components/FinalTernaSheet";
 import { ActionsRecruitment } from "../../list/reclutamiento/components/ActionsRecruitment";
-import { Prisma, Vacancy } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export type VacancyWithRelations = Prisma.VacancyGetPayload<{
   include: {
@@ -179,8 +179,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     },
   },
   {
-    id: "posicion",
-    accessorKey: "puesto",
+    accessorKey: "posicion",
     header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
     cell: ({ row }) => {
       return <PosicionPopOver row={row} />;
@@ -214,10 +213,21 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     header: ({ column }) => (
       <SortableHeader column={column} title="Tiempo trranscurrido" />
     ),
-
     cell: ({ row }) => {
       const tiempo = row.original.tiempoTranscurrido;
-      return <span>{tiempo} días</span>;
+      return (
+        <div className="flex items-center justify-center">
+          <Button variant="outline" className="w-full">
+            <p>
+              {tiempo ? (
+                <span>{tiempo} dias</span>
+              ) : (
+                <span className="text-red-500">N/A</span>
+              )}
+            </p>
+          </Button>
+        </div>
+      );
     },
   },
   {
@@ -228,7 +238,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     cell: ({ row }) => {
       return (
         <ChangeDateComponent
-          fecha={row.original.fechaAsignacion}
+          fecha={row.original.fechaOferta}
           onFechaChange={(nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
             console.log("Fecha actualizada:", nuevaFecha);
@@ -239,15 +249,15 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
   },
   {
     accessorKey: "candidatoContratado",
-    header: "Finalista",
+    header: "Contratado",
     cell: ({ row }) => (
-      <div>
+      <Button variant="outline" className="w-full">
         {row.original.candidatoContratado ? (
           <p>{row.original.candidatoContratado.name}</p>
         ) : (
           <p className="text-red-500">N.A</p>
         )}
-      </div>
+      </Button>
     ),
   },
   {
@@ -255,7 +265,19 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     header: ({ column }) => <SortableHeader column={column} title="Salario" />,
     cell: ({ row }) => {
       const salario = row.original.salario;
-      return <span>${salario}</span>;
+      return (
+        <div className="flex items-center justify-center">
+          <Button variant="outline" className="w-full">
+            <p>
+              {salario ? (
+                <span>${salario}</span>
+              ) : (
+                <span className="text-red-500">N/A</span>
+              )}
+            </p>
+          </Button>
+        </div>
+      );
     },
   },
   {
@@ -266,7 +288,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     cell: ({ row }) => {
       return (
         <ChangeDateComponent
-          fecha={row.original.fechaAsignacion}
+          fecha={row.original.fechaComision}
           onFechaChange={(nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
             console.log("Fecha actualizada:", nuevaFecha);
@@ -318,7 +340,19 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     ),
     cell: ({ row }) => {
       const total = row.original.duracionTotal;
-      return <span>{total} días</span>;
+      return (
+        <div className="flex items-center justify-center">
+          <Button variant="outline" className="w-full">
+            <p>
+              {total ? (
+                <span>{total} días</span>
+              ) : (
+                <span className="text-red-500">N/A</span>
+              )}
+            </p>
+          </Button>
+        </div>
+      );
     },
   },
   {
@@ -326,7 +360,15 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorKey: "oficina",
     header: ({ column }) => <SortableHeader column={column} title="Oficina" />,
     cell: ({ row }) => {
-      return <span>{row.original.reclutador?.Oficina || "Sin oficina"}</span>;
+      return (
+        <div className="flex items-center justify-center">
+          <Button variant="outline" className="w-full">
+            <p>
+              {oficinaMap[row.original.reclutador?.Oficina] || "Sin oficina"}
+            </p>
+          </Button>
+        </div>
+      );
     },
     accessorFn: (row) => row.reclutador?.Oficina,
     enableSorting: true,
@@ -342,3 +384,8 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     enableHiding: false,
   },
 ];
+
+const oficinaMap = {
+  Oficina1: "Oficina 1",
+  Oficina2: "Oficina 2",
+};

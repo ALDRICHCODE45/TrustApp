@@ -30,7 +30,7 @@ import { Person } from "@prisma/client";
 export const FinalTernaSheet = ({ ternaFinal }: { ternaFinal: Person[] }) => {
   return (
     <Sheet>
-      <SheetTrigger asChild>
+      <SheetTrigger asChild className="flex justify-center items-center w-full">
         <Button variant="outline" size="sm">
           <Users />
         </Button>

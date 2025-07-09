@@ -164,6 +164,11 @@ export interface DataTableProps<LeadWithRelations, TValue> {
   isHybridLoading?: boolean;
   isFiltering?: boolean;
   onHybridRefresh?: () => void;
+  // Nueva prop para actualizar leads en el estado
+  updateLeadInState?: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }
 
 // Componente de filtro y selector de columnas
@@ -1004,6 +1009,7 @@ export function CommercialTable<TData extends LeadWithRelations, TValue>({
   isHybridLoading,
   isFiltering,
   onHybridRefresh,
+  updateLeadInState,
 }: DataTableProps<TData, TValue>) {
   // Estados
   const [sorting, setSorting] = useState<SortingState>([]);

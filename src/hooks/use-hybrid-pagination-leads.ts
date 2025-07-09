@@ -37,10 +37,15 @@ interface HybridPaginationReturn {
   updateParams: (params: Partial<HybridPaginationParams>) => void;
   refetch: () => void;
   currentParams: HybridPaginationParams;
+  // Nueva función para actualizar un lead específico
+  updateLeadInState: (
+    leadId: string,
+    updates: Partial<LeadWithRelations>
+  ) => void;
 }
 
 export function useHybridPaginationLeads(
-  initialParams: HybridPaginationParams = {},
+  initialParams: HybridPaginationParams = {}
 ): HybridPaginationReturn {
   // Configuración
   const defaultPrefetchSize = 200; // Cargar 200 registros del servidor por vez
@@ -53,7 +58,7 @@ export function useHybridPaginationLeads(
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSizeState] = useState(
-    initialParams.pageSize || defaultPageSize,
+    initialParams.pageSize || defaultPageSize
   );
   const [serverPage, setServerPage] = useState(1); // Qué página del servidor hemos cargado
   const [totalServerRecords, setTotalServerRecords] = useState(0);
@@ -77,7 +82,7 @@ export function useHybridPaginationLeads(
       params: HybridPaginationParams,
       serverPageToLoad: number = 1,
       append: boolean = false,
-      isFilterOperation: boolean = false, // Nuevo parámetro
+      isFilterOperation: boolean = false // Nuevo parámetro
     ) => {
       try {
         if (isFilterOperation) {
@@ -93,7 +98,7 @@ export function useHybridPaginationLeads(
         searchParams.append("page", serverPageToLoad.toString());
         searchParams.append(
           "pageSize",
-          (params.prefetchSize || defaultPrefetchSize).toString(),
+          (params.prefetchSize || defaultPrefetchSize).toString()
         );
 
         // Filtros
@@ -156,7 +161,7 @@ export function useHybridPaginationLeads(
         setIsFiltering(false);
       }
     },
-    [],
+    []
   );
 
   // Pre-fetch inteligente: cargar más datos cuando se acerque al final
@@ -200,7 +205,7 @@ export function useHybridPaginationLeads(
       // Trigger pre-fetch check después de cambiar página
       setTimeout(checkAndPrefetch, 100);
     },
-    [checkAndPrefetch],
+    [checkAndPrefetch]
   );
 
   // Función para cambiar tamaño de página
@@ -219,7 +224,7 @@ export function useHybridPaginationLeads(
         return updated;
       });
     },
-    [],
+    []
   );
 
   // Función para refrescar datos
@@ -254,6 +259,18 @@ export function useHybridPaginationLeads(
     checkAndPrefetch();
   }, [currentPage, checkAndPrefetch]);
 
+  // Nueva función para actualizar un lead específico
+  const updateLeadInState = useCallback(
+    (leadId: string, updates: Partial<LeadWithRelations>) => {
+      setAllLoadedData((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId ? { ...lead, ...updates } : lead
+        )
+      );
+    },
+    []
+  );
+
   return {
     currentPageData,
     loading,
@@ -270,5 +287,6 @@ export function useHybridPaginationLeads(
     updateParams,
     refetch,
     currentParams,
+    updateLeadInState,
   };
 }
