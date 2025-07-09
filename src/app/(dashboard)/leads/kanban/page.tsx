@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import KanbanLeadsBoard from "./ClientPage";
 import { log } from "console";
-import { Role } from "@prisma/client";
+import { Role, LeadStatus } from "@prisma/client";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
@@ -33,34 +33,72 @@ export type LeadWithRelations = Prisma.LeadGetPayload<{
   };
 }>;
 
-const getInitialLeads = async (): Promise<LeadWithRelations[]> => {
+const getInitialLeadsByStatus = async () => {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    const leads = await prisma.lead.findMany({
-      include: {
-        generadorLeads: true,
-        contactos: {
+    const leadStatusEnum = Object.values(LeadStatus);
+
+    // Obtener primeros 50 leads por cada estado en paralelo
+    const promises = leadStatusEnum.map(async (status) => {
+      const [leads, totalCount] = await Promise.all([
+        prisma.lead.findMany({
+          where: { status: status as any },
           include: {
-            interactions: {
+            generadorLeads: true,
+            contactos: {
               include: {
-                autor: true,
-                contacto: true,
-                linkedTasks: true,
+                interactions: {
+                  include: {
+                    autor: true,
+                    contacto: true,
+                    linkedTasks: true,
+                  },
+                },
+              },
+            },
+            sector: true,
+            origen: true,
+            SubSector: true,
+            statusHistory: {
+              include: {
+                changedBy: true,
               },
             },
           },
-        },
-        sector: true,
-        origen: true,
-        SubSector: true,
-        statusHistory: {
-          include: {
-            changedBy: true,
+          orderBy: {
+            createdAt: "desc",
           },
+          take: 50,
+        }),
+        prisma.lead.count({
+          where: { status: status as any },
+        }),
+      ]);
+
+      return {
+        status: status as any,
+        leads,
+        pagination: {
+          page: 1,
+          limit: 50,
+          totalCount,
+          totalPages: Math.ceil(totalCount / 50),
+          hasMore: totalCount > 50,
         },
-      },
+      };
     });
-    return leads;
+
+    const results = await Promise.all(promises);
+
+    // Organizar datos en el formato esperado
+    const leadsData: any = {};
+    const paginationInfo: any = {};
+
+    results.forEach(({ status, leads, pagination }) => {
+      leadsData[status] = leads;
+      paginationInfo[status] = pagination;
+    });
+
+    return { leadsData, paginationInfo };
   } catch (error) {
     log(error);
     throw new Error("Error trayendo las tareas");
@@ -95,7 +133,7 @@ const page = async () => {
     throw new Error("Id is required");
   }
 
-  const leads = await getInitialLeads();
+  const { leadsData, paginationInfo } = await getInitialLeadsByStatus();
   const generadores = await getGeneradores();
 
   return (
@@ -106,7 +144,11 @@ const page = async () => {
           <TabsTrigger value="history">Historial</TabsTrigger>
         </TabsList>
         <TabsContent value="kanban">
-          <KanbanLeadsBoard initialLeads={leads} generadores={generadores} />
+          <KanbanLeadsBoard
+            initialLeadsData={leadsData}
+            initialPaginationInfo={paginationInfo}
+            generadores={generadores}
+          />
         </TabsContent>
         <TabsContent value="history">
           <LeadHistory generadores={generadores} />

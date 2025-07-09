@@ -11,10 +11,13 @@ import {
   BriefcaseIcon,
   CircleX,
   UserCheck,
+  Loader2,
 } from "lucide-react";
 import { User, Lead, LeadStatus } from "@prisma/client";
-import { LeadWithRelations } from "../page";
+import { LeadWithRelations } from "@/hooks/use-infinite-leads";
 import { leadStatusMap } from "@/app/(dashboard)/list/leads/components/LeadChangeStatus";
+import { useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 
 type KanbanColumnProps = {
   status: LeadStatus;
@@ -22,6 +25,9 @@ type KanbanColumnProps = {
   setSelectedTask: (task: Lead | null) => void;
   showCreateLeadForm: boolean;
   generadores?: User[];
+  hasMore?: boolean;
+  isLoading?: boolean;
+  onLoadMore?: () => void;
 };
 
 const getColumnIcon = (status: string) => {
@@ -87,10 +93,35 @@ export const DroppableKanbanColumn = ({
   leads,
   setSelectedTask,
   generadores = [],
+  hasMore = false,
+  isLoading = false,
+  onLoadMore,
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const leadTitle = leadStatusMap[status];
   const leadsColumnIcon = getColumnIcon(status);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Función para detectar scroll al final
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current || isLoading || !hasMore || !onLoadMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    const threshold = 50; // Pixels antes del final para comenzar a cargar
+
+    if (scrollHeight - scrollTop - clientHeight < threshold) {
+      onLoadMore();
+    }
+  }, [isLoading, hasMore, onLoadMore]);
+
+  // Configurar el listener de scroll
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    scrollElement.addEventListener("scroll", handleScroll);
+    return () => scrollElement.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   return (
     <div
@@ -109,13 +140,15 @@ export const DroppableKanbanColumn = ({
             {leadsColumnIcon} {leadTitle}
           </span>
           <span
-            className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getBadgeColor(status)}`}
+            className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${getBadgeColor(
+              status
+            )}`}
           >
             {leads.length}
           </span>
         </div>
       </div>
-      <div className="p-3 flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="p-3 flex-1 overflow-y-auto scroll-smooth">
         <div className="space-y-2">
           {leads.map((lead) => (
             <DraggableLeadCard
@@ -124,6 +157,34 @@ export const DroppableKanbanColumn = ({
               setSelectedTask={setSelectedTask}
             />
           ))}
+
+          {/* Indicador de carga y botón de cargar más */}
+          {hasMore && (
+            <div className="flex flex-col items-center py-4 space-y-2">
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando más leads...
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onLoadMore}
+                  className="text-xs h-8 px-3"
+                >
+                  Cargar más leads
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Mensaje cuando no hay más leads */}
+          {!hasMore && leads.length > 0 && (
+            <div className="text-center py-2 text-xs text-muted-foreground">
+              No hay más leads
+            </div>
+          )}
         </div>
       </div>
     </div>

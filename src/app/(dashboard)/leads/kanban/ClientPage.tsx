@@ -18,7 +18,6 @@ import { KanbanFilters, FilterState } from "./components/KanbanFilters";
 import { DroppableKanbanColumn } from "./components/KanbanColumn";
 import { useState, useEffect } from "react";
 import { Lead, LeadStatus, SubSector, User } from "@prisma/client";
-import { LeadWithRelations } from "./page";
 import {
   editLeadById,
   editLeadByIdAndCreatePreClient,
@@ -31,9 +30,23 @@ import {
   ContactoCalidoFormData,
 } from "./components/ContactoCalidoDialog";
 import { getAllSubSectores } from "@/actions/subsectores/actions";
+import {
+  useInfiniteLeads,
+  LeadWithRelations,
+  FilterState as InfiniteFilterState,
+} from "@/hooks/use-infinite-leads";
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
+}
 
 interface Props {
-  initialLeads: LeadWithRelations[];
+  initialLeadsData: Record<LeadStatus, LeadWithRelations[]>;
+  initialPaginationInfo: Record<LeadStatus, PaginationInfo>;
   generadores: User[];
 }
 
@@ -42,13 +55,24 @@ const getSubSectores = async () => {
   return subSectores;
 };
 
-export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
+export default function KanbanLeadsBoard({
+  initialLeadsData,
+  initialPaginationInfo,
+  generadores,
+}: Props) {
   const { width, height } = useWindowSize();
 
+  // Usar el hook de infinite leads
+  const {
+    leadsData,
+    paginationInfo,
+    loadingStates,
+    loadMoreLeads,
+    refreshLeads,
+    updateLeadInState,
+  } = useInfiniteLeads(initialLeadsData, initialPaginationInfo);
+
   const [showConfetti, setShowConfetti] = useState(false);
-  const [leads, setLeads] = useState<LeadWithRelations[]>(initialLeads);
-  const [filteredLeads, setFilteredLeads] =
-    useState<LeadWithRelations[]>(initialLeads);
   const [, setSelectedTask] = useState<Lead | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeLead, setActiveLead] = useState<LeadWithRelations | null>(null);
@@ -71,7 +95,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     leadToUpdate: LeadWithRelations;
   } | null>(null);
 
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState<InfiniteFilterState>({
     generadorId: null,
     fechaCreacion: { from: null, to: null },
     oficina: null,
@@ -87,71 +111,20 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     })
   );
 
+  // Cuando cambien los filtros, recargar datos
   useEffect(() => {
-    let result = [...leads];
-    // Filter by search term (empresa)
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      result = result.filter(
-        (lead) =>
-          lead.empresa.toLowerCase().includes(searchLower) ||
-          lead.sector.nombre.toLowerCase().includes(searchLower)
-      );
-    }
+    refreshLeads(filters);
+  }, [filters, refreshLeads]);
 
-    // Filter by generator
-    if (filters.generadorId) {
-      result = result.filter(
-        (lead) => lead.generadorId === filters.generadorId
-      );
-    }
-
-    // Filter by office
-    if (filters.oficina) {
-      result = result.filter(
-        (lead) => lead.generadorLeads.Oficina === filters.oficina
-      );
-    }
-
-    // Filter by prospection date
-    if (filters.fechaCreacion?.from || filters.fechaCreacion?.to) {
-      result = result.filter((lead) => {
-        if (!lead.createdAt) return false;
-        const leadDate = new Date(lead.createdAt);
-        const fromDate = filters.fechaCreacion?.from
-          ? new Date(filters.fechaCreacion.from)
-          : null;
-        const toDate = filters.fechaCreacion?.to
-          ? new Date(filters.fechaCreacion.to)
-          : null;
-
-        if (fromDate && toDate) {
-          return leadDate >= fromDate && leadDate <= toDate;
-        } else if (fromDate) {
-          return leadDate >= fromDate;
-        } else if (toDate) {
-          return leadDate <= toDate;
-        }
-        return true;
-      });
-    }
-
-    setFilteredLeads(result);
-  }, [filters, leads]);
-
-  const groupedLeads = Object.values(LeadStatus).reduce((acc, status) => {
-    acc[status] = filteredLeads.filter((lead) => lead.status === status);
-    return acc;
-  }, {} as Record<LeadStatus, LeadWithRelations[]>);
-
-  const handleFilterChange = (newFilters: FilterState) => {
+  const handleFilterChange = (newFilters: InfiniteFilterState) => {
     setFilters(newFilters);
   };
 
-  const clearSingleFilter = (filterKey: keyof FilterState) => {
+  const clearSingleFilter = (filterKey: keyof InfiniteFilterState) => {
     setFilters((prev) => ({
       ...prev,
-      [filterKey]: null,
+      [filterKey]:
+        filterKey === "fechaCreacion" ? { from: null, to: null } : null,
     }));
   };
 
@@ -173,24 +146,16 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       );
 
       // Actualizar el estado local optimistamente con todos los cambios
-      setLeads((currentLeads) =>
-        currentLeads.map((lead) =>
-          lead.id === pendingLeadUpdate.leadId
-            ? {
-                ...lead,
-                status: pendingLeadUpdate.newStatus,
-                numero_empleados:
-                  formData.numeroEmpleados === "500+"
-                    ? 500
-                    : parseInt(formData.numeroEmpleados.split("-")[0]) ||
-                      lead.numero_empleados,
-                ubicacion: formData.ubicacion,
-                subSectorId: formData.subsector,
-                SubSector: selectedSubSector || null,
-              }
-            : lead
-        )
-      );
+      updateLeadInState(pendingLeadUpdate.leadId, {
+        status: pendingLeadUpdate.newStatus,
+        numero_empleados:
+          formData.numeroEmpleados === "500+"
+            ? 500
+            : parseInt(formData.numeroEmpleados.split("-")[0]) || undefined,
+        ubicacion: formData.ubicacion,
+        subSectorId: formData.subsector,
+        SubSector: selectedSubSector || null,
+      });
 
       // Hacer una sola llamada que actualice todo
       //const promise = editLeadById(pendingLeadUpdate.leadId, formDataToSend);
@@ -206,13 +171,9 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
           `Lead actualizado a Contacto Cálido con información adicional`,
         error: () => {
           // Revertir el cambio si hay un error
-          setLeads((currentLeads) =>
-            currentLeads.map((lead) =>
-              lead.id === pendingLeadUpdate.leadId
-                ? { ...lead, status: pendingLeadUpdate.leadToUpdate.status }
-                : lead
-            )
-          );
+          updateLeadInState(pendingLeadUpdate.leadId, {
+            status: pendingLeadUpdate.leadToUpdate.status,
+          });
           return `Error al actualizar`;
         },
       });
@@ -227,9 +188,18 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     setPendingLeadUpdate(null);
   };
 
+  // Función auxiliar para encontrar un lead por ID a través de todos los estados
+  const findLeadById = (leadId: string): LeadWithRelations | undefined => {
+    for (const status of Object.keys(leadsData) as LeadStatus[]) {
+      const lead = leadsData[status].find((lead) => lead.id === leadId);
+      if (lead) return lead;
+    }
+    return undefined;
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const lead = leads.find((lead) => lead.id === active.id);
+    const lead = findLeadById(active.id as string);
     if (lead) {
       setActiveLead(lead);
       setActiveId(active.id as string);
@@ -252,7 +222,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     const leadId = active.id as string;
     const newStatus = over.id as LeadStatus;
 
-    const leadToUpdate = leads.find((lead) => lead.id === leadId);
+    const leadToUpdate = findLeadById(leadId);
 
     if (leadToUpdate && leadToUpdate.status !== newStatus) {
       // Si se intenta mover a ContactoCalido, verificar si ya tiene los datos requeridos
@@ -284,11 +254,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     leadToUpdate: LeadWithRelations
   ) => {
     // Actualizar optimistamente el estado local
-    setLeads((currentLeads) =>
-      currentLeads.map((lead) =>
-        lead.id === leadId ? { ...lead, status: newStatus } : lead
-      )
-    );
+    updateLeadInState(leadId, { status: newStatus });
 
     // llamar accion para ACTUALIZAR lead
     const formData = new FormData();
@@ -301,11 +267,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       success: () => `Lead actualizado a ${newStatus}`,
       error: () => {
         // Revertir el cambio si hay un error
-        setLeads((currentLeads) =>
-          currentLeads.map((lead) =>
-            lead.id === leadId ? { ...lead, status: leadToUpdate.status } : lead
-          )
-        );
+        updateLeadInState(leadId, { status: leadToUpdate.status });
         return `Error al actualizar`;
       },
     });
@@ -316,9 +278,11 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
     }
   };
 
-  // Contar el total de leads y filtrarlos
-  const totalLeads = leads.length;
-  const totalFilteredLeads = filteredLeads.length;
+  // Contar el total de leads
+  const totalLeads = Object.values(leadsData).reduce(
+    (total, leads) => total + leads.length,
+    0
+  );
 
   return (
     <div className="flex flex-col  h-[calc(100vh-170px)]">
@@ -336,7 +300,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       <KanbanFilters
         onFilterChange={handleFilterChange}
         generadores={generadores}
-        initialLeads={initialLeads}
+        initialLeads={Object.values(initialLeadsData).flat()}
       />
 
       {/* Filter status indicator */}
@@ -346,9 +310,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       filters.oficina ||
       filters.searchTerm ? (
         <div className="px-4 py-2 flex flex-wrap gap-2 text-black text-sm items-center">
-          <span>
-            Mostrando {totalFilteredLeads} de {totalLeads} leads
-          </span>
+          <span>Mostrando {totalLeads} leads</span>
 
           {filters.searchTerm && (
             <Badge
@@ -434,7 +396,7 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
       >
         <div className="flex-1 overflow-x-auto scroll-hide pt-4 h-[calc(80vh-1400px)]">
           <div className="flex gap-14 h-full">
-            {Object.entries(groupedLeads).map(([status, leads], index) => (
+            {Object.entries(leadsData).map(([status, leads], index) => (
               <DroppableKanbanColumn
                 key={status}
                 status={status as LeadStatus}
@@ -442,6 +404,9 @@ export default function KanbanLeadsBoard({ initialLeads, generadores }: Props) {
                 setSelectedTask={setSelectedTask}
                 showCreateLeadForm={index === 0}
                 generadores={generadores}
+                hasMore={paginationInfo[status as LeadStatus]?.hasMore || false}
+                isLoading={loadingStates[status as LeadStatus] || false}
+                onLoadMore={() => loadMoreLeads(status as LeadStatus)}
               />
             ))}
           </div>
