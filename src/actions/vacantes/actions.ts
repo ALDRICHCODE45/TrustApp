@@ -1,6 +1,12 @@
 "use server";
 import prisma from "@/lib/db";
-import { VacancyTipo, VacancyEstado, VacancyPrioridad } from "@prisma/client";
+import {
+  VacancyTipo,
+  VacancyEstado,
+  VacancyPrioridad,
+  User,
+  Role,
+} from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface VacancyFormData {
@@ -84,5 +90,41 @@ export const createVacancy = async (vacancy: VacancyFormData) => {
   } catch (err) {
     console.log(err);
     throw new Error("Error al crear la vacante");
+  }
+};
+
+export const updateVacancyStatus = async (
+  vacancyId: string,
+  status: VacancyEstado
+) => {
+  try {
+    const vacancy = await prisma.vacancy.update({
+      where: { id: vacancyId },
+      data: { estado: status },
+    });
+
+    revalidatePath("/list/reclutamiento");
+    revalidatePath("/reclutador");
+    revalidatePath("/");
+
+    return { ok: true, message: "Vacante actualizada correctamente", vacancy };
+  } catch (err) {
+    throw new Error("Error al actualizar el estado de la vacante");
+  }
+};
+
+export const getRecruiters = async (): Promise<User[]> => {
+  try {
+    const recruiters = await prisma.user.findMany({
+      where: {
+        role: {
+          in: [Role.reclutador],
+        },
+      },
+    });
+    return recruiters;
+  } catch (error) {
+    console.log(error);
+    throw Error("error");
   }
 };

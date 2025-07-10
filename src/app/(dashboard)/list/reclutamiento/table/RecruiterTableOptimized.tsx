@@ -378,7 +378,11 @@ function TableFilters<TData, TValue>({
                 <SelectGroup>
                   <SelectItem value="all">Todos los clientes</SelectItem>
                   {clientes.map((cliente) => (
-                    <SelectItem key={cliente.id} value={cliente.id}>
+                    <SelectItem
+                      key={cliente.id}
+                      value={cliente.cuenta || ""}
+                      disabled={!cliente.cuenta}
+                    >
                       {cliente.cuenta}
                     </SelectItem>
                   ))}
@@ -958,10 +962,7 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
       setCurrentClient(value);
-      table.getColumn("cliente")?.setFilterValue((row: Row<Vacante>) => {
-        const cliente = row.getValue<string>("cliente");
-        return cliente?.toLowerCase() === value.toLowerCase();
-      });
+      table.getColumn("cliente")?.setFilterValue(value);
       table.setPageIndex(0);
     },
     [table]
@@ -994,17 +995,10 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
 
-      if (value in Oficina) {
-        setCurrentOficina(value as Oficina);
-        table.getColumn("oficina")?.setFilterValue((row: Row<Vacante>) => {
-          if (!row.original.reclutador) return false;
-          return row.original.reclutador.oficina === value;
-        });
-        table.setPageIndex(0);
-      } else {
-        console.error("Valor de oficina inválido:", value);
-        toast.error("Error al filtrar por oficina");
-      }
+      setCurrentOficina(value as Oficina);
+
+      table.getColumn("oficina")?.setFilterValue(value as Oficina);
+      table.setPageIndex(0);
     },
     [table]
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,8 +36,8 @@ import {
   Mail,
   Phone,
   X,
+  Loader2,
 } from "lucide-react";
-import { type Vacante, vacantes as mockVacantes } from "@/lib/data";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,34 +46,78 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { KanbanFilters } from "./KanbanFilters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+import { updateVacancyStatus } from "@/actions/vacantes/actions";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  KeyboardSensor,
+  DragOverlay as DragOverlayComponent,
+  useDroppable,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import { VacancyWithRelations } from "./ReclutadorColumns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Role } from "@prisma/client";
 
 // Types
 interface ColumnProps {
   id: string;
   title: string;
-  vacantes: Vacante[];
-  onVacanteClick: (vacante: Vacante) => void;
+  vacantes: VacancyWithRelations[];
+  onVacanteClick: (vacante: VacancyWithRelations) => void;
+  user_logged: {
+    name: string;
+    email: string;
+    role: Role;
+    image: string;
+  };
 }
 
 interface VacanteCardProps {
-  vacante: Vacante;
+  vacante: VacancyWithRelations;
   onClick: () => void;
+  isDragging?: boolean;
 }
 
 interface DetailsSectionProps {
-  vacante: Vacante;
+  vacante: VacancyWithRelations;
+  user_logged: {
+    name: string;
+    email: string;
+    role: Role;
+    image: string;
+  };
 }
 
 interface CandidatesSectionProps {
-  vacante: Vacante;
+  vacante: VacancyWithRelations;
 }
 
 interface CommentsSectionProps {
-  vacante: Vacante;
+  vacante: VacancyWithRelations;
 }
 
 interface DocumentsSectionProps {
-  vacante: Vacante;
+  vacante: VacancyWithRelations;
 }
 
 // Utility Functions
@@ -88,107 +132,224 @@ const getTipoColor = (tipo: string) => {
   }
 };
 
-// Components
-const VacanteCard: React.FC<VacanteCardProps> = ({ vacante, onClick }) => (
-  <Card
-    className="cursor-pointer hover:shadow-md transition-shadow rounded-xl"
-    onClick={onClick}
-  >
-    <CardHeader className="p-5 pb-3">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium text-base line-clamp-2">{vacante.puesto}</h3>
-        <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
-          {vacante.tipo}
-        </Badge>
-      </div>
-      <div className="flex items-center text-sm text-muted-foreground mt-2">
-        <Building className="h-4 w-4 mr-2" />
-        <span>{vacante.cliente?.cuenta || "Sin cliente"}</span>
-      </div>
-    </CardHeader>
-    <CardContent className="p-5 pt-0 pb-3">
-      <div className="flex items-center text-sm mt-3">
-        <Avatar className="h-7 w-7 mr-3">
-          <AvatarImage
-            src={vacante.reclutador?.photo}
-            alt={vacante.reclutador?.name || "Reclutador"}
-            className="h-full w-full object-cover"
-          />
-          <AvatarFallback>
-            {vacante.reclutador?.name?.charAt(0) || "R"}
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-sm">
-          {vacante.reclutador?.name || "Sin reclutador"}
-        </span>
-      </div>
-      <div className="flex items-center text-sm mt-3">
-        <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-        <span className="text-muted-foreground">
-          Entrega: {vacante.fechaEntrega}
-        </span>
-      </div>
-    </CardContent>
-    <CardFooter className="p-5 pt-3 flex justify-between">
-      <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
-        {vacante.tipo}
-      </Badge>
-      <div className="flex items-center text-sm text-muted-foreground">
-        <Clock className="h-4 w-4 mr-2" />
-        <span>{vacante.tiempoTranscurrido} días</span>
-      </div>
-    </CardFooter>
-  </Card>
-);
+const getEstadoColor = (estado: string) => {
+  switch (estado) {
+    case "Hunting":
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+    case "Entrevistas":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    case "Placement":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    case "Perdida":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+    case "Cancelada":
+      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+  }
+};
 
-const KanbanColumn: React.FC<ColumnProps> = ({
+// Draggable Vacante Card Component
+const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
+  vacante,
+  onClick,
+  isDragging = false,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: vacante.id.toString() });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging || isSortableDragging ? 0.5 : 1,
+    zIndex: isDragging || isSortableDragging ? 1000 : "auto",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="group"
+    >
+      <Card
+        className={`cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 rounded-2xl border-2 ${
+          isDragging || isSortableDragging
+            ? "border-blue-400 shadow-xl scale-105"
+            : "border-slate-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+        } bg-white dark:bg-gray-800`}
+        onClick={onClick}
+      >
+        <CardHeader className="p-4 pb-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <h3 className="font-semibold text-base truncate max-w-[170px]">
+                    {vacante.posicion.length > 30
+                      ? `${vacante.posicion.slice(0, 30)}...`
+                      : vacante.posicion}
+                  </h3>
+                  {vacante.posicion.length > 30 && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 p-0"
+                          aria-label="Ver posición completa"
+                          tabIndex={0}
+                        >
+                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="max-w-xs">
+                        <span className="text-sm break-words">
+                          {vacante.posicion}
+                        </span>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground mt-1">
+                  <Building className="h-4 w-4 mr-1" />
+                  <span className="truncate">
+                    {vacante.cliente?.cuenta || "Sin cliente"}
+                  </span>
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  getTipoColor(vacante.tipo) + " ml-2 whitespace-nowrap"
+                }
+              >
+                {vacante.tipo}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 pt-0 pb-2">
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={vacante.reclutador?.image || ""}
+                  alt={vacante.reclutador?.name || "Reclutador"}
+                  className="h-full w-full object-cover"
+                />
+                <AvatarFallback>
+                  {vacante.reclutador?.name?.charAt(0) || "R"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium">
+                {vacante.reclutador?.name || "Sin reclutador"}
+              </span>
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-1" />
+              <span>
+                {vacante.fechaEntrega?.toLocaleDateString() || "Sin fecha"}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="px-4 pt-2 pb-4 flex items-center justify-between border-t border-slate-100 dark:border-gray-700">
+          <Badge variant="outline" className={getEstadoColor(vacante.estado)}>
+            {vacante.estado}
+          </Badge>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>{vacante.tiempoTranscurrido || 0} días</span>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+// Kanban Column Component
+const DroppableColumn: React.FC<ColumnProps> = ({
   id,
   title,
   vacantes,
   onVacanteClick,
-}) => (
-  <div className="w-[320px] flex-shrink-0 bg-[#f1f5f9] dark:bg-gray-800 rounded-3xl p-3 h-full flex flex-col border border-slate-200 dark:border-gray-700">
-    <div className="p-3 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-800 ">{title}</h2>
-        <span className="text-sm font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-          {vacantes.length}
-        </span>
-      </div>
-    </div>
-    <ScrollArea className="pt-2 pb-2 h-[calc(100vh-180px)]">
-      <div className="space-y-2">
-        {vacantes.map((vacante, idx) => (
-          <Dialog key={idx}>
-            <DialogTrigger asChild>
-              <div>
-                <VacanteCard
-                  vacante={vacante}
-                  onClick={() => onVacanteClick(vacante)}
-                />
-              </div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px]">
-              <DialogHeader>
-                <DialogTitle className="text-xl">{vacante.puesto}</DialogTitle>
-              </DialogHeader>
-              <VacanteTabs vacante={vacante} />
-            </DialogContent>
-          </Dialog>
-        ))}
-      </div>
-    </ScrollArea>
-  </div>
-);
+  user_logged,
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: id,
+  });
 
-const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
+  return (
+    <div
+      ref={setNodeRef}
+      className={`w-[320px] flex-shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-3 h-full flex flex-col border-2 transition-all duration-200 ${
+        isOver
+          ? "border-blue-400 bg-blue-50/50 dark:bg-blue-900/20"
+          : "border-slate-200 dark:border-gray-700"
+      } shadow-lg`}
+    >
+      <div className="p-4 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mb-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm text-normal  text-gray-800 dark:text-black">
+            {title}
+          </h2>
+          <span className="text-sm font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+            {vacantes.length}
+          </span>
+        </div>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="space-y-3 px-1">
+          <SortableContext
+            items={vacantes.map((v) => v.id.toString())}
+            strategy={verticalListSortingStrategy}
+          >
+            {vacantes.map((vacante) => (
+              <Dialog key={vacante.id}>
+                <DialogTrigger asChild>
+                  <div>
+                    <DraggableVacanteCard
+                      vacante={vacante}
+                      onClick={() => onVacanteClick(vacante)}
+                    />
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl">
+                      {vacante.posicion}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <VacanteTabs vacante={vacante} user_logged={user_logged} />
+                </DialogContent>
+              </Dialog>
+            ))}
+          </SortableContext>
+        </div>
+      </ScrollArea>
+    </div>
+  );
+};
+
+const DetailsSection: React.FC<DetailsSectionProps> = ({
+  vacante,
+  user_logged,
+}) => (
   <div className="space-y-6 mt-4">
     <div className="bg-muted/30 p-4 rounded-lg border border-border">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={vacante.reclutador?.photo}
+              src={vacante.reclutador?.image || ""}
               alt={vacante.reclutador?.name || "Reclutador"}
               className="w-full h-full object-cover"
             />
@@ -225,7 +386,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
             <span className="text-sm text-muted-foreground">
               Fecha entrega:
             </span>
-            <span className="ml-2 font-medium">{vacante.fechaEntrega}</span>
+            <span className="ml-2 font-medium">
+              {vacante.fechaEntrega?.toLocaleDateString() || "Sin fecha"}
+            </span>
           </div>
           <div className="flex items-center">
             <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -243,7 +406,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
             </div>
             <Button variant="ghost" size="sm" className="h-6 px-2">
               <span className="font-medium">
-                {vacante.tiempoTranscurrido} días
+                {vacante.tiempoTranscurrido || 0} días
               </span>
             </Button>
           </div>
@@ -251,16 +414,16 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
             <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
               <div
                 className={`h-full ${
-                  vacante.tiempoTranscurrido > 30
+                  (vacante.tiempoTranscurrido || 0) > 30
                     ? "bg-red-500"
-                    : vacante.tiempoTranscurrido > 15
+                    : (vacante.tiempoTranscurrido || 0) > 15
                     ? "bg-amber-500"
                     : "bg-green-500"
                 }`}
                 style={{
                   width: `${Math.min(
                     100,
-                    (vacante.tiempoTranscurrido / 45) * 100
+                    ((vacante.tiempoTranscurrido || 0) / 45) * 100
                   )}%`,
                 }}
               ></div>
@@ -276,39 +439,46 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
       </div>
     </div>
     {/* Información financiera */}
-    <div>
-      <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
-        <FileText className="h-4 w-4 mr-2" />
-        Información financiera
-      </h4>
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-blue-500"></div>
-          <CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Salario</div>
-            <div className="text-2xl font-semibold mt-1">
-              ${vacante.salario.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-purple-500"></div>
-          <CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Fee</div>
-            <div className="text-2xl font-semibold mt-1">{vacante.fee}%</div>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden">
-          <div className="h-1 bg-green-500"></div>
-          <CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Valor factura</div>
-            <div className="text-2xl font-semibold mt-1">
-              ${vacante.valorFactura.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+    {user_logged.role === Role.Admin && (
+      <div>
+        <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
+          <FileText className="h-4 w-4 mr-2" />
+          Información financiera
+        </h4>
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-blue-500"></div>
+            <CardContent className="pt-4">
+              <div className="text-sm text-muted-foreground">Salario</div>
+              <div className="text-2xl font-semibold mt-1">
+                $
+                {vacante.salario?.toLocaleString() || (
+                  <span className="">N/A</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-purple-500"></div>
+            <CardContent className="pt-4">
+              <div className="text-sm text-muted-foreground">Fee</div>
+              <div className="text-2xl font-semibold mt-1">
+                {vacante.fee || "N/A"}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-green-500"></div>
+            <CardContent className="pt-4">
+              <div className="text-sm text-muted-foreground">Valor factura</div>
+              <div className="text-2xl font-semibold mt-1">
+                ${vacante.valorFactura?.toLocaleString() || "N/A"}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    )}
     {/* Candidato contratado (condicional) */}
     {vacante.candidatoContratado && (
       <Card className="overflow-hidden border-green-200 dark:border-green-800">
@@ -322,7 +492,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ vacante }) => (
               <div>
                 <h4 className="font-medium">Candidato contratado</h4>
                 <p className="text-muted-foreground text-sm">
-                  {vacante.candidatoContratado.nombre}
+                  {vacante.candidatoContratado.name}
                 </p>
               </div>
             </div>
@@ -362,26 +532,21 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => (
               <div className="flex items-center gap-4">
                 {/* Avatar */}
                 <Avatar className="h-14 w-14 border-2 border-primary/10">
-                  <AvatarImage src={candidato.foto} alt={candidato.nombre} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">
-                    {candidato.nombre
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
+                  <AvatarImage src={candidato.cv || ""} alt={candidato.name} />
+                  <AvatarFallback>{candidato.name.charAt(0)}</AvatarFallback>
                 </Avatar>
 
                 {/* Detalles del candidato */}
                 <div className="flex-1 space-y-1">
-                  <p className="font-medium text-sm">{candidato.nombre}</p>
+                  <p className="font-medium text-sm">{candidato.name}</p>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center">
                       <Mail className="h-3 w-3 mr-1 opacity-70" />
-                      <span>{candidato.correo}</span>
+                      <span>{candidato.email || "Sin email"}</span>
                     </div>
                     <div className="flex items-center">
                       <Phone className="h-3 w-3 mr-1 opacity-70" />
-                      <span>{candidato.telefono}</span>
+                      <span>{candidato.phone || "Sin teléfono"}</span>
                     </div>
                   </div>
                 </div>
@@ -444,13 +609,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
         </Button>
       </div>
       {/* Contenido de los comentarios */}
-      {vacante.comentarios && vacante.comentarios.length > 0 ? (
+      {vacante.Comments && vacante.Comments.length > 0 ? (
         <div className="space-y-4">
           {/* Barra de tiempo para comentarios */}
           <div className="relative pb-2">
             <div className="absolute left-4 top-0 bottom-0 w-px bg-border"></div>
 
-            {vacante.comentarios.map((comentario, index) => (
+            {vacante.Comments.map((comentario, index) => (
               <div key={comentario.id} className="relative mb-6 last:mb-0">
                 {/* Indicador de tiempo */}
                 <div className="absolute left-4 top-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary z-10"></div>
@@ -461,26 +626,26 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage
-                            src={comentario.autor.photo}
-                            alt={comentario.autor.name}
+                            src={comentario.author.image || ""}
+                            alt={comentario.author.name}
                             className="w-full h-full object-cover"
                           />
                           <AvatarFallback>
-                            {comentario.autor.name.charAt(0)}
+                            {comentario.author.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium leading-none">
-                            {comentario.autor.name}
+                            {comentario.author.name}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
-                            {comentario.autor.rol || "Reclutador"}
+                            {comentario.author.role || "Reclutador"}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {comentario.fecha}
+                          {comentario.createdAt.toLocaleDateString()}
                         </Badge>
                         {index === 0 && (
                           <Badge variant="secondary" className="text-xs">
@@ -491,7 +656,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 pt-2">
-                    <p className="text-sm">{comentario.texto}</p>
+                    <p className="text-sm">{comentario.content}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -514,18 +679,14 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
 
 const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => (
   <div className="space-y-6 mt-4">
-    {" "}
-    {/* Existing documents section content */}{" "}
-    {/* ... (Keep the existing documents section content) ... */}{" "}
+    {/* Existing documents section content */}
+    {/* ... (Keep the existing documents section content) ... */}
     <div className="space-y-6 mt-6">
-      {" "}
       <div className="flex items-center justify-between">
-        {" "}
-        <h3 className="text-xl font-semibold">Documentos</h3>{" "}
+        <h3 className="text-xl font-semibold">Documentos</h3>
         <Button variant="outline" size="sm" className="flex items-center gap-2">
-          {" "}
-          <Plus className="h-4 w-4" /> <span>Añadir documento</span>{" "}
-        </Button>{" "}
+          <Plus className="h-4 w-4" /> <span>Añadir documento</span>
+        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Documento 1 */}
@@ -664,7 +825,15 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => (
   </div>
 );
 
-const VacanteTabs: React.FC<{ vacante: Vacante }> = ({ vacante }) => (
+const VacanteTabs: React.FC<{
+  vacante: VacancyWithRelations;
+  user_logged: {
+    name: string;
+    email: string;
+    role: Role;
+    image: string;
+  };
+}> = ({ vacante, user_logged }) => (
   <Tabs defaultValue="detalles">
     <TabsList className="grid w-full grid-cols-4">
       <TabsTrigger value="detalles">Detalles</TabsTrigger>
@@ -673,7 +842,7 @@ const VacanteTabs: React.FC<{ vacante: Vacante }> = ({ vacante }) => (
       <TabsTrigger value="documentos">Documentos</TabsTrigger>
     </TabsList>
     <TabsContent value="detalles">
-      <DetailsSection vacante={vacante} />
+      <DetailsSection vacante={vacante} user_logged={user_logged} />
     </TabsContent>
     <TabsContent value="candidatos">
       <CandidatesSection vacante={vacante} />
@@ -687,10 +856,37 @@ const VacanteTabs: React.FC<{ vacante: Vacante }> = ({ vacante }) => (
   </Tabs>
 );
 
-export const KanbanBoardPage = () => {
-  const [vacantes] = useState<Vacante[]>(mockVacantes);
-  const [selectedVacante, setSelectedVacante] = useState<Vacante | null>(null);
+interface KanbanBoardPageProps {
+  initialVacantes: VacancyWithRelations[];
+  user_logged: {
+    name: string;
+    email: string;
+    role: Role;
+    image: string;
+  };
+}
+
+export const KanbanBoardPage = ({
+  initialVacantes,
+  user_logged,
+}: KanbanBoardPageProps) => {
+  const [vacantes, setVacantes] =
+    useState<VacancyWithRelations[]>(initialVacantes);
+  const [selectedVacante, setSelectedVacante] =
+    useState<VacancyWithRelations | null>(null);
   const [mobileView, setMobileView] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Configurar sensores para drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   // Filtrar vacantes que tienen reclutador asignado
   const validVacantes = vacantes.filter((vacante) => {
@@ -709,33 +905,149 @@ export const KanbanBoardPage = () => {
     { id: "Cancelada", title: "Cancelada" },
   ];
 
+  // Función para manejar el inicio del drag
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  // Función para manejar el final del drag
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Encontrar la vacante activa
+    const activeVacante = validVacantes.find(
+      (v) => v.id.toString() === activeId
+    );
+    if (!activeVacante) return;
+
+    // Verificar si se está moviendo a una nueva columna
+    const targetColumn = columns.find((col) => col.id === overId);
+    if (targetColumn && activeVacante.estado !== targetColumn.id) {
+      try {
+        setIsUpdating(true);
+
+        // Actualizar el estado en el backend
+        const result = await updateVacancyStatus(
+          activeId,
+          targetColumn.id as any
+        );
+
+        if (result.ok) {
+          // Actualizar el estado local
+          setVacantes((prev) =>
+            prev.map((v) =>
+              v.id.toString() === activeId
+                ? { ...v, estado: targetColumn.id as any }
+                : v
+            )
+          );
+
+          toast.success(`Vacante actualizada a ${targetColumn.title}`);
+        } else {
+          toast.error(result.message || "Error al actualizar la vacante");
+        }
+      } catch (error) {
+        console.error("Error updating vacancy status:", error);
+        toast.error("Error al actualizar el estado de la vacante");
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
+  // Función para manejar el drag over (para mejor UX)
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Encontrar la vacante activa
+    const activeVacante = validVacantes.find(
+      (v) => v.id.toString() === activeId
+    );
+    if (!activeVacante) return;
+
+    // Verificar si se está moviendo a una nueva columna
+    const targetColumn = columns.find((col) => col.id === overId);
+    if (targetColumn && activeVacante.estado !== targetColumn.id) {
+      // La columna se resaltará automáticamente gracias al isOver del useDroppable
+    }
+  };
+
+  // Obtener la vacante activa para el overlay
+  const activeVacante = activeId
+    ? validVacantes.find((v) => v.id.toString() === activeId)
+    : null;
+
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
       <KanbanFilters />
-      <ScrollArea className="flex-1 pt-4">
-        <div className="flex gap-14 h-full">
-          {columns.map(
-            (column) =>
-              (mobileView === null || mobileView === column.id) && (
-                <div
-                  className="h-[calc(100vh-230px)] flex flex-col"
-                  key={column.id}
-                >
-                  <KanbanColumn
-                    key={column.id}
-                    id={column.id}
-                    title={column.title}
-                    vacantes={validVacantes.filter(
-                      (v) => v.estado === column.id
-                    )}
-                    onVacanteClick={setSelectedVacante}
-                  />
-                </div>
-              )
-          )}
+
+      {isUpdating && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            <span className="text-gray-700 dark:text-gray-300">
+              Actualizando vacante...
+            </span>
+          </div>
         </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      )}
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToWindowEdges]}
+      >
+        <ScrollArea className="flex-1 pt-4">
+          <div className="flex gap-14 h-full">
+            {columns.map(
+              (column) =>
+                (mobileView === null || mobileView === column.id) && (
+                  <div
+                    className="h-[calc(100vh-230px)] flex flex-col"
+                    key={column.id}
+                  >
+                    <DroppableColumn
+                      user_logged={user_logged}
+                      key={column.id}
+                      id={column.id}
+                      title={column.title}
+                      vacantes={validVacantes.filter(
+                        (v) => v.estado === column.id
+                      )}
+                      onVacanteClick={setSelectedVacante}
+                    />
+                  </div>
+                )
+            )}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        {/* Drag Overlay */}
+        <DragOverlay>
+          {activeVacante ? (
+            <DraggableVacanteCard
+              vacante={activeVacante}
+              onClick={() => {}}
+              isDragging={true}
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 };
