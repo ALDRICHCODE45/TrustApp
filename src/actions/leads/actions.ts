@@ -221,8 +221,8 @@ export const deleteLeadById = async (leadId: string) => {
       },
     });
 
-    if (!leadIndb || leadIndb.generadorId != session?.user.id) {
-      throw new Error("No tienes los permisos para eliminar este lead");
+    if (!leadIndb) {
+      throw new Error("El lead no existe");
     }
 
     await prisma.lead.delete({
@@ -425,6 +425,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
           leadId: leadId,
           usuarioId: sesion.user.id,
           cuenta: clientName,
+          origenId: updatedLead.origenId,
         },
       });
     }

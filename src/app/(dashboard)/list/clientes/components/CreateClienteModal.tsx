@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -19,33 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Building2, FileText, Settings, UserPlus } from "lucide-react";
-
-// Tipos para el formulario
-interface ClientFormData {
-  usuarioId: string;
-  etiqueta: "PreCliente" | "Cliente" | "Inactivo";
-  cuenta: string;
-  asignadas: number;
-  perdidas: number;
-  canceladas: number;
-  placements: number;
-  tp_placement: number;
-  modalidad: string;
-  fee: number;
-  dias_credito: number;
-  tipo_factura: string;
-  razon_social: string;
-  regimen: string;
-  rfc: string;
-  codigo_postal: string;
-  como_factura: string;
-  portal_site: string;
-  origenId: string;
-}
-
-interface FormErrors {
-  [key: string]: string;
-}
+import { createClientFromClientForm } from "@/actions/clientes/actions";
+import { toast } from "sonner";
+import { ClienteEtiqueta, ClienteModalidad, LeadOrigen } from "@prisma/client";
+import {
+  createClientSchema,
+  CreateClientFormData,
+} from "@/zod/createClientSchema";
 
 interface FormFieldProps {
   label: string;
@@ -54,73 +36,24 @@ interface FormFieldProps {
   required?: boolean;
 }
 
-export const CreateClientModal = () => {
+interface Props {
+  users: { id: string; name: string }[];
+  origenes: LeadOrigen[];
+}
+
+export const CreateClientModal = ({ users, origenes }: Props) => {
   const [open, setOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("general");
-  const [errors, setErrors] = useState<FormErrors>({});
 
-  const [formData, setFormData] = useState<ClientFormData>({
-    usuarioId: "",
-    etiqueta: "PreCliente",
-    cuenta: "",
-    asignadas: 0,
-    perdidas: 0,
-    canceladas: 0,
-    placements: 0,
-    tp_placement: 0,
-    modalidad: "",
-    fee: 0,
-    dias_credito: 0,
-    tipo_factura: "",
-    razon_social: "",
-    regimen: "",
-    rfc: "",
-    codigo_postal: "",
-    como_factura: "",
-    portal_site: "",
-    origenId: "",
-  });
-
-  const handleInputChange = (
-    field: keyof ClientFormData,
-    value: string | number
-  ): void => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Limpiar error del campo cuando el usuario empiece a escribir
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: "",
-      }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.usuarioId) {
-      newErrors.usuarioId = "Debe seleccionar un usuario";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (): void => {
-    if (validateForm()) {
-      console.log("Datos del formulario:", formData);
-      // Aquí iría la lógica para crear el cliente
-      setOpen(false);
-      resetForm();
-    }
-  };
-
-  const resetForm = (): void => {
-    setFormData({
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateClientFormData>({
+    resolver: zodResolver(createClientSchema),
+    defaultValues: {
       usuarioId: "",
       etiqueta: "PreCliente",
       cuenta: "",
@@ -129,7 +62,7 @@ export const CreateClientModal = () => {
       canceladas: 0,
       placements: 0,
       tp_placement: 0,
-      modalidad: "",
+      modalidad: "Exito",
       fee: 0,
       dias_credito: 0,
       tipo_factura: "",
@@ -140,14 +73,28 @@ export const CreateClientModal = () => {
       como_factura: "",
       portal_site: "",
       origenId: "",
+    },
+  });
+
+  const onSubmit = async (data: CreateClientFormData): Promise<void> => {
+    const promise = createClientFromClientForm(data);
+    toast.promise(promise, {
+      loading: "Cargando...",
+      success: () => {
+        return `Cliente creado correctamente`;
+      },
+      error: "Error al crear el cliente",
     });
-    setErrors({});
+
+    setOpen(false);
+    reset();
     setActiveTab("general");
   };
 
-  const getUsers = async (): Promise<any[]> => {
-    // Función vacía para implementar la petición de usuarios
-    return [];
+  const handleCancel = (): void => {
+    setOpen(false);
+    reset();
+    setActiveTab("general");
   };
 
   const FormField: React.FC<FormFieldProps> = ({
@@ -180,7 +127,7 @@ export const CreateClientModal = () => {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
@@ -223,70 +170,91 @@ export const CreateClientModal = () => {
                   <FormField
                     label="Usuario Asignado"
                     required
-                    error={errors.usuarioId}
+                    error={errors.usuarioId?.message}
                   >
-                    <Select
-                      value={formData.usuarioId}
-                      onValueChange={(value: string) =>
-                        handleInputChange("usuarioId", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar usuario" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        <SelectItem value="user1">Usuario 1</SelectItem>
-                        <SelectItem value="user2">Usuario 2</SelectItem>
-                        <SelectItem value="user3">Usuario 3</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-
-                  <FormField label="Etiqueta">
-                    <Select
-                      value={formData.etiqueta}
-                      onValueChange={(value: ClientFormData["etiqueta"]) =>
-                        handleInputChange("etiqueta", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        <SelectItem value="PreCliente">Pre-Cliente</SelectItem>
-                        <SelectItem value="Cliente">Cliente</SelectItem>
-                        <SelectItem value="Inactivo">Inactivo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-
-                  <FormField label="Cuenta">
-                    <Input
-                      placeholder="Nombre de la cuenta"
-                      value={formData.cuenta}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("cuenta", e.target.value)
-                      }
+                    <Controller
+                      name="usuarioId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar usuario" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            {users.map((user) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     />
                   </FormField>
 
-                  <FormField label="Origen">
-                    <Select
-                      value={formData.origenId}
-                      onValueChange={(value: string) =>
-                        handleInputChange("origenId", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar origen" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        <SelectItem value="web">Sitio Web</SelectItem>
-                        <SelectItem value="referido">Referido</SelectItem>
-                        <SelectItem value="social">Redes Sociales</SelectItem>
-                        <SelectItem value="otro">Otro</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <FormField label="Etiqueta" error={errors.etiqueta?.message}>
+                    <Controller
+                      name="etiqueta"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            <SelectItem value="PreCliente">
+                              Pre-Cliente
+                            </SelectItem>
+                            <SelectItem value="Cliente">Cliente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="Cuenta"
+                    required
+                    error={errors.cuenta?.message}
+                  >
+                    <Input
+                      placeholder="Nombre de la cuenta"
+                      {...register("cuenta")}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="Origen"
+                    required
+                    error={errors.origenId?.message}
+                  >
+                    <Controller
+                      name="origenId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar origen" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            {origenes.map((origen) => (
+                              <SelectItem key={origen.id} value={origen.id}>
+                                {origen.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </FormField>
                 </CardContent>
               </Card>
@@ -300,73 +268,55 @@ export const CreateClientModal = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <FormField label="Asignadas">
+                  <FormField
+                    label="Asignadas"
+                    error={errors.asignadas?.message}
+                  >
                     <Input
                       type="number"
                       min="0"
-                      value={formData.asignadas}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "asignadas",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("asignadas", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="Perdidas">
+                  <FormField label="Perdidas" error={errors.perdidas?.message}>
                     <Input
                       type="number"
                       min="0"
-                      value={formData.perdidas}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "perdidas",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("perdidas", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="Canceladas">
+                  <FormField
+                    label="Canceladas"
+                    error={errors.canceladas?.message}
+                  >
                     <Input
                       type="number"
                       min="0"
-                      value={formData.canceladas}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "canceladas",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("canceladas", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="Placements">
+                  <FormField
+                    label="Placements"
+                    error={errors.placements?.message}
+                  >
                     <Input
                       type="number"
                       min="0"
-                      value={formData.placements}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "placements",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("placements", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="TP Placement">
+                  <FormField
+                    label="TP Placement"
+                    error={errors.tp_placement?.message}
+                  >
                     <Input
                       type="number"
                       min="0"
-                      value={formData.tp_placement}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "tp_placement",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("tp_placement", { valueAsNumber: true })}
                     />
                   </FormField>
                 </CardContent>
@@ -381,71 +331,75 @@ export const CreateClientModal = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField label="Razón Social">
+                  <FormField
+                    label="Razón Social"
+                    error={errors.razon_social?.message}
+                  >
                     <Input
                       placeholder="Razón social de la empresa"
-                      value={formData.razon_social}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("razon_social", e.target.value)
-                      }
+                      {...register("razon_social")}
                     />
                   </FormField>
 
-                  <FormField label="RFC">
+                  <FormField label="RFC" error={errors.rfc?.message}>
                     <Input
                       placeholder="RFC de la empresa"
-                      value={formData.rfc}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("rfc", e.target.value)
-                      }
+                      {...register("rfc")}
                     />
                   </FormField>
 
-                  <FormField label="Régimen Fiscal">
+                  <FormField
+                    label="Régimen Fiscal"
+                    error={errors.regimen?.message}
+                  >
                     <Input
                       placeholder="Régimen fiscal"
-                      value={formData.regimen}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("regimen", e.target.value)
-                      }
+                      {...register("regimen")}
                     />
                   </FormField>
 
-                  <FormField label="Código Postal">
+                  <FormField
+                    label="Código Postal"
+                    error={errors.codigo_postal?.message}
+                  >
                     <Input
                       placeholder="Código postal"
-                      value={formData.codigo_postal}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("codigo_postal", e.target.value)
-                      }
+                      {...register("codigo_postal")}
                     />
                   </FormField>
 
-                  <FormField label="Tipo de Factura">
-                    <Select
-                      value={formData.tipo_factura}
-                      onValueChange={(value: string) =>
-                        handleInputChange("tipo_factura", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar tipo" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        <SelectItem value="factura">Factura</SelectItem>
-                        <SelectItem value="recibo">Recibo</SelectItem>
-                        <SelectItem value="nota">Nota</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <FormField
+                    label="Tipo de Factura"
+                    error={errors.tipo_factura?.message}
+                  >
+                    <Controller
+                      name="tipo_factura"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar tipo" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            <SelectItem value="factura">Factura</SelectItem>
+                            <SelectItem value="recibo">Recibo</SelectItem>
+                            <SelectItem value="nota">Nota</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </FormField>
 
-                  <FormField label="Cómo Factura">
+                  <FormField
+                    label="Cómo Factura"
+                    error={errors.como_factura?.message}
+                  >
                     <Input
                       placeholder="Método de facturación"
-                      value={formData.como_factura}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("como_factura", e.target.value)
-                      }
+                      {...register("como_factura")}
                     />
                   </FormField>
                 </CardContent>
@@ -460,59 +414,59 @@ export const CreateClientModal = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField label="Modalidad">
-                    <Select
-                      value={formData.modalidad}
-                      onValueChange={(value: string) =>
-                        handleInputChange("modalidad", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar modalidad" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        <SelectItem value="contado">Contado</SelectItem>
-                        <SelectItem value="credito">Crédito</SelectItem>
-                        <SelectItem value="mixto">Mixto</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <FormField
+                    label="Modalidad"
+                    error={errors.modalidad?.message}
+                  >
+                    <Controller
+                      name="modalidad"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar modalidad" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            <SelectItem value="Exito">Éxito</SelectItem>
+                            <SelectItem value="Anticipo">Anticipo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </FormField>
 
-                  <FormField label="Fee (%)">
+                  <FormField label="Fee (%)" error={errors.fee?.message}>
                     <Input
                       type="number"
                       min="0"
                       max="100"
                       placeholder="Porcentaje de comisión"
-                      value={formData.fee}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("fee", parseInt(e.target.value) || 0)
-                      }
+                      {...register("fee", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="Días de Crédito">
+                  <FormField
+                    label="Días de Crédito"
+                    error={errors.dias_credito?.message}
+                  >
                     <Input
                       type="number"
                       min="0"
                       placeholder="Días de crédito"
-                      value={formData.dias_credito}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(
-                          "dias_credito",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      {...register("dias_credito", { valueAsNumber: true })}
                     />
                   </FormField>
 
-                  <FormField label="Portal/Sitio Web">
+                  <FormField
+                    label="Portal/Sitio Web"
+                    error={errors.portal_site?.message}
+                  >
                     <Input
                       placeholder="URL del portal o sitio web"
-                      value={formData.portal_site}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange("portal_site", e.target.value)
-                      }
+                      {...register("portal_site")}
                     />
                   </FormField>
                 </CardContent>
@@ -521,17 +475,18 @@ export const CreateClientModal = () => {
           </Tabs>
 
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               Cancelar
             </Button>
             <Button
-              onClick={handleSubmit}
+              type="submit"
+              disabled={isSubmitting}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              Crear Cliente
+              {isSubmitting ? "Creando..." : "Crear Cliente"}
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

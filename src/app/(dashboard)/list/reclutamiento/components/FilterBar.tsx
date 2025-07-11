@@ -157,7 +157,7 @@ export function FilterBar({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="todos">Todos</SelectItem>
                       {reclutadores.map((reclutador) => (
                         <SelectItem key={reclutador} value={reclutador}>
                           {reclutador}
@@ -183,7 +183,7 @@ export function FilterBar({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="todos">Todos</SelectItem>
                       {estados.map((estado) => (
                         <SelectItem key={estado} value={estado}>
                           {estado}
@@ -209,7 +209,7 @@ export function FilterBar({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="todos">Todos</SelectItem>
                       {tipos.map((tipo) => (
                         <SelectItem key={tipo} value={tipo}>
                           {tipo}
@@ -235,7 +235,7 @@ export function FilterBar({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="todos">Todos</SelectItem>
                       {clientes.map((cliente) => (
                         <SelectItem key={cliente} value={cliente}>
                           {cliente}

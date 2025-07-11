@@ -4,7 +4,7 @@ import { clientesColumns, ClientWithRelations } from "./columns";
 import { ColumnDef } from "@tanstack/react-table";
 import { checkRoleRedirect } from "../../../helpers/checkRoleRedirect";
 import { auth } from "@/lib/auth";
-import { Role } from "@prisma/client";
+import { LeadOrigen, Role, User } from "@prisma/client";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Trust | Clientes",
 };
 
-const fetchUsers = async (): Promise<{
+const fetchClientes = async (): Promise<{
   columns: ColumnDef<ClientWithRelations>[];
   data: ClientWithRelations[];
 }> => {
@@ -31,6 +31,7 @@ const fetchUsers = async (): Promise<{
         contactos: true,
         usuario: true,
         comentarios: true,
+        origen: true,
       },
     });
 
@@ -44,8 +45,35 @@ const fetchUsers = async (): Promise<{
   }
 };
 
+const fetchUser = async (): Promise<{ id: string; name: string }[]> => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return users;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error al obtener los usuarios");
+  }
+};
+
+const fetchOrigenes = async (): Promise<LeadOrigen[]> => {
+  try {
+    const origenes = await prisma.leadOrigen.findMany();
+    return origenes;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error al obtener los origenes");
+  }
+};
+
 export default async function ClientesList({}: pageProps): Promise<ReactElement> {
-  const { columns, data } = await fetchUsers();
+  const { columns, data } = await fetchClientes();
+  const users = await fetchUser();
+  const origenes = await fetchOrigenes();
   const session = await auth();
   if (!session) {
     redirect("/sign-in");
@@ -56,7 +84,7 @@ export default async function ClientesList({}: pageProps): Promise<ReactElement>
     <>
       {/* LIST */}
       <div className="flex justify-end mb-4">
-        <CreateClientModal />
+        <CreateClientModal users={users} origenes={origenes} />
       </div>
       <DataTable columns={columns} data={data} />
     </>

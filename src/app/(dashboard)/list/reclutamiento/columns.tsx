@@ -1,16 +1,8 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  BookCheck,
-  ChevronDown,
-  ChevronUp,
-  SortAsc,
-  UserPen,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, SortAsc } from "lucide-react";
 import { CommentSheet } from "./components/CommentSheet";
-import { FinalTernaSheet } from "./components/FinalTernaSheet";
 import { StatusDropdown } from "./components/StatusDropdown";
 import { RecruiterDropDown } from "./components/RecruiterDropdown";
 import { TypeDropdown } from "./components/TypeDropDown";

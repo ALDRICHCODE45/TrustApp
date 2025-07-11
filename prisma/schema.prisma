@@ -257,7 +257,7 @@ model Client {
   id           String            @id @default(cuid())
   //Relacion con el lead
   leadId       String?
-  lead         Lead?             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead         Lead?             @relation(fields: [leadId], references: [id])
   //Etiqueta del cliente
   etiqueta     ClienteEtiqueta   @default(PreCliente)
   //Data de la cuenta y estadisticas
@@ -280,6 +280,7 @@ model Client {
   como_factura  String?
   portal_site   String?
   comentarios   Comment[]
+  tipo          String?
   //Origen en caso de que no haya lead
   origenId      String?
   origen        LeadOrigen? @relation(fields: [origenId], references: [id])

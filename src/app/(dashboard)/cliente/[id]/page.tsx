@@ -30,6 +30,7 @@ const fetchClient = async (
           },
         },
         contactos: true,
+        origen: true,
       },
     });
     return client;

@@ -377,15 +377,13 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los clientes</SelectItem>
-                  {clientes.map((cliente) => (
-                    <SelectItem
-                      key={cliente.id}
-                      value={cliente.cuenta || ""}
-                      disabled={!cliente.cuenta}
-                    >
-                      {cliente.cuenta}
-                    </SelectItem>
-                  ))}
+                  {clientes
+                    .filter((cliente) => cliente.cuenta)
+                    .map((cliente) => (
+                      <SelectItem key={cliente.id} value={cliente.cuenta!}>
+                        {cliente.cuenta}
+                      </SelectItem>
+                    ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -976,12 +974,7 @@ export function RecruiterTable<TData, TValue>({
         return;
       }
       setCurrentTipo(value);
-      // Usar una función de filtro personalizada para comparación case insensitive
-      table.getColumn("tipo")?.setFilterValue((row: Row<Vacante>) => {
-        const tipo = row.getValue("tipo");
-        if (!tipo) return false;
-        return tipo.toString().toLowerCase() === value.toLowerCase();
-      });
+      table.getColumn("tipo")?.setFilterValue(value);
       table.setPageIndex(0);
     },
     [table]

@@ -51,7 +51,14 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Client, User, Vacancy } from "@prisma/client";
+import {
+  Client,
+  User,
+  Vacancy,
+  VacancyEstado,
+  VacancyPrioridad,
+  VacancyTipo,
+} from "@prisma/client";
 import { toast } from "sonner";
 import { createVacancy } from "@/actions/vacantes/actions";
 
@@ -309,8 +316,10 @@ const BasicInformationTab = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="z-[888]">
-                    <SelectItem value="Nueva">Nueva</SelectItem>
-                    <SelectItem value="Garantia">Garantía</SelectItem>
+                    <SelectItem value={VacancyTipo.Nueva}>Nueva</SelectItem>
+                    <SelectItem value={VacancyTipo.Garantia}>
+                      Garantía
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -334,11 +343,21 @@ const BasicInformationTab = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="z-[8888]">
-                    <SelectItem value="Hunting">Hunting</SelectItem>
-                    <SelectItem value="Cancelada">Cancelada</SelectItem>
-                    <SelectItem value="Entrevistas">Entrevistas</SelectItem>
-                    <SelectItem value="Perdida">Perdida</SelectItem>
-                    <SelectItem value="Placement">Placement</SelectItem>
+                    <SelectItem value={VacancyEstado.Hunting}>
+                      Hunting
+                    </SelectItem>
+                    <SelectItem value={VacancyEstado.Cancelada}>
+                      Cancelada
+                    </SelectItem>
+                    <SelectItem value={VacancyEstado.Entrevistas}>
+                      Entrevistas
+                    </SelectItem>
+                    <SelectItem value={VacancyEstado.Perdida}>
+                      Perdida
+                    </SelectItem>
+                    <SelectItem value={VacancyEstado.Placement}>
+                      Placement
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -378,9 +397,11 @@ const BasicInformationTab = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="z-[8888]">
-                    <SelectItem value="Alta">Alta</SelectItem>
-                    <SelectItem value="Media">Media</SelectItem>
-                    <SelectItem value="Baja">Baja</SelectItem>
+                    <SelectItem value={VacancyPrioridad.Alta}>Alta</SelectItem>
+                    <SelectItem value={VacancyPrioridad.Media}>
+                      Media
+                    </SelectItem>
+                    <SelectItem value={VacancyPrioridad.Baja}>Baja</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

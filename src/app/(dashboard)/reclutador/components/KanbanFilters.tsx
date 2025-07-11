@@ -17,6 +17,7 @@ import {
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { VacancyTipo } from "@prisma/client";
 
 {
   /* interface KanbanFiltersProps { */
@@ -143,7 +144,9 @@ export function KanbanFilters() {
             <SelectTrigger>
               <SelectValue placeholder="Reclutador" />
             </SelectTrigger>
-            <SelectContent></SelectContent>
+            <SelectContent>
+              <SelectItem value="todos">Todos los reclutadores</SelectItem>
+            </SelectContent>
           </Select>
         </div>
 
@@ -155,7 +158,9 @@ export function KanbanFilters() {
             <SelectTrigger>
               <SelectValue placeholder="Cliente" />
             </SelectTrigger>
-            <SelectContent></SelectContent>
+            <SelectContent>
+              <SelectItem value="todos">Todos los clientes</SelectItem>
+            </SelectContent>
           </Select>
         </div>
 
@@ -167,7 +172,11 @@ export function KanbanFilters() {
             <SelectTrigger>
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
-            <SelectContent></SelectContent>
+            <SelectContent>
+              <SelectItem value="todos">Todos los tipos</SelectItem>
+              <SelectItem value={VacancyTipo.Nueva}>Nueva</SelectItem>
+              <SelectItem value={VacancyTipo.Garantia}>Garantía</SelectItem>
+            </SelectContent>
           </Select>
         </div>
 
@@ -179,11 +188,7 @@ export function KanbanFilters() {
                 className={cn("w-full justify-start text-left font-normal")}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {/* {filters.fecha ? ( */}
-                {/*   format(filters.fecha, "PPP") */}
-                {/* ) : ( */}
-                {/*   <span>Fecha entrega</span> */}
-                {/* )} */}
+                <span>Fecha entrega</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

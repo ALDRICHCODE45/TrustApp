@@ -16,7 +16,7 @@ import { ComentariosSheet } from "../../cliente/[id]/components/ComentariosSheet
 import { FacturacionSheet } from "./components/Facturacion_instrucciones";
 import { ClientesActions } from "./components/ClientesActions";
 import { UserClientDropDown } from "./components/UserClientDropDown";
-import { Client, ClienteModalidad, Prisma } from "@prisma/client";
+import { ClienteModalidad, Prisma } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -35,6 +35,7 @@ export type ClientWithRelations = Prisma.ClientGetPayload<{
     contactos: true;
     usuario: true;
     comentarios: true;
+    origen: true;
   };
 }>;
 
@@ -66,7 +67,7 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     id: "origen",
     header: "Origen",
     cell: ({ row }) => {
-      const origenCompleto = row.original.lead?.origen?.nombre ?? "N/A";
+      const origenCompleto = row.original.origen?.nombre ?? "N/A";
       const firstWord = origenCompleto.split(" ").at(0);
       return <span>{firstWord}</span>;
     },
@@ -76,6 +77,25 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     header: "Usuario",
     cell: ({ row }) => {
       return <UserClientDropDown row={row} />;
+    },
+  },
+  {
+    accessorKey: "etiqueta",
+    header: "Etiqueta",
+    cell: ({ row }) => {
+      const etiqueta = row.original.etiqueta;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground">{etiqueta}</p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Etiqueta del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
@@ -121,7 +141,7 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline">
-              <p className="text-foreground flex gap-1 items-center">
+              <p className="flex gap-1 items-center">
                 <ArrowDownToLine size={15} className="text-gray-500" />
                 {perdidas ?? <span className="text-red-500">N/A</span>}
               </p>
@@ -145,7 +165,7 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline">
-                <p className="text-foreground flex gap-1 items-center">
+                <p className="flex gap-1 items-center">
                   <CircleOff size={15} className="text-gray-500" />
                   {canceladas ?? <span className="text-red-500">N/A</span>}
                 </p>
@@ -168,7 +188,7 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline">
-              <p className="text-foreground flex gap-1 items-center">
+              <p className="flex gap-1 items-center">
                 <CircleCheck size={15} className="text-gray-500" />
                 {placements ?? <span className="text-red-500">N/A</span>}
               </p>
@@ -231,36 +251,92 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     cell: ({ row }) => {
       const fee = row.original.fee;
       return (
-        <div className="flex items-center gap-1">
-          <span>{fee}</span>%
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="">
+                <span>{fee}%</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fee del cliente</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
   {
     accessorKey: "dias_credito",
-    header: "Credito",
+    header: "Dias credito",
     cell: ({ row }) => {
       const credito = row.original.dias_credito;
       return (
-        <div className="flex gap-2 items-center">
-          <span>{credito ?? "N/A"}</span>
-          dias
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="">
+                <span>{credito}</span>
+                dias
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Dias de credito para el cliente</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
   },
   {
-    accessorKey: "tipo_factura",
-    header: "Factura",
+    accessorKey: "tipo_factura", //PDDD O PUE,etc...
+    header: "Tipo factura",
+    cell: ({ row }) => {
+      const tipo_factura =
+        !row.original.tipo_factura || row.original.tipo_factura.trim() === ""
+          ? "N/A"
+          : row.original.tipo_factura;
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <p className="">
+                <span>{tipo_factura}</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Tipo de factura del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: "razon_social",
     header: "RS",
     cell: ({ row }) => {
-      const razon_social = row.original.razon_social ?? "N/A";
+      const razon_social =
+        !row.original.razon_social || row.original.razon_social.trim() === ""
+          ? "N/A"
+          : row.original.razon_social;
       const firstWord = razon_social?.split(" ").at(0);
-      return <span>{firstWord}</span>;
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="">
+                <span>{firstWord}</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Razón social del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
@@ -272,16 +348,73 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     },
   },
   {
-    accessorKey: "tipo",
+    accessorKey: "tipo", //Persona moral o fisica
     header: "Tipo",
+    cell: ({ row }) => {
+      const tipo = row.original?.tipo ?? "N/A";
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                <span>{tipo}</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Tipo de cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: "rfc",
     header: "RFC",
+    cell: ({ row }) => {
+      const rfc =
+        !row.original.rfc || row.original.rfc.trim() === ""
+          ? "N/A"
+          : row.original.rfc;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                <span>{rfc}</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>RFC del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: "cp",
     header: "CP",
+    cell: ({ row }) => {
+      const cp =
+        !row.original.codigo_postal || row.original.codigo_postal.trim() === ""
+          ? "N/A"
+          : row.original.codigo_postal;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground flex gap-1 items-center">
+                <span>{cp}</span>
+              </p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Codigo postal del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: "como_factura",
