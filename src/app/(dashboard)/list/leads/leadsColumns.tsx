@@ -62,7 +62,16 @@ export const createLeadsColumns = (
     header: "Empresa",
     cell: ({ row }) => {
       const empresa = row.original.empresa;
-      return <span>{empresa}</span>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">{empresa}</Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Nombre de la empresa</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
@@ -74,7 +83,14 @@ export const createLeadsColumns = (
 
       return (
         <>
-          <Button variant="outline">{origen}</Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline">{origen}</Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Origen del lead</p>
+            </TooltipContent>
+          </Tooltip>
         </>
       );
     },
@@ -92,7 +108,14 @@ export const createLeadsColumns = (
       const sector = row.original.sector.nombre;
       return (
         <>
-          <Button variant="outline">{sector}</Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline">{sector}</Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Sector del lead</p>
+            </TooltipContent>
+          </Tooltip>
         </>
       );
     },
@@ -140,9 +163,16 @@ export const createLeadsColumns = (
 
       return (
         <div className="text-center">
-          <Button variant="outline">
-            {format(fechaUTC, "eee dd/MM/yyyy", { locale: es })}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline">
+                {format(fechaUTC, "eee dd/MM/yyyy", { locale: es })}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Fecha de creación del lead</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       );
     },
@@ -185,13 +215,20 @@ export const createLeadsColumns = (
     header: () => <div className="text-center">Oficina</div>,
     cell: ({ row }) => {
       return (
-        <Button variant="outline">
-          {
-            oficinaMap[
-              row.original.generadorLeads.Oficina as keyof typeof oficinaMap
-            ]
-          }
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              {
+                oficinaMap[
+                  row.original.generadorLeads.Oficina as keyof typeof oficinaMap
+                ]
+              }
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Oficina del lead</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
     accessorFn: (row) => {

@@ -119,7 +119,7 @@ function NuevoLeadForm({
 
   const [lastResult, formAction, isPending] = useActionState(
     createLead,
-    undefined,
+    undefined
   );
 
   const [form, fields] = useForm({
@@ -266,82 +266,80 @@ function NuevoLeadForm({
           <div className="w-1/2">
             <Label>Generador de Leads</Label>
             {(isAdmin || activeUser.role === Role.MK) && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild className="w-full">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      type="button"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <UserIcon />
-                      <span className="truncate">
-                        {selectedUser
-                          ? selectedUser.name
-                          : "Selecciona un Generador"}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-72 max-h-[250px] overflow-y-auto z-[9999]">
-                    {generadores.map((generador) => (
-                      <DropdownMenuItem
-                        key={generador.id}
-                        className="flex items-center gap-3 p-2 cursor-pointer"
-                        onClick={() => {
-                          handleSelectGl(generador);
-                        }}
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <Avatar className="h-9 w-9 shrink-0">
-                            <AvatarImage
-                              src={
-                                generador.image ? generador.image : undefined
-                              }
-                              alt={generador.name}
-                              className="object-cover rounded-full h-full w-full"
-                            />
-                            <AvatarFallback className="rounded-full">
-                              {getInitials(generador.name)}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {generador.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {generador.email}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="link"
-                          className="ml-auto h-8 w-8 p-0"
-                          type="button"
-                          asChild
-                        >
-                          <Link href={`/profile/${generador.id}`}>Ver</Link>
-                        </Button>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
-            {(!isAdmin && activeUser.role !== Role.MK) && (
-                <div className="flex flex-col gap-2">
-                  <Button variant="outline" disabled>
-                    {activeUser.name}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <UserIcon />
+                    <span className="truncate">
+                      {selectedUser
+                        ? selectedUser.name
+                        : "Selecciona un Generador"}
+                    </span>
                   </Button>
-                  <input
-                    type="hidden"
-                    name={fields.generadorId.name}
-                    key={fields.generadorId.key}
-                    value={activeUser.id}
-                  />
-                </div>
-              )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-72 max-h-[250px] overflow-y-auto z-[9999]">
+                  {generadores.map((generador) => (
+                    <DropdownMenuItem
+                      key={generador.id}
+                      className="flex items-center gap-3 p-2 cursor-pointer"
+                      onClick={() => {
+                        handleSelectGl(generador);
+                      }}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarImage
+                            src={generador.image ? generador.image : undefined}
+                            alt={generador.name}
+                            className="object-cover rounded-full h-full w-full"
+                          />
+                          <AvatarFallback className="rounded-full">
+                            {getInitials(generador.name)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {generador.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {generador.email}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="link"
+                        className="ml-auto h-8 w-8 p-0"
+                        type="button"
+                        asChild
+                      >
+                        <Link href={`/profile/${generador.id}`}>Ver</Link>
+                      </Button>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {!isAdmin && activeUser.role !== Role.MK && (
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" disabled>
+                  {activeUser.name}
+                </Button>
+                <input
+                  type="hidden"
+                  name={fields.generadorId.name}
+                  key={fields.generadorId.key}
+                  value={activeUser.id}
+                />
+              </div>
+            )}
             <p className="text-sm text-red-500">{fields.generadorId.errors}</p>
           </div>
           <div className="w-1/2">
@@ -380,6 +378,7 @@ function NuevoLeadForm({
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>

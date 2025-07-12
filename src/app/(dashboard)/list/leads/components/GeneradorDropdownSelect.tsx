@@ -15,6 +15,11 @@ import { editLeadById, getRecruiters } from "@/actions/leads/actions";
 import { toast } from "sonner";
 import { ExternalLink, Loader2, RotateCw } from "lucide-react";
 import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const GeneradorDropdownSelect = ({
   row,
@@ -107,92 +112,95 @@ export const GeneradorDropdownSelect = ({
   };
 
   return (
-    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2 w-full justify-between"
-          disabled={isUpdating}
-        >
-          {isUpdating ? (
-            <div className="flex items-center gap-2">
-              <span>Actualizando...</span>
-              <Loader2 className="h-3 w-3 animate-spin" />
-            </div>
-          ) : (
-            renderCurrentGeneratorName()
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        className="w-72 max-h-[300px] overflow-y-auto"
-        align="start"
-        side="bottom"
-      >
-        {error ? (
-          <div className="p-3 text-center">
-            <p className="text-sm text-red-500 mb-2">{error}</p>
-            <Button size="sm" onClick={() => loadRecruiters()}>
-              Reintentar
-            </Button>
-          </div>
-        ) : loading ? (
-          <div className="p-3 text-center">
-            <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground mt-2">
-              Cargando reclutadores...
-            </p>
-          </div>
-        ) : recruiters && recruiters.length > 0 ? (
-          recruiters.map((recruiter) => (
-            <DropdownMenuItem
-              key={recruiter.id}
-              className={`p-2 cursor-pointer ${
-                recruiter.id === currentGeneratorId ? "bg-muted" : ""
-              }`}
-              onClick={() => handleUserChange(recruiter)}
-            >
-              <div className="flex items-center w-full">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage
-                      src={recruiter.image ?? undefined}
-                      alt={recruiter.name}
-                      className="object-cover"
-                    />
-                    <AvatarFallback>{recruiter.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-medium truncate">
-                      {recruiter.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {recruiter.email}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 shrink-0 ml-2"
-                  onClick={(e) => navigateToProfile(e, recruiter.id)}
-                  title="Ver perfil"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Button>
+    <>
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 w-full justify-between"
+            disabled={isUpdating}
+          >
+            {isUpdating ? (
+              <div className="flex items-center gap-2">
+                <span>Actualizando...</span>
+                <Loader2 className="h-3 w-3 animate-spin" />
               </div>
-            </DropdownMenuItem>
-          ))
-        ) : (
-          <div className="p-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              No hay reclutadores disponibles
-            </p>
-          </div>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            ) : (
+              renderCurrentGeneratorName()
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-72 max-h-[300px] overflow-y-auto"
+          align="start"
+          side="bottom"
+        >
+          {error ? (
+            <div className="p-3 text-center">
+              <p className="text-sm text-red-500 mb-2">{error}</p>
+              <Button size="sm" onClick={() => loadRecruiters()}>
+                Reintentar
+              </Button>
+            </div>
+          ) : loading ? (
+            <div className="p-3 text-center">
+              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+              <p className="text-sm text-muted-foreground mt-2">
+                Cargando reclutadores...
+              </p>
+            </div>
+          ) : recruiters && recruiters.length > 0 ? (
+            recruiters.map((recruiter) => (
+              <DropdownMenuItem
+                key={recruiter.id}
+                className={`p-2 cursor-pointer ${
+                  recruiter.id === currentGeneratorId ? "bg-muted" : ""
+                }`}
+                onClick={() => handleUserChange(recruiter)}
+              >
+                <div className="flex items-center w-full">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage
+                        src={recruiter.image ?? undefined}
+                        alt={recruiter.name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback>
+                        {recruiter.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium truncate">
+                        {recruiter.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {recruiter.email}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0 ml-2"
+                    onClick={(e) => navigateToProfile(e, recruiter.id)}
+                    title="Ver perfil"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </DropdownMenuItem>
+            ))
+          ) : (
+            <div className="p-3 text-center">
+              <p className="text-sm text-muted-foreground">
+                No hay reclutadores disponibles
+              </p>
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 };

@@ -437,6 +437,7 @@ const BasicInformationTab = ({
                       selected={field.value}
                       onSelect={field.onChange}
                       locale={es}
+                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>
@@ -450,7 +451,7 @@ const BasicInformationTab = ({
             name="fechaEntrega"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Fecha Límite</FormLabel>
+                <FormLabel>Fecha Entrega</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -471,6 +472,7 @@ const BasicInformationTab = ({
                       selected={field.value}
                       onSelect={field.onChange}
                       locale={es}
+                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>

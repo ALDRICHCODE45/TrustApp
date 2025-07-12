@@ -4,8 +4,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   BookCheck,
+  BriefcaseBusiness,
   ChevronDown,
   ChevronUp,
+  Info,
   SortAsc,
   UserPen,
 } from "lucide-react";
@@ -19,6 +21,19 @@ import { CommentSheet } from "../../list/reclutamiento/components/CommentSheet";
 import { FinalTernaSheet } from "../../list/reclutamiento/components/FinalTernaSheet";
 import { ActionsRecruitment } from "../../list/reclutamiento/components/ActionsRecruitment";
 import { Prisma } from "@prisma/client";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { format } from "date-fns";
+import { es, id } from "date-fns/locale";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 export type VacancyWithRelations = Prisma.VacancyGetPayload<{
   include: {
@@ -81,13 +96,20 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorKey: "fechaAsignacion",
     cell: ({ row }) => {
       return (
-        <ChangeDateComponent
-          fecha={row.original.fechaAsignacion}
-          onFechaChange={(nuevaFecha) => {
-            // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
-            console.log("Fecha actualizada:", nuevaFecha);
-          }}
-        />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.fechaAsignacion
+                ? format(row.original.fechaAsignacion, "EEE d/M/yy", {
+                    locale: es,
+                  })
+                : "N/A"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fecha Asignacion</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
     filterFn: (row, columnId, filterValue) => {
@@ -141,6 +163,31 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     },
   },
   {
+    id: "fechaEntrega",
+    accessorKey: "fechaEntrega",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Fecha Entrega" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.fechaEntrega
+                ? format(row.original.fechaEntrega, "EEE d/M/yy", {
+                    locale: es,
+                  })
+                : "N/A"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fecha Entrega</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
+  },
+  {
     id: "reclutador",
     accessorKey: "reclutador",
     header: ({ column }) => (
@@ -156,7 +203,33 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorKey: "tipo",
     header: ({ column }) => <SortableHeader column={column} title="Tipo" />,
     cell: ({ row }) => {
-      return <TypeDropdown row={row} />;
+      //return <TypeDropdown row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* <Button variant="outline" className="w-full">
+              {row.original.tipo}
+            </Button> */}
+            <Badge variant="outline" className="gap-1.5">
+              {row.original.tipo === "Nueva" ? (
+                <span
+                  className="size-1.5 rounded-full bg-emerald-500"
+                  aria-hidden="true"
+                ></span>
+              ) : (
+                <span
+                  className="size-1.5 rounded-full bg-amber-500"
+                  aria-hidden="true"
+                ></span>
+              )}
+              {row.original.tipo}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Tipo de vacante</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
     accessorFn: (row) => row.tipo,
   },
@@ -165,7 +238,18 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorKey: "cliente",
     header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
     cell: ({ row }) => {
-      return <ClientesDropDown row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.cliente.cuenta}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
     accessorFn: (row) => row.cliente.cuenta,
   },
@@ -175,14 +259,53 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     header: ({ column }) => <SortableHeader column={column} title="Estado" />,
 
     cell: ({ row }) => {
-      return <StatusDropdown row={row} />;
+      //return <StatusDropdown row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.estado}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Estado de la vacante</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {
     accessorKey: "posicion",
     header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
     cell: ({ row }) => {
-      return <PosicionPopOver row={row} />;
+      //return <PosicionPopOver row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex items-center gap-2" variant="outline">
+              <BriefcaseBusiness size={15} />
+              <div className="max-w-[100px] truncate">
+                {row.original.posicion}
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="h-6 w-6 p-0">
+                    <Info size={16} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-52">
+                  <div className="grid gap-1">
+                    <p className="text-sm">{row.original.posicion}</p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Posicion de la vacante</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {

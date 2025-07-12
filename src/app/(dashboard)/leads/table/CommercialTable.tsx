@@ -390,16 +390,16 @@ function TableFilters<TData extends { id: string }, TValue>({
                     {currentDateRange.from ? (
                       currentDateRange.to ? (
                         <>
-                          {format(currentDateRange.from, "dd/MM/yyyy", {
+                          {format(currentDateRange.from, "EEE d/M/yy", {
                             locale: es,
                           })}{" "}
                           -{" "}
-                          {format(currentDateRange.to, "dd/MM/yyyy", {
+                          {format(currentDateRange.to, "EEE d/M/yy", {
                             locale: es,
                           })}
                         </>
                       ) : (
-                        format(currentDateRange.from, "dd/MM/yyyy", {
+                        format(currentDateRange.from, "EEE d/M/yy", {
                           locale: es,
                         })
                       )
@@ -410,6 +410,7 @@ function TableFilters<TData extends { id: string }, TValue>({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
+                    captionLayout="dropdown"
                     mode="range"
                     selected={{
                       from: currentDateRange.from,
@@ -438,9 +439,9 @@ function TableFilters<TData extends { id: string }, TValue>({
               {(currentDateRange.from || currentDateRange.to) && (
                 <Badge variant="outline" className="w-fit gap-1">
                   {currentDateRange.from &&
-                    format(currentDateRange.from, "dd/MM/yyyy", { locale: es })}
+                    format(currentDateRange.from, "EEE d/M/yy", { locale: es })}
                   {currentDateRange.to &&
-                    ` - ${format(currentDateRange.to, "dd/MM/yyyy", {
+                    ` - ${format(currentDateRange.to, "EEE d/M/yy", {
                       locale: es,
                     })}`}
                   <Button

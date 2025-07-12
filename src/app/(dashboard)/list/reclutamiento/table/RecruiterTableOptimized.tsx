@@ -68,6 +68,10 @@ import {
 import { toast } from "sonner";
 import CreateVacanteForm from "../components/CreateVacanteForm";
 import { Client, User } from "@prisma/client";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Función de filtro personalizada para rangos de fechas
 const dateRangeFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
@@ -265,8 +269,14 @@ function TableFilters<TData, TValue>({
     },
     {
       condition: dateRange && (dateRange.from || dateRange.to),
-      label: `Fecha: ${dateRange?.from?.toLocaleDateString()} - ${
-        dateRange?.to?.toLocaleDateString() || "ahora"
+      label: `Fecha: ${
+        dateRange?.from
+          ? format(dateRange?.from, "EEE d/M/yy", { locale: es })
+          : ""
+      } - ${
+        dateRange?.to
+          ? format(dateRange?.to, "EEE d/M/yy", { locale: es })
+          : "ahora"
       }`,
       clear: () => {
         setDateRange(undefined);
@@ -883,6 +893,7 @@ export function RecruiterTable<TData, TValue>({
       columnOrder,
     },
   });
+  const router = useRouter();
 
   // Efecto para actualizar los datos cuando cambia la prop data
   useEffect(() => {
@@ -895,8 +906,7 @@ export function RecruiterTable<TData, TValue>({
   const refreshData = useCallback(async () => {
     try {
       setIsRefreshing(true);
-      // Aquí puedes agregar la lógica para refrescar los datos
-      // Por ejemplo, hacer una llamada a la API
+      router.refresh();
       toast.success("Datos actualizados correctamente");
     } catch (error) {
       console.error("Error al actualizar los datos:", error);

@@ -21,6 +21,8 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { editLeadById } from "@/actions/leads/actions";
 import { toast } from "sonner";
 import { LeadWithRelations } from "@/app/(dashboard)/leads/kanban/page";
+import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 
 const allowLeadStatus = [
   {

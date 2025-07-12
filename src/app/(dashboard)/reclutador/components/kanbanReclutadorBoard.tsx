@@ -184,9 +184,12 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
           isDragging || isSortableDragging
             ? "border-blue-400 shadow-xl scale-105"
             : "border-slate-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
-        } bg-white dark:bg-gray-800`}
+        } bg-white dark:bg-gray-800 relative`}
         onClick={onClick}
       >
+        {/* Indicador visual cuando se arrastra sobre esta tarjeta */}
+        <div className="absolute inset-0 rounded-2xl border-2 border-dashed border-blue-400 bg-blue-50/20 dark:bg-blue-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+
         <CardHeader className="p-4 pb-2">
           <div className="flex flex-col gap-2">
             <div className="flex items-start justify-between">
@@ -333,6 +336,14 @@ const DroppableColumn: React.FC<ColumnProps> = ({
               </Dialog>
             ))}
           </SortableContext>
+          {/* Área de drop vacía al final de la columna */}
+          {vacantes.length === 0 && (
+            <div className="h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Arrastra vacantes aquí
+              </span>
+            </div>
+          )}
         </div>
       </ScrollArea>
     </div>
@@ -359,7 +370,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
           </Avatar>
           <div>
             <p className="text-sm text-muted-foreground">Reclutador asignado</p>
-            <p className="font-medium">
+            <p className="font-normal text-md text-gray-700">
               {vacante.reclutador?.name || "Sin reclutador"}
             </p>
           </div>
@@ -377,7 +388,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
           <div className="flex items-center">
             <Building className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Cliente:</span>
-            <span className="ml-2 font-medium">
+            <span className="ml-2 font-normal text-md text-gray-700">
               {vacante.cliente?.cuenta || "Sin cliente"}
             </span>
           </div>
@@ -386,14 +397,16 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
             <span className="text-sm text-muted-foreground">
               Fecha entrega:
             </span>
-            <span className="ml-2 font-medium">
+            <span className="ml-2 font-normal text-md text-gray-700">
               {vacante.fechaEntrega?.toLocaleDateString() || "Sin fecha"}
             </span>
           </div>
           <div className="flex items-center">
             <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Mes asignado:</span>
-            <span className="ml-2 font-medium">Fecha asignacion</span>
+            <span className="ml-2 font-normal text-md text-gray-700">
+              Fecha asignacion
+            </span>
           </div>
         </div>
         <div className="space-y-3">
@@ -404,8 +417,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
                 Tiempo transcurrido:
               </span>
             </div>
-            <Button variant="ghost" size="sm" className="h-6 px-2">
-              <span className="font-medium">
+            <Button variant="outline" size="sm" className="h-6 px-2">
+              <span className="font-normal text-md text-gray-700">
                 {vacante.tiempoTranscurrido || 0} días
               </span>
             </Button>
@@ -439,46 +452,50 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
       </div>
     </div>
     {/* Información financiera */}
-    {user_logged.role === Role.Admin && (
-      <div>
-        <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
-          <FileText className="h-4 w-4 mr-2" />
-          Información financiera
-        </h4>
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="overflow-hidden">
-            <div className="h-1 bg-blue-500"></div>
-            <CardContent className="pt-4">
-              <div className="text-sm text-muted-foreground">Salario</div>
-              <div className="text-2xl font-semibold mt-1">
-                $
-                {vacante.salario?.toLocaleString() || (
-                  <span className="">N/A</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="overflow-hidden">
-            <div className="h-1 bg-purple-500"></div>
-            <CardContent className="pt-4">
-              <div className="text-sm text-muted-foreground">Fee</div>
-              <div className="text-2xl font-semibold mt-1">
-                {vacante.fee || "N/A"}%
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="overflow-hidden">
-            <div className="h-1 bg-green-500"></div>
-            <CardContent className="pt-4">
-              <div className="text-sm text-muted-foreground">Valor factura</div>
-              <div className="text-2xl font-semibold mt-1">
-                ${vacante.valorFactura?.toLocaleString() || "N/A"}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div>
+      <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
+        <FileText className="h-4 w-4 mr-2" />
+        Información financiera
+      </h4>
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-blue-500"></div>
+          <CardContent className="pt-4">
+            <div className="text-sm text-muted-foreground">Salario</div>
+            <div className="text-2xl font-semibold mt-1">
+              $
+              {vacante.salario?.toLocaleString() || (
+                <span className="">N/A</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        {user_logged.role === Role.Admin && (
+          <>
+            <Card className="overflow-hidden">
+              <div className="h-1 bg-purple-500"></div>
+              <CardContent className="pt-4">
+                <div className="text-sm text-muted-foreground">Fee</div>
+                <div className="text-2xl font-semibold mt-1">
+                  {vacante.fee || "N/A"}%
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="overflow-hidden">
+              <div className="h-1 bg-green-500"></div>
+              <CardContent className="pt-4">
+                <div className="text-sm text-muted-foreground">
+                  Valor factura
+                </div>
+                <div className="text-2xl font-semibold mt-1">
+                  ${vacante.valorFactura?.toLocaleString() || "N/A"}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
-    )}
+    </div>
     {/* Candidato contratado (condicional) */}
     {vacante.candidatoContratado && (
       <Card className="overflow-hidden border-green-200 dark:border-green-800">
@@ -926,9 +943,15 @@ export const KanbanBoardPage = ({
     );
     if (!activeVacante) return;
 
+    // Buscar la tarjeta objetivo
+    const overVacante = validVacantes.find((v) => v.id.toString() === overId);
+
     // Verificar si se está moviendo a una nueva columna
     const targetColumn = columns.find((col) => col.id === overId);
+
+    // Si se arrastra directamente sobre una columna
     if (targetColumn && activeVacante.estado !== targetColumn.id) {
+      // Movimiento entre columnas
       try {
         setIsUpdating(true);
 
@@ -958,6 +981,62 @@ export const KanbanBoardPage = ({
       } finally {
         setIsUpdating(false);
       }
+    } else if (overVacante) {
+      // Se arrastra sobre otra tarjeta
+      if (activeVacante.estado !== overVacante.estado) {
+        // Movimiento entre columnas a través de una tarjeta
+        try {
+          setIsUpdating(true);
+
+          const result = await updateVacancyStatus(
+            activeId,
+            overVacante.estado as any
+          );
+
+          if (result.ok) {
+            setVacantes((prev) =>
+              prev.map((v) =>
+                v.id.toString() === activeId
+                  ? { ...v, estado: overVacante.estado as any }
+                  : v
+              )
+            );
+
+            const targetColumnTitle =
+              columns.find((col) => col.id === overVacante.estado)?.title ||
+              overVacante.estado;
+
+            toast.success(`Vacante actualizada a ${targetColumnTitle}`);
+          } else {
+            toast.error(result.message || "Error al actualizar la vacante");
+          }
+        } catch (error) {
+          console.error("Error updating vacancy status:", error);
+          toast.error("Error al actualizar el estado de la vacante");
+        } finally {
+          setIsUpdating(false);
+        }
+      } else {
+        // Reordenamiento dentro de la misma columna
+        const activeVacanteIndex = validVacantes.findIndex(
+          (v) => v.id.toString() === activeId
+        );
+        const overVacanteIndex = validVacantes.findIndex(
+          (v) => v.id.toString() === overId
+        );
+
+        if (activeVacanteIndex !== overVacanteIndex) {
+          const newVacantes = arrayMove(
+            validVacantes,
+            activeVacanteIndex,
+            overVacanteIndex
+          );
+          setVacantes(newVacantes);
+        }
+      }
+    } else if (targetColumn && activeVacante.estado === targetColumn.id) {
+      // Arrastrar sobre una columna vacía en la misma columna
+      // No hacer nada ya que está en la misma columna
     }
   };
 
@@ -976,10 +1055,21 @@ export const KanbanBoardPage = ({
     );
     if (!activeVacante) return;
 
+    // Buscar la tarjeta objetivo
+    const overVacante = validVacantes.find((v) => v.id.toString() === overId);
+
     // Verificar si se está moviendo a una nueva columna
     const targetColumn = columns.find((col) => col.id === overId);
+
     if (targetColumn && activeVacante.estado !== targetColumn.id) {
+      // Arrastrar sobre una columna diferente
       // La columna se resaltará automáticamente gracias al isOver del useDroppable
+    } else if (overVacante && activeVacante.estado !== overVacante.estado) {
+      // Arrastrar sobre una tarjeta en una columna diferente
+      // Esto permitirá el movimiento entre columnas
+    } else if (overVacante && activeVacante.estado === overVacante.estado) {
+      // Arrastrar sobre una tarjeta en la misma columna
+      // Esto permitirá el reordenamiento
     }
   };
 

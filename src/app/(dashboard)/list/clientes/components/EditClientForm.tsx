@@ -35,6 +35,7 @@ import { updateClientById } from "@/actions/clientes/actions";
 import { getLeadsUsers } from "@/actions/users/create-user";
 import { getAllOrigenes } from "@/actions/sectores/actions";
 import { toast } from "sonner";
+import { ClienteEtiqueta } from "@prisma/client";
 
 interface EditClientFormProps {
   clientData: ClientWithRelations;
@@ -58,7 +59,7 @@ export const EditClientForm = ({
     defaultValues: {
       id: clientData.id,
       usuarioId: clientData.usuarioId,
-      etiqueta: clientData.etiqueta as "PreCliente" | "Cliente" | "Inactivo",
+      etiqueta: clientData.etiqueta || ClienteEtiqueta.PreCliente,
       cuenta: clientData.cuenta || "",
       asignadas: clientData.asignadas || 0,
       perdidas: clientData.perdidas || 0,
@@ -102,7 +103,7 @@ export const EditClientForm = ({
   }, [isOpen]);
 
   // Función para manejar el envío del formulario
-  const onSubmit = async (data: EditClientFormData): Promise<void> => {
+  const onSubmit = async (data: EditClientFormData) => {
     setIsLoading(true);
     try {
       await updateClientById(data);
@@ -122,7 +123,7 @@ export const EditClientForm = ({
     form.reset({
       id: clientData.id,
       usuarioId: clientData.usuarioId,
-      etiqueta: clientData.etiqueta as "PreCliente" | "Cliente" | "Inactivo",
+      etiqueta: clientData.etiqueta || ClienteEtiqueta.PreCliente,
       cuenta: clientData.cuenta || "",
       asignadas: clientData.asignadas || 0,
       perdidas: clientData.perdidas || 0,
@@ -247,11 +248,12 @@ export const EditClientForm = ({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="z-[9999]">
-                              <SelectItem value="PreCliente">
+                              <SelectItem value={ClienteEtiqueta.PreCliente}>
                                 Pre-Cliente
                               </SelectItem>
-                              <SelectItem value="Cliente">Cliente</SelectItem>
-                              <SelectItem value="Inactivo">Inactivo</SelectItem>
+                              <SelectItem value={ClienteEtiqueta.Cliente}>
+                                Cliente
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

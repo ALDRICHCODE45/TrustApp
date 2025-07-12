@@ -28,12 +28,14 @@ export default async function KanbanReclutadorPage() {
   if (!user_logged?.user) {
     redirect("/");
   }
+
   const user_logged_data = {
     name: user_logged.user.name,
     email: user_logged.user.email,
     role: user_logged.user.role as Role,
     image: user_logged.user.image || "",
   };
+
   return (
     <>
       <KanbanBoardPage

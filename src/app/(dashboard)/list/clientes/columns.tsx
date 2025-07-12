@@ -62,14 +62,23 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-
   {
     id: "origen",
     header: "Origen",
     cell: ({ row }) => {
       const origenCompleto = row.original.origen?.nombre ?? "N/A";
-      const firstWord = origenCompleto.split(" ").at(0);
-      return <span>{firstWord}</span>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">
+              <p className="text-foreground">{origenCompleto}</p>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Origen del cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     },
   },
   {

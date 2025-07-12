@@ -69,6 +69,7 @@ export default async function VacantesPage({}: PageProps): Promise<ReactElement>
   const reclutadores = await fetchReclutadores();
   const vacantes = await fetchVacancies();
   const clientes = await fetchClientes();
+
   return (
     <>
       {/* LIST */}

@@ -24,7 +24,7 @@ export const ClientesDropDown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="w-full">
           {cliente}
         </Button>
       </DropdownMenuTrigger>

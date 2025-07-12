@@ -30,9 +30,6 @@ export function DateRangePicker({
 
   const handleSelect = (range: DateRange | undefined) => {
     onChange(range);
-    if (range?.from && range?.to) {
-      setIsOpen(false);
-    }
   };
 
   const handleClear = () => {
@@ -48,18 +45,18 @@ export function DateRangePicker({
           className={cn(
             "w-full justify-start text-left font-normal",
             !value && "text-muted-foreground",
-            className,
+            className
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value?.from ? (
             value.to ? (
               <>
-                {format(value.from, "dd/MM/yy", { locale: es })} -{" "}
-                {format(value.to, "dd/MM/yy", { locale: es })}
+                {format(value.from, "EEE d/M/yy", { locale: es })} -{" "}
+                {format(value.to, "EEE d/M/yy", { locale: es })}
               </>
             ) : (
-              format(value.from, "dd/MM/yyyy", { locale: es })
+              format(value.from, "EEE d/M/yy", { locale: es })
             )
           ) : (
             placeholder
@@ -68,7 +65,7 @@ export function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
-          initialFocus
+          captionLayout="dropdown"
           mode="range"
           defaultMonth={value?.from}
           selected={value}

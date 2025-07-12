@@ -17,7 +17,7 @@ export const TypeDropdown = ({ row }: { row: any }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="w-full">
           {tipo}
         </Button>
       </DropdownMenuTrigger>
