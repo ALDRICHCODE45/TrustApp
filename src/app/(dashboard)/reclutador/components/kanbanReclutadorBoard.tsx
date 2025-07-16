@@ -134,6 +134,8 @@ const getTipoColor = (tipo: string) => {
 
 const getEstadoColor = (estado: string) => {
   switch (estado) {
+    case "QuickMeeting":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
     case "Hunting":
       return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
     case "Entrevistas":
@@ -146,6 +148,90 @@ const getEstadoColor = (estado: string) => {
       return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     default:
       return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+  }
+};
+
+// Nueva función para calcular días transcurridos desde la asignación
+const calculateDaysFromAssignment = (fechaAsignacion: Date): number => {
+  const today = new Date();
+  const assignmentDate = new Date(fechaAsignacion);
+  const diffTime = today.getTime() - assignmentDate.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Nueva función para calcular días restantes hasta la entrega
+const calculateDaysToDelivery = (fechaEntrega: Date | null): number => {
+  if (!fechaEntrega) return 0;
+
+  const today = new Date();
+  const deliveryDate = new Date(fechaEntrega);
+  const diffTime = deliveryDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Nueva función para obtener el color de progreso basado en los días restantes
+const getProgressColor = (daysRemaining: number): string => {
+  if (daysRemaining < 0) {
+    // Días de retraso - rojo intenso
+    return "bg-red-600";
+  } else if (daysRemaining <= 3) {
+    // Crítico - rojo
+    return "bg-red-500";
+  } else if (daysRemaining <= 7) {
+    // Urgente - naranja
+    return "bg-orange-500";
+  } else if (daysRemaining <= 14) {
+    // Precaución - amarillo
+    return "bg-yellow-500";
+  } else {
+    // Seguro - verde
+    return "bg-green-500";
+  }
+};
+
+// Nueva función para obtener el porcentaje de progreso
+const getProgressPercentage = (
+  daysTranscurred: number,
+  daysRemaining: number
+): number => {
+  const totalDays = daysTranscurred + Math.max(0, daysRemaining);
+  if (totalDays === 0) return 0;
+
+  const percentage = (daysTranscurred / totalDays) * 100;
+  return Math.min(100, Math.max(0, percentage));
+};
+
+// Nueva función para obtener el texto del estado del progreso
+const getProgressStatusText = (
+  daysRemaining: number
+): { text: string; color: string } => {
+  if (daysRemaining < 0) {
+    return {
+      text: `${Math.abs(daysRemaining)} días de retraso`,
+      color: "text-red-600 font-semibold",
+    };
+  } else if (daysRemaining === 0) {
+    return {
+      text: "Vence hoy",
+      color: "text-red-600 font-semibold",
+    };
+  } else if (daysRemaining <= 3) {
+    return {
+      text: `${daysRemaining} días restantes`,
+      color: "text-red-600 font-semibold",
+    };
+  } else if (daysRemaining <= 7) {
+    return {
+      text: `${daysRemaining} días restantes`,
+      color: "text-orange-600 font-medium",
+    };
+  } else {
+    return {
+      text: `${daysRemaining} días restantes`,
+      color: "text-green-600",
+    };
   }
 };
 
@@ -221,6 +307,23 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
                     </Popover>
                   )}
                 </div>
+                {/* Indicador de retraso - debajo del nombre */}
+                {(() => {
+                  const daysRemaining = calculateDaysToDelivery(
+                    vacante.fechaEntrega
+                  );
+                  if (daysRemaining < 0) {
+                    return (
+                      <div className="flex items-center mt-1">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <span className="text-xs text-red-600 font-semibold ml-1">
+                          ¡Retraso!
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
                 <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Building className="h-4 w-4 mr-1" />
                   <span className="truncate">
@@ -228,14 +331,16 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
                   </span>
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className={
-                  getTipoColor(vacante.tipo) + " ml-2 whitespace-nowrap"
-                }
-              >
-                {vacante.tipo}
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge
+                  variant="outline"
+                  className={
+                    getTipoColor(vacante.tipo) + " ml-2 whitespace-nowrap"
+                  }
+                >
+                  {vacante.tipo}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -263,6 +368,42 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Barra de progreso visual */}
+          {(() => {
+            const daysTranscurred = calculateDaysFromAssignment(
+              vacante.fechaAsignacion
+            );
+            const daysRemaining = calculateDaysToDelivery(vacante.fechaEntrega);
+            const progressPercentage = getProgressPercentage(
+              daysTranscurred,
+              daysRemaining
+            );
+            const progressColor = getProgressColor(daysRemaining);
+
+            return (
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${progressColor} transition-all duration-300`}
+                    style={{
+                      width: `${progressPercentage}%`,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>{daysTranscurred}d transcurridos</span>
+                  {daysRemaining < 0 ? (
+                    <span className="text-red-600 font-semibold">
+                      {Math.abs(daysRemaining)}d retraso
+                    </span>
+                  ) : (
+                    <span>{daysRemaining}d restantes</span>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </CardContent>
         <CardFooter className="px-4 pt-2 pb-4 flex items-center justify-between border-t border-slate-100 dark:border-gray-700">
           <Badge variant="outline" className={getEstadoColor(vacante.estado)}>
@@ -270,7 +411,9 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
           </Badge>
           <div className="flex items-center text-xs text-muted-foreground">
             <Clock className="h-4 w-4 mr-1" />
-            <span>{vacante.tiempoTranscurrido || 0} días</span>
+            <span>
+              {calculateDaysFromAssignment(vacante.fechaAsignacion)} días
+            </span>
           </div>
         </CardFooter>
       </Card>
@@ -310,7 +453,7 @@ const DroppableColumn: React.FC<ColumnProps> = ({
         </div>
       </div>
       <ScrollArea className="flex-1">
-        <div className="space-y-3 px-1">
+        <div className="space-y-3 px-2">
           <SortableContext
             items={vacantes.map((v) => v.id.toString())}
             strategy={verticalListSortingStrategy}
@@ -419,24 +562,20 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
             </div>
             <Button variant="outline" size="sm" className="h-6 px-2">
               <span className="font-normal text-md text-gray-700">
-                {vacante.tiempoTranscurrido || 0} días
+                {calculateDaysFromAssignment(vacante.fechaAsignacion)} días
               </span>
             </Button>
           </div>
           <div className="pt-2">
             <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full ${
-                  (vacante.tiempoTranscurrido || 0) > 30
-                    ? "bg-red-500"
-                    : (vacante.tiempoTranscurrido || 0) > 15
-                    ? "bg-amber-500"
-                    : "bg-green-500"
-                }`}
+                className={`h-full ${getProgressColor(
+                  calculateDaysToDelivery(vacante.fechaEntrega)
+                )}`}
                 style={{
-                  width: `${Math.min(
-                    100,
-                    ((vacante.tiempoTranscurrido || 0) / 45) * 100
+                  width: `${getProgressPercentage(
+                    calculateDaysFromAssignment(vacante.fechaAsignacion),
+                    calculateDaysToDelivery(vacante.fechaEntrega)
                   )}%`,
                 }}
               ></div>
@@ -915,6 +1054,7 @@ export const KanbanBoardPage = ({
   });
 
   const columns = [
+    { id: "QuickMeeting", title: "Quick Meeting" },
     { id: "Hunting", title: "Hunting" },
     { id: "Entrevistas", title: "Entrevistas" },
     { id: "Placement", title: "Placement" },
@@ -1107,7 +1247,7 @@ export const KanbanBoardPage = ({
               (column) =>
                 (mobileView === null || mobileView === column.id) && (
                   <div
-                    className="h-[calc(100vh-230px)] flex flex-col"
+                    className="h-[calc(100vh-300px)] flex flex-col"
                     key={column.id}
                   >
                     <DroppableColumn

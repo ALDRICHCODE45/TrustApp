@@ -1,5 +1,5 @@
 "use client";
-import { LucideIcon } from "lucide-react";
+import { Landmark, LucideIcon } from "lucide-react";
 import * as React from "react";
 import {
   AudioWaveform,
@@ -81,7 +81,7 @@ const data: {
           roles: [Role.reclutador, Role.Admin],
         },
         {
-          title: "Kanban",
+          title: "Kanban Board",
           url: "/reclutador/kanban",
           roles: [Role.reclutador, Role.Admin],
         },
@@ -171,24 +171,24 @@ const data: {
         },
       ],
     },
-    // {
-    //   title: "Finanzas",
-    //   url: "",
-    //   icon: Landmark,
-    //   roles: [Role.Admin],
-    //   items: [
-    //     {
-    //       title: "CXP",
-    //       url: "/list/cuentas",
-    //       roles: [Role.Admin],
-    //     },
-    //     {
-    //       title: "CXC",
-    //       url: "/list/facturas",
-    //       roles: [Role.Admin],
-    //     },
-    //   ],
-    // },
+    {
+      title: "Finanzas",
+      url: "",
+      icon: Landmark,
+      roles: [Role.Admin],
+      items: [
+        {
+          title: "Cuentas",
+          url: "/list/cuentas",
+          roles: [Role.Admin],
+        },
+        {
+          title: "Facturas",
+          url: "/list/facturas",
+          roles: [Role.Admin],
+        },
+      ],
+    },
   ],
 };
 

@@ -35,6 +35,18 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
     currentUrl = "Usuario";
   } else if (pathName.split("/").at(1) === "tasks") {
     currentUrl = "Tareas";
+  } else if (
+    pathName.split("/").at(1) === "reclutador" &&
+    pathName.split("/").at(2) === "kanban"
+  ) {
+    currentUrl = "Kanban Board - Reclutamiento";
+  } else if (
+    pathName.split("/").at(1) === "leads" &&
+    pathName.split("/").at(2) === "kanban"
+  ) {
+    currentUrl = "Kanban Board - Generación de Leads";
+  } else if (pathName.split("/").at(1) === "cliente") {
+    currentUrl = "Cliente";
   }
 
   return (

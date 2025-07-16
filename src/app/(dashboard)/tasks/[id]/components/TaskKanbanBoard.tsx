@@ -428,21 +428,21 @@ export const TaskKanbanBoard = ({
                   )}
                 </div>
 
-                {/* Contenido de la columna */}
+                {/* Contenido de la columna con borde distintivo */}
                 <Droppable droppableId={column.id}>
                   {(provided, snapshot) => (
                     <div
-                      className={`transition-colors rounded-lg ${
+                      className={`transition-colors rounded-xl border ${
                         snapshot.isDraggingOver
-                          ? "bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-300 dark:border-slate-600"
-                          : ""
+                          ? "bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600"
+                          : "bg-slate-50/50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700"
                       }`}
                     >
-                      <ScrollArea className="h-[75vh] w-full rounded-lg">
+                      <ScrollArea className="h-[75vh] w-full rounded-xl">
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className="min-h-[60vh] p-2"
+                          className="min-h-[60vh] p-4"
                         >
                           <div className="space-y-3">
                             {columnTasks.map((task, index) => (
@@ -507,7 +507,7 @@ export const TaskKanbanBoard = ({
             );
           })}
 
-          {/* Tercera columna: Tareas compartidas (sin drag & drop) */}
+          {/* Tercera columna: Tareas compartidas (sin drag & drop) con borde distintivo */}
           <div className="space-y-4">
             {/* Header de columna compartidas */}
             <div className="flex items-center justify-between">
@@ -527,27 +527,29 @@ export const TaskKanbanBoard = ({
               </div>
             </div>
 
-            {/* Contenido de tareas compartidas */}
-            <ScrollArea className="h-[75vh] w-full rounded-lg">
-              <div className="min-h-[60vh] p-2">
-                <div className="space-y-3">
-                  {sharedTasks.map((task) => (
-                    <SharedTaskCard key={task.id} task={task} />
-                  ))}
-                </div>
-
-                {sharedTasks.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 mb-3">
-                      <Users className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      No tienes tareas compartidas
-                    </p>
+            {/* Contenido de tareas compartidas con borde distintivo */}
+            <div className="border rounded-xl bg-slate-50/50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 transition-colors">
+              <ScrollArea className="h-[75vh] w-full rounded-xl">
+                <div className="min-h-[60vh] p-4">
+                  <div className="space-y-3">
+                    {sharedTasks.map((task) => (
+                      <SharedTaskCard key={task.id} task={task} />
+                    ))}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
+
+                  {sharedTasks.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 mb-3">
+                        <Users className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        No tienes tareas compartidas
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
         </div>
       </DragDropContext>

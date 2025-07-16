@@ -343,6 +343,9 @@ const BasicInformationTab = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="z-[8888]">
+                    <SelectItem value={VacancyEstado.QuickMeeting}>
+                      Quick Meeting
+                    </SelectItem>
                     <SelectItem value={VacancyEstado.Hunting}>
                       Hunting
                     </SelectItem>

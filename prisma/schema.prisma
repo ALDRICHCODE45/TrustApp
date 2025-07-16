@@ -168,10 +168,12 @@ model Person {
 
 enum VacancyTipo {
   Nueva
+  Recompra
   Garantia
 }
 
 enum VacancyEstado {
+  QuickMeeting
   Hunting
   Cancelada
   Entrevistas

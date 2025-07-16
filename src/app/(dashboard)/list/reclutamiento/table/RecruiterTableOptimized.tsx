@@ -346,6 +346,7 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="QuickMeeting">Quick Meeting</SelectItem>
                   <SelectItem value="Hunting">Hunting</SelectItem>
                   <SelectItem value="Cancelada">Cancelada</SelectItem>
                   <SelectItem value="Entrevistas">Entrevistas</SelectItem>

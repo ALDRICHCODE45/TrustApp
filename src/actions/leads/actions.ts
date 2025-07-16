@@ -357,6 +357,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       include: {
         origen: true,
         sector: true,
+        generadorLeads: true,
       },
     });
 
@@ -423,7 +424,7 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
       await prisma.client.create({
         data: {
           leadId: leadId,
-          usuarioId: sesion.user.id,
+          usuarioId: existingLead.generadorId,
           cuenta: clientName,
           origenId: updatedLead.origenId,
         },

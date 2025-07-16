@@ -168,6 +168,7 @@ export const EventCalendar = ({ userId }: Props) => {
               </div>
             )}
             <Calendar
+              captionLayout="dropdown"
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
