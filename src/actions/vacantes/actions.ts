@@ -8,6 +8,47 @@ import {
   Role,
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import * as z from "zod";
+
+//Schema para actualizar vacante (basado en el formulario de edición)
+const updateVacancySchema = z.object({
+  id: z.string().min(1, "ID de vacante es requerido"),
+  tipo: z
+    .enum([VacancyTipo.Nueva, VacancyTipo.Garantia, VacancyTipo.Recompra])
+    .optional(),
+  estado: z
+    .enum([
+      VacancyEstado.Hunting,
+      VacancyEstado.Cancelada,
+      VacancyEstado.Entrevistas,
+      VacancyEstado.Perdida,
+      VacancyEstado.Placement,
+      VacancyEstado.QuickMeeting,
+    ])
+    .optional(),
+  posicion: z.string().min(1, "Posición es requerida").optional(),
+  prioridad: z
+    .enum([
+      VacancyPrioridad.Alta,
+      VacancyPrioridad.Media,
+      VacancyPrioridad.Baja,
+    ])
+    .optional(),
+  fechaAsignacion: z.date().optional(),
+  fechaEntrega: z.date().optional(),
+  salario: z
+    .number()
+    .min(0, "El salario debe ser mayor o igual a 0")
+    .optional(),
+  valorFactura: z
+    .number()
+    .min(0, "El valor de factura debe ser mayor o igual a 0")
+    .optional(),
+  fee: z.number().min(0, "El fee debe ser mayor o igual a 0").optional(),
+  monto: z.number().min(0, "El monto debe ser mayor o igual a 0").optional(),
+});
+
+type UpdateVacancyFormData = z.infer<typeof updateVacancySchema>;
 
 interface VacancyFormData {
   tipo?: VacancyTipo;
@@ -23,6 +64,86 @@ interface VacancyFormData {
   fee?: number;
   monto?: number;
 }
+
+export const updateVacancy = async (data: UpdateVacancyFormData) => {
+  try {
+    // Validar los datos con Zod
+    const validatedData = updateVacancySchema.parse(data);
+
+    // Preparar los datos para la actualización
+    const updateData: any = {};
+    if (validatedData.tipo !== undefined) updateData.tipo = validatedData.tipo;
+    if (validatedData.estado !== undefined)
+      updateData.estado = validatedData.estado;
+    if (validatedData.posicion !== undefined)
+      updateData.posicion = validatedData.posicion;
+    if (validatedData.prioridad !== undefined)
+      updateData.prioridad = validatedData.prioridad;
+    if (validatedData.fechaAsignacion !== undefined)
+      updateData.fechaAsignacion = validatedData.fechaAsignacion;
+    if (validatedData.fechaEntrega !== undefined)
+      updateData.fechaEntrega = validatedData.fechaEntrega;
+    if (validatedData.salario !== undefined)
+      updateData.salario = validatedData.salario;
+    if (validatedData.valorFactura !== undefined)
+      updateData.valorFactura = validatedData.valorFactura;
+    if (validatedData.fee !== undefined) updateData.fee = validatedData.fee;
+    if (validatedData.monto !== undefined)
+      updateData.monto = validatedData.monto;
+
+    // Verificar que hay al menos un campo para actualizar
+    if (Object.keys(updateData).length === 0) {
+      return {
+        ok: false,
+        message: "No hay campos para actualizar",
+      };
+    }
+
+    const updatedVacancy = await prisma.vacancy.update({
+      where: { id: validatedData.id },
+      data: updateData,
+      include: {
+        reclutador: true,
+        cliente: true,
+        candidatoContratado: true,
+        ternaFinal: true,
+        Comments: {
+          include: {
+            author: true,
+          },
+        },
+      },
+    });
+
+    // Revalidar las rutas para actualizar la UI
+    revalidatePath("/list/reclutamiento");
+    revalidatePath("/reclutador");
+    revalidatePath("/");
+
+    return {
+      ok: true,
+      message: "Vacante actualizada correctamente",
+      vacancy: updatedVacancy,
+    };
+  } catch (error) {
+    console.error("Error al actualizar la vacante:", error);
+
+    // Manejar errores de validación de Zod
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors.map((err) => err.message).join(", ");
+      return {
+        ok: false,
+        message: `Error de validación: ${errorMessages}`,
+      };
+    }
+
+    // Manejar otros errores
+    return {
+      ok: false,
+      message: "Error al actualizar la vacante",
+    };
+  }
+};
 
 export const createVacancy = async (vacancy: VacancyFormData) => {
   try {

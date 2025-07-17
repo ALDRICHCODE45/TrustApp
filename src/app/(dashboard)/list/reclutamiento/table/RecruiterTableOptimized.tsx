@@ -67,7 +67,7 @@ import {
 } from "../../../../../lib/data";
 import { toast } from "sonner";
 import CreateVacanteForm from "../components/CreateVacanteForm";
-import { Client, User } from "@prisma/client";
+import { Client, User, VacancyTipo } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Router } from "next/router";
@@ -437,8 +437,9 @@ function TableFilters<TData, TValue>({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos los tipos</SelectItem>
-                  <SelectItem value="Nueva">Nueva</SelectItem>
-                  <SelectItem value="Garantia">Garantia</SelectItem>
+                  <SelectItem value={VacancyTipo.Nueva}>Nueva</SelectItem>
+                  <SelectItem value={VacancyTipo.Garantia}>Garantia</SelectItem>
+                  <SelectItem value={VacancyTipo.Recompra}>Recompra</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

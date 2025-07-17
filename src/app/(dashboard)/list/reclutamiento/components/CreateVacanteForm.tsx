@@ -65,9 +65,18 @@ import { createVacancy } from "@/actions/vacantes/actions";
 // Schema basado en el modelo Vacancy de Prisma
 const vacancySchema = z.object({
   // Información básica
-  tipo: z.enum(["Nueva", "Garantia"]).optional(),
+  tipo: z
+    .enum([VacancyTipo.Nueva, VacancyTipo.Garantia, VacancyTipo.Recompra])
+    .optional(),
   estado: z
-    .enum(["Hunting", "Cancelada", "Entrevistas", "Perdida", "Placement"])
+    .enum([
+      VacancyEstado.Hunting,
+      VacancyEstado.Cancelada,
+      VacancyEstado.Entrevistas,
+      VacancyEstado.Perdida,
+      VacancyEstado.Placement,
+      VacancyEstado.QuickMeeting,
+    ])
     .optional(),
   posicion: z.string().optional(),
   prioridad: z.enum(["Alta", "Media", "Baja"]).optional(),
@@ -319,6 +328,9 @@ const BasicInformationTab = ({
                     <SelectItem value={VacancyTipo.Nueva}>Nueva</SelectItem>
                     <SelectItem value={VacancyTipo.Garantia}>
                       Garantía
+                    </SelectItem>
+                    <SelectItem value={VacancyTipo.Recompra}>
+                      Recompra
                     </SelectItem>
                   </SelectContent>
                 </Select>

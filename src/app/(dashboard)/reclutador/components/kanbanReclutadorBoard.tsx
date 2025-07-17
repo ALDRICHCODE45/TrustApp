@@ -77,6 +77,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Role } from "@prisma/client";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 // Types
 interface ColumnProps {
@@ -191,6 +193,20 @@ const getProgressColor = (daysRemaining: number): string => {
   }
 };
 
+//Nuava funcion para obtener los dias de diferencia entre la fecha de asignacion y la fecha de entrega
+const getDaysDifference = (
+  fechaAsignacion: Date,
+  fechaEntrega: Date
+): number => {
+  const fechaAsignacionDate = new Date("2024-07-01");
+  const fechaEntregaDate = new Date("2024-07-10");
+
+  const diferenciaMs =
+    fechaEntregaDate.getTime() - fechaAsignacionDate.getTime();
+  const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
+  return diferenciaDias;
+};
+
 // Nueva función para obtener el porcentaje de progreso
 const getProgressPercentage = (
   daysTranscurred: number,
@@ -281,7 +297,7 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
-                  <h3 className="font-semibold text-base truncate max-w-[170px]">
+                  <h3 className="font-semibold text-base truncate max-w-[150px]">
                     {vacante.posicion.length > 30
                       ? `${vacante.posicion.slice(0, 30)}...`
                       : vacante.posicion}
@@ -358,7 +374,9 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm font-medium">
-                {vacante.reclutador?.name || "Sin reclutador"}
+                {vacante.reclutador.name.length > 10
+                  ? `${vacante.reclutador.name.slice(0, 10)}...`
+                  : vacante.reclutador.name}
               </span>
             </div>
             <div className="flex items-center text-xs text-muted-foreground">
@@ -513,7 +531,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
           </Avatar>
           <div>
             <p className="text-sm text-muted-foreground">Reclutador asignado</p>
-            <p className="font-normal text-md text-gray-700">
+            <p className="font-normal text-md text-gray-700 dark:text-muted-foreground">
               {vacante.reclutador?.name || "Sin reclutador"}
             </p>
           </div>
@@ -531,7 +549,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
           <div className="flex items-center">
             <Building className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Cliente:</span>
-            <span className="ml-2 font-normal text-md text-gray-700">
+            <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground">
               {vacante.cliente?.cuenta || "Sin cliente"}
             </span>
           </div>
@@ -540,15 +558,25 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
             <span className="text-sm text-muted-foreground">
               Fecha entrega:
             </span>
-            <span className="ml-2 font-normal text-md text-gray-700">
-              {vacante.fechaEntrega?.toLocaleDateString() || "Sin fecha"}
+            <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground ">
+              {vacante?.fechaEntrega
+                ? format(vacante.fechaEntrega, "EE, dd MMMM yyyy", {
+                    locale: es,
+                  })
+                : "Sin fecha"}
             </span>
           </div>
           <div className="flex items-center">
             <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Mes asignado:</span>
-            <span className="ml-2 font-normal text-md text-gray-700">
-              Fecha asignacion
+            <span className="text-sm text-muted-foreground">
+              Fecha asignación:
+            </span>
+            <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground">
+              {vacante.fechaAsignacion
+                ? format(vacante.fechaAsignacion, "EE, dd MMMM yyyy", {
+                    locale: es,
+                  })
+                : "Sin fecha"}
             </span>
           </div>
         </div>
@@ -561,7 +589,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
               </span>
             </div>
             <Button variant="outline" size="sm" className="h-6 px-2">
-              <span className="font-normal text-md text-gray-700">
+              <span className="font-normal text-md text-gray-700 dark:text-muted-foreground">
                 {calculateDaysFromAssignment(vacante.fechaAsignacion)} días
               </span>
             </Button>
@@ -581,10 +609,14 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
               ></div>
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>0d</span>
-              <span>15d</span>
-              <span>30d</span>
-              <span>45d</span>
+              <span>0</span>
+              <span>
+                {getDaysDifference(
+                  vacante.fechaAsignacion,
+                  vacante.fechaEntrega || new Date()
+                )}
+                d
+              </span>
             </div>
           </div>
         </div>
@@ -801,7 +833,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {comentario.createdAt.toLocaleDateString()}
+                          {format(comentario.createdAt, "EE, dd MMMM yyyy", {
+                            locale: es,
+                          })}
                         </Badge>
                         {index === 0 && (
                           <Badge variant="secondary" className="text-xs">
@@ -993,7 +1027,7 @@ const VacanteTabs: React.FC<{
   <Tabs defaultValue="detalles">
     <TabsList className="grid w-full grid-cols-4">
       <TabsTrigger value="detalles">Detalles</TabsTrigger>
-      <TabsTrigger value="candidatos">Candidatos</TabsTrigger>
+      <TabsTrigger value="candidatos">Terna Final</TabsTrigger>
       <TabsTrigger value="comentarios">Comentarios</TabsTrigger>
       <TabsTrigger value="documentos">Documentos</TabsTrigger>
     </TabsList>

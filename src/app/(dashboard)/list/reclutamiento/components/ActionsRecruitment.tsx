@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import {
   AlertDialog,
@@ -21,9 +20,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Clipboard, MoreHorizontal, SquarePen, Trash2 } from "lucide-react";
+import { Row } from "@tanstack/react-table";
+import { VacancyWithRelations } from "@/app/(dashboard)/reclutador/components/ReclutadorColumns";
+import { EditVacancyForm } from "./EditVacancyForm";
 
-export const ActionsRecruitment = ({ row }: { row: any }) => {
-  const [open, setOpen] = useState(false); // Estado para controlar la apertura del AlertDialog
+export const ActionsRecruitment = ({
+  row,
+}: {
+  row: Row<VacancyWithRelations>;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [openEdit, setOpenEdit] = useState<boolean>(false);
+
+  const handleEdit = () => {
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -38,14 +54,14 @@ export const ActionsRecruitment = ({ row }: { row: any }) => {
             <Clipboard />
             Copiar Usuario
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={handleEdit}>
             <SquarePen />
             Editar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="cursor-pointer flex items-center gap-2 text-red-500"
-            onClick={() => setOpen(true)} // Abre el AlertDialog al hacer clic
+            onClick={() => setOpen(true)}
           >
             <Trash2 />
             Eliminar
@@ -53,7 +69,12 @@ export const ActionsRecruitment = ({ row }: { row: any }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* AlertDialog fuera del DropdownMenu */}
+      <EditVacancyForm
+        open={openEdit}
+        setOpen={handleCloseEdit}
+        vacancy={row.original}
+      />
+
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -69,7 +90,7 @@ export const ActionsRecruitment = ({ row }: { row: any }) => {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                console.log("Vacante eliminada"); // Lógica para eliminar el usuario
+                console.log("Vacante eliminada");
                 setOpen(false);
               }}
             >

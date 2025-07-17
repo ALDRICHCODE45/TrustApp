@@ -216,9 +216,14 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
                   className="size-1.5 rounded-full bg-emerald-500"
                   aria-hidden="true"
                 ></span>
+              ) : row.original.tipo === "Recompra" ? (
+                <span
+                  className="size-1.5 rounded-full bg-blue-500"
+                  aria-hidden="true"
+                ></span>
               ) : (
                 <span
-                  className="size-1.5 rounded-full bg-amber-500"
+                  className="size-1.5 rounded-full bg-red-500"
                   aria-hidden="true"
                 ></span>
               )}
@@ -322,7 +327,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     cell: ({ row }) => {
       return (
         <ChangeDateComponent
-          fecha={row.original.fechaAsignacion}
+          fecha={row.original.fechaUltimaTerna}
           onFechaChange={(nuevaFecha) => {
             // Aquí implementarías la lógica para actualizar la fecha en tu fuente de datos
             console.log("Fecha actualizada:", nuevaFecha);
@@ -332,7 +337,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     },
   },
   {
-    accessorKey: "tiempoTranscurrido",
+    id: "tiempoTranscurrido",
     header: ({ column }) => (
       <SortableHeader column={column} title="Tiempo trranscurrido" />
     ),
@@ -462,16 +467,41 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
       <SortableHeader column={column} title="Duración Total" />
     ),
     cell: ({ row }) => {
-      const total = row.original.duracionTotal;
+      const fechaAsignacion = row.original.fechaAsignacion;
+      const estado = row.original.estado;
+      const fechaOferta = row.original.fechaOferta;
+
+      if (!fechaAsignacion) {
+        return (
+          <div className="flex items-center justify-center">
+            <Button variant="outline" className="w-full">
+              <p>
+                <span className="text-red-500">N/A</span>
+              </p>
+            </Button>
+          </div>
+        );
+      }
+
+      // Calcular la fecha final según el estado
+      let fechaFinal: Date;
+      if (estado === "Placement" && fechaOferta) {
+        fechaFinal = fechaOferta;
+      } else {
+        fechaFinal = new Date();
+      }
+
+      // Calcular la diferencia en días
+      const tiempoTranscurrido = Math.floor(
+        (fechaFinal.getTime() - fechaAsignacion.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
       return (
         <div className="flex items-center justify-center">
           <Button variant="outline" className="w-full">
             <p>
-              {total ? (
-                <span>{total} días</span>
-              ) : (
-                <span className="text-red-500">N/A</span>
-              )}
+              <span>{tiempoTranscurrido} días</span>
             </p>
           </Button>
         </div>
