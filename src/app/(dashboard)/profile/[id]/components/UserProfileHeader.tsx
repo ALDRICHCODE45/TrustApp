@@ -16,8 +16,13 @@ import { ChangePassword } from "@/app/(dashboard)/list/users/components/ChangePa
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const oficinaMapper = {
   Oficina1: "Oficina 1",
@@ -123,12 +128,29 @@ export const UserProfileHeader = ({
                 {/* </Button> */}
                 {/* Actividades del usuario */}
                 {/* <ActivityProfileSheet user={user} tasks={tasks} /> */}
-                <Button variant="outline" className="mt-2" asChild>
+
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button variant="outline" className="mt-2" asChild>
+                      <Link href={`/tasks/${user.id}`} className="">
+                        <p className=" flex items-center dark:hover:text-white gap-1 text-muted-foreground text-md hover:text-black">
+                          Actividades
+                          <ExternalLink className="w-4 h-4" />
+                        </p>
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Actividades de {user.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* <Button variant="outline" className="mt-2" asChild>
                   <Link href={`/tasks/${user.id}`}>
-                    <Calendar />
                     Actividades
+                    <ExternalLink />
                   </Link>
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>

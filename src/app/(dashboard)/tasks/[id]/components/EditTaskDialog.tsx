@@ -203,6 +203,7 @@ export const EditTaskDialog = ({ taskId, onEdit, activity }: Props) => {
                 <PopoverContent className="w-auto p-0 z-[900]">
                   <Calendar
                     mode="single"
+                    captionLayout="dropdown"
                     selected={date}
                     onSelect={handleDateSelect}
                     locale={es}

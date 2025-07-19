@@ -10,6 +10,7 @@ import {
   Info,
   SortAsc,
   UserPen,
+  UserX,
 } from "lucide-react";
 import { ChangeDateComponent } from "../../list/reclutamiento/components/AsignacionDatePickerComponent";
 import { RecruiterDropDown } from "../../list/reclutamiento/components/RecruiterDropdown";
@@ -40,7 +41,11 @@ export type VacancyWithRelations = Prisma.VacancyGetPayload<{
     reclutador: true;
     cliente: true;
     candidatoContratado: true;
-    ternaFinal: true;
+    ternaFinal: {
+      include: {
+        cv: true;
+      };
+    };
     Comments: {
       include: {
         author: true;
@@ -383,7 +388,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
         {row.original.candidatoContratado ? (
           <p>{row.original.candidatoContratado.name}</p>
         ) : (
-          <p className="text-red-500">N.A</p>
+          <UserX className="text-gray-400" />
         )}
       </Button>
     ),
@@ -458,7 +463,12 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
   {
     accessorKey: "ternaFinal",
     header: "Terna Final",
-    cell: ({ row }) => <FinalTernaSheet ternaFinal={row.original.ternaFinal} />,
+    cell: ({ row }) => (
+      <FinalTernaSheet
+        vacancyId={row.original.id}
+        ternaFinal={row.original.ternaFinal}
+      />
+    ),
   },
   {
     accessorKey: "duracionTotal",

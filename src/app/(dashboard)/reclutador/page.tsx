@@ -34,12 +34,19 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
         reclutador: true,
         cliente: true,
         candidatoContratado: true,
-        ternaFinal: true,
+        ternaFinal: {
+          include: {
+            cv: true,
+          },
+        },
         Comments: {
           include: {
             author: true,
           },
         },
+      },
+      orderBy: {
+        updatedAt: "desc",
       },
     });
     return vacantes;

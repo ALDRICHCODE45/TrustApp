@@ -87,7 +87,10 @@ export async function uploadFile(formData: FormData) {
   const file = formData.get("file") as File;
 
   if (!file) {
-    throw new Error("No file provided");
+    return {
+      ok: false,
+      message: "No file provided",
+    };
   }
 
   const arrayBuffer = await file.arrayBuffer();
@@ -108,6 +111,7 @@ export async function uploadFile(formData: FormData) {
     .DO_SPACES_BUCKET!}.nyc3.digitaloceanspaces.com/${key}`;
 
   return {
+    ok: true,
     success: true,
     url: fileUrl,
     fileName: file.name,

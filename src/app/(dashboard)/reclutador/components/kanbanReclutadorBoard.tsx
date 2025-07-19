@@ -37,6 +37,7 @@ import {
   Phone,
   X,
   Loader2,
+  Filter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,7 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { KanbanFilters } from "./KanbanFilters";
+import { KanbanFilters, FilterState } from "./KanbanFilters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { updateVacancyStatus } from "@/actions/vacantes/actions";
@@ -79,6 +80,8 @@ import {
 import { Role } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { User, Client } from "@prisma/client";
+import Link from "next/link";
 
 // Types
 interface ColumnProps {
@@ -544,8 +547,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
         </div>
       </div>
       {/* Información de cliente y tiempos */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-3">
+      <div className="grid grid-cols-5 gap-6">
+        <div className="col-span-3 space-y-3">
           <div className="flex items-center">
             <Building className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Cliente:</span>
@@ -580,13 +583,18 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
             </span>
           </div>
         </div>
-        <div className="space-y-3">
+        <div className="col-span-2 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Tiempo transcurrido:
-              </span>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">
+                  Tiempo transcurrido:
+                </span>
+                <span className="font-normal text-xs text-gray-700 dark:text-muted-foreground">
+                  (Placement)
+                </span>
+              </div>
             </div>
             <Button variant="outline" size="sm" className="h-6 px-2">
               <span className="font-normal text-md text-gray-700 dark:text-muted-foreground">
@@ -711,54 +719,107 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => (
           </Badge>
         </div>
         {/* Lista de candidatos */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {vacante.ternaFinal.map((candidato, index) => (
             <Card
               key={index}
-              className="hover:bg-accent hover:text-accent-foreground transition-colors p-4 rounded-lg"
+              className="group hover:shadow-sm transition-shadow duration-200"
             >
-              <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <Avatar className="h-14 w-14 border-2 border-primary/10">
-                  <AvatarImage src={candidato.cv || ""} alt={candidato.name} />
-                  <AvatarFallback>{candidato.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  {/* Avatar compacto */}
+                  <div className="relative">
+                    <Avatar className="h-11 w-11">
+                      <AvatarImage
+                        src={
+                          typeof candidato.cv === "string"
+                            ? candidato.cv
+                            : (candidato.cv as any)?.url || "" || ""
+                        }
+                        alt={candidato.name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-muted text-muted-foreground font-medium">
+                        {candidato.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Indicador de estado minimalista */}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  </div>
 
-                {/* Detalles del candidato */}
-                <div className="flex-1 space-y-1">
-                  <p className="font-medium text-sm">{candidato.name}</p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center">
-                      <Mail className="h-3 w-3 mr-1 opacity-70" />
-                      <span>{candidato.email || "Sin email"}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="h-3 w-3 mr-1 opacity-70" />
-                      <span>{candidato.phone || "Sin teléfono"}</span>
+                  {/* Información del candidato */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm text-foreground mb-1 truncate">
+                          {candidato.name}
+                        </h3>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Mail className="h-3 w-3" />
+                            <span className="truncate">
+                              {candidato.email || "Sin email"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            <span>{candidato.phone || "Sin teléfono"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dropdown de acciones */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-40 z-[9999]"
+                        >
+                          {candidato.cv?.url && (
+                            <DropdownMenuItem
+                              asChild
+                              className="cursor-pointer"
+                            >
+                              <Link
+                                href={candidato.cv.url || ""}
+                                target="_blank"
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver CV
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem className="cursor-pointer">
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Seleccionar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
 
-                {/* Acciones */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-sm px-3 py-1.5 hover:bg-primary/10"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Ver CV
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="text-sm px-3 py-1.5"
-                  >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Seleccionar
-                  </Button>
+                {/* Información de estado */}
+                <div className="mt-3 pt-2 border-t">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary" className="text-xs">
+                      Candidato #{index + 1}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      En terna final
+                    </Badge>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
         </div>
@@ -1054,19 +1115,56 @@ interface KanbanBoardPageProps {
     role: Role;
     image: string;
   };
+  reclutadores: User[];
+  clientes: Client[];
 }
 
 export const KanbanBoardPage = ({
   initialVacantes,
   user_logged,
+  reclutadores,
+  clientes,
 }: KanbanBoardPageProps) => {
-  const [vacantes, setVacantes] =
+  const [allVacantes, setAllVacantes] =
+    useState<VacancyWithRelations[]>(initialVacantes);
+  const [filteredVacantes, setFilteredVacantes] =
     useState<VacancyWithRelations[]>(initialVacantes);
   const [selectedVacante, setSelectedVacante] =
     useState<VacancyWithRelations | null>(null);
   const [mobileView, setMobileView] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isFilteringVacantes, setIsFilteringVacantes] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    searchTerm: "",
+    reclutadorId: null,
+    clienteId: null,
+    tipo: null,
+    fechaAsignacion: { from: null, to: null },
+    año: null,
+    mes: null,
+    rangoMeses: { from: null, to: null },
+  });
+
+  // Meses del año para referencia
+  const months = [
+    { value: 1, label: "Enero" },
+    { value: 2, label: "Febrero" },
+    { value: 3, label: "Marzo" },
+    { value: 4, label: "Abril" },
+    { value: 5, label: "Mayo" },
+    { value: 6, label: "Junio" },
+    { value: 7, label: "Julio" },
+    { value: 8, label: "Agosto" },
+    { value: 9, label: "Septiembre" },
+    { value: 10, label: "Octubre" },
+    { value: 11, label: "Noviembre" },
+    { value: 12, label: "Diciembre" },
+  ];
+
+  const getMonthName = (monthValue: number) => {
+    return months.find((m) => m.value === monthValue)?.label;
+  };
 
   // Configurar sensores para drag and drop
   const sensors = useSensors(
@@ -1078,14 +1176,120 @@ export const KanbanBoardPage = ({
     useSensor(KeyboardSensor)
   );
 
-  // Filtrar vacantes que tienen reclutador asignado
-  const validVacantes = vacantes.filter((vacante) => {
+  // Función para aplicar filtros con debouncing
+  const applyFilters = (
+    vacantes: VacancyWithRelations[],
+    filterState: FilterState
+  ) => {
+    let filtered = [...vacantes];
+
+    // Filtro por término de búsqueda (posición)
+    if (filterState.searchTerm) {
+      filtered = filtered.filter((v) =>
+        v.posicion.toLowerCase().includes(filterState.searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtro por reclutador
+    if (filterState.reclutadorId) {
+      filtered = filtered.filter(
+        (v) => v.reclutadorId === filterState.reclutadorId
+      );
+    }
+
+    // Filtro por cliente
+    if (filterState.clienteId) {
+      filtered = filtered.filter((v) => v.clienteId === filterState.clienteId);
+    }
+
+    // Filtro por tipo
+    if (filterState.tipo) {
+      filtered = filtered.filter((v) => v.tipo === filterState.tipo);
+    }
+
+    // Filtro por rango de fechas de asignación
+    if (filterState.fechaAsignacion.from || filterState.fechaAsignacion.to) {
+      filtered = filtered.filter((v) => {
+        const fechaAsignacion = new Date(v.fechaAsignacion);
+        const from = filterState.fechaAsignacion.from;
+        const to = filterState.fechaAsignacion.to;
+
+        if (from && to) {
+          return fechaAsignacion >= from && fechaAsignacion <= to;
+        } else if (from) {
+          return fechaAsignacion >= from;
+        } else if (to) {
+          return fechaAsignacion <= to;
+        }
+        return true;
+      });
+    }
+
+    // Filtro por año
+    if (filterState.año) {
+      filtered = filtered.filter((v) => {
+        const year = new Date(v.fechaAsignacion).getFullYear();
+        return year === filterState.año;
+      });
+    }
+
+    // Filtro por mes
+    if (filterState.mes) {
+      filtered = filtered.filter((v) => {
+        const month = new Date(v.fechaAsignacion).getMonth() + 1;
+        return month === filterState.mes;
+      });
+    }
+
+    // Filtro por rango de meses
+    if (filterState.rangoMeses.from || filterState.rangoMeses.to) {
+      filtered = filtered.filter((v) => {
+        const month = new Date(v.fechaAsignacion).getMonth() + 1;
+        const from = filterState.rangoMeses.from;
+        const to = filterState.rangoMeses.to;
+
+        if (from && to) {
+          return month >= from && month <= to;
+        } else if (from) {
+          return month >= from;
+        } else if (to) {
+          return month <= to;
+        }
+        return true;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Manejar cambios en los filtros con loading state
+  const handleFilterChange = async (newFilters: FilterState) => {
+    setIsFilteringVacantes(true);
+    setFilters(newFilters);
+
+    // Simular un pequeño delay para mejor UX
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const filtered = applyFilters(allVacantes, newFilters);
+    setFilteredVacantes(filtered);
+    setIsFilteringVacantes(false);
+  };
+
+  // Usar filtered vacantes en lugar de las originales
+  const validVacantes = filteredVacantes.filter((vacante) => {
     if (!vacante.reclutador) {
       console.warn(`Vacante ${vacante.id} no tiene reclutador asignado`);
       return false;
     }
     return true;
   });
+
+  // Función para actualizar vacantes después de cambios
+  const updateVacantes = (updatedVacantes: VacancyWithRelations[]) => {
+    setAllVacantes(updatedVacantes);
+    const filtered = applyFilters(updatedVacantes, filters);
+    setFilteredVacantes(filtered);
+  };
 
   const columns = [
     { id: "QuickMeeting", title: "Quick Meeting" },
@@ -1137,13 +1341,12 @@ export const KanbanBoardPage = ({
 
         if (result.ok) {
           // Actualizar el estado local
-          setVacantes((prev) =>
-            prev.map((v) =>
-              v.id.toString() === activeId
-                ? { ...v, estado: targetColumn.id as any }
-                : v
-            )
+          const updatedVacantes = allVacantes.map((v: VacancyWithRelations) =>
+            v.id.toString() === activeId
+              ? { ...v, estado: targetColumn.id as any }
+              : v
           );
+          updateVacantes(updatedVacantes);
 
           toast.success(`Vacante actualizada a ${targetColumn.title}`);
         } else {
@@ -1168,13 +1371,12 @@ export const KanbanBoardPage = ({
           );
 
           if (result.ok) {
-            setVacantes((prev) =>
-              prev.map((v) =>
-                v.id.toString() === activeId
-                  ? { ...v, estado: overVacante.estado as any }
-                  : v
-              )
+            const updatedVacantes = allVacantes.map((v: VacancyWithRelations) =>
+              v.id.toString() === activeId
+                ? { ...v, estado: overVacante.estado as any }
+                : v
             );
+            updateVacantes(updatedVacantes);
 
             const targetColumnTitle =
               columns.find((col) => col.id === overVacante.estado)?.title ||
@@ -1205,7 +1407,7 @@ export const KanbanBoardPage = ({
             activeVacanteIndex,
             overVacanteIndex
           );
-          setVacantes(newVacantes);
+          updateVacantes(newVacantes);
         }
       }
     } else if (targetColumn && activeVacante.estado === targetColumn.id) {
@@ -1252,66 +1454,136 @@ export const KanbanBoardPage = ({
     ? validVacantes.find((v) => v.id.toString() === activeId)
     : null;
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
-      <KanbanFilters />
+  const isAnyFilterApplied =
+    filters.searchTerm ||
+    filters.reclutadorId ||
+    filters.clienteId ||
+    filters.tipo ||
+    filters.fechaAsignacion.from ||
+    filters.fechaAsignacion.to ||
+    filters.año ||
+    filters.mes ||
+    filters.rangoMeses.from ||
+    filters.rangoMeses.to;
 
-      {isUpdating && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-            <span className="text-gray-700 dark:text-gray-300">
-              Actualizando vacante...
+  return (
+    <>
+      <KanbanFilters
+        reclutadores={reclutadores}
+        clientes={clientes}
+        vacantes={allVacantes}
+        onFilterChange={handleFilterChange}
+      />
+      <div className="flex flex-col h-[calc(100vh-200px)]">
+        {/* Filter status indicator */}
+        {isAnyFilterApplied && (
+          <div className="px-6 py-3 flex flex-wrap gap-2 text-sm items-center border-b bg-muted/30">
+            <span className="text-muted-foreground">
+              Mostrando {validVacantes.length} de {allVacantes.length} vacantes
             </span>
           </div>
-        </div>
-      )}
+        )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToWindowEdges]}
-      >
-        <ScrollArea className="flex-1 pt-4">
-          <div className="flex gap-14 h-full">
-            {columns.map(
-              (column) =>
-                (mobileView === null || mobileView === column.id) && (
-                  <div
-                    className="h-[calc(100vh-300px)] flex flex-col"
-                    key={column.id}
-                  >
-                    <DroppableColumn
-                      user_logged={user_logged}
-                      key={column.id}
-                      id={column.id}
-                      title={column.title}
-                      vacantes={validVacantes.filter(
-                        (v) => v.estado === column.id
-                      )}
-                      onVacanteClick={setSelectedVacante}
-                    />
-                  </div>
-                )
-            )}
+        {/* Loading indicator for filtering */}
+        {isFilteringVacantes && (
+          <div className="px-6 py-2 flex items-center justify-center bg-muted/20 border-b">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Aplicando filtros...</span>
+            </div>
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        )}
 
-        {/* Drag Overlay */}
-        <DragOverlay>
-          {activeVacante ? (
-            <DraggableVacanteCard
-              vacante={activeVacante}
-              onClick={() => {}}
-              isDragging={true}
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-    </div>
+        {isUpdating && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <span className="text-gray-700 dark:text-gray-300">
+                Actualizando vacante...
+              </span>
+            </div>
+          </div>
+        )}
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToWindowEdges]}
+        >
+          <ScrollArea className="flex-1 pt-4">
+            <div className="flex gap-14 h-full">
+              {validVacantes.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center h-full  hhh-[calc(100vh-300px)]">
+                  <div className="text-center">
+                    <div className="w-24 h-24 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                      <Filter className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No se encontraron vacantes
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      No hay vacantes que coincidan con los filtros aplicados.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleFilterChange({
+                          searchTerm: "",
+                          reclutadorId: null,
+                          clienteId: null,
+                          tipo: null,
+                          fechaAsignacion: { from: null, to: null },
+                          año: null,
+                          mes: null,
+                          rangoMeses: { from: null, to: null },
+                        })
+                      }
+                    >
+                      Limpiar filtros
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                columns.map(
+                  (column) =>
+                    (mobileView === null || mobileView === column.id) && (
+                      <div
+                        className="h-[calc(100vh-330px)] flex flex-col"
+                        key={column.id}
+                      >
+                        <DroppableColumn
+                          user_logged={user_logged}
+                          key={column.id}
+                          id={column.id}
+                          title={column.title}
+                          vacantes={validVacantes.filter(
+                            (v) => v.estado === column.id
+                          )}
+                          onVacanteClick={setSelectedVacante}
+                        />
+                      </div>
+                    )
+                )
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          {/* Drag Overlay */}
+          <DragOverlay>
+            {activeVacante ? (
+              <DraggableVacanteCard
+                vacante={activeVacante}
+                onClick={() => {}}
+                isDragging={true}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
+    </>
   );
 };

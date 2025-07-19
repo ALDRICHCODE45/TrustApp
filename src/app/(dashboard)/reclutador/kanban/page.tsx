@@ -16,14 +16,50 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
       candidatoContratado: true,
       reclutador: true,
       cliente: true,
-      ternaFinal: true,
+      ternaFinal: {
+        include: {
+          cv: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
     },
   });
   return vacancies;
 };
 
+const fetchReclutadores = async () => {
+  try {
+    const reclutadores = await prisma.user.findMany({
+      where: {
+        role: Role.reclutador,
+      },
+    });
+    return reclutadores;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error al devolver los reclutadores");
+  }
+};
+
+const fetchClientes = async () => {
+  try {
+    const clientes = await prisma.client.findMany();
+    return clientes;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error al devolver los clientes");
+  }
+};
+
 export default async function KanbanReclutadorPage() {
-  const vacancies = await fetchVacancies();
+  const [vacancies, reclutadores, clientes] = await Promise.all([
+    fetchVacancies(),
+    fetchReclutadores(),
+    fetchClientes(),
+  ]);
+
   const user_logged = await auth();
   if (!user_logged?.user) {
     redirect("/");
@@ -41,6 +77,8 @@ export default async function KanbanReclutadorPage() {
       <KanbanBoardPage
         initialVacantes={vacancies}
         user_logged={user_logged_data}
+        reclutadores={reclutadores}
+        clientes={clientes}
       />
     </>
   );

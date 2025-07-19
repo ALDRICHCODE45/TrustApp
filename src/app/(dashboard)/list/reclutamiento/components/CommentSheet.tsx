@@ -43,10 +43,21 @@ import {
   Edit,
   Trash2,
   AlertCircle,
+  BellRing,
+  X,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -61,9 +72,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
-import { Comment, Prisma } from "@prisma/client";
+import { Comment, Prisma, User } from "@prisma/client";
+import { toast } from "sonner";
 
 export type CommentWithRelations = Prisma.CommentGetPayload<{
   include: {
@@ -72,19 +84,53 @@ export type CommentWithRelations = Prisma.CommentGetPayload<{
 }>;
 
 // Schema para validación del formulario
-const comentarioFormSchema = z.object({
-  texto: z.string().min(1, {
-    message: "El comentario no puede estar vacío.",
-  }),
-  esTarea: z.boolean(),
-  fechaEntrega: z.date().optional(),
-});
+const comentarioFormSchema = z
+  .object({
+    texto: z
+      .string()
+      .min(1, {
+        message: "El comentario no puede estar vacío.",
+      })
+      .max(1000, {
+        message: "El comentario no puede exceder 1000 caracteres.",
+      }),
+    esTarea: z.boolean(),
+    // Campos específicos para tareas
+    tituloTarea: z.string().optional(),
+    descripcionTarea: z.string().optional(),
+    fechaEntrega: z.date().optional(),
+    notificarAlCompletar: z.boolean().optional(),
+    destinatariosNotificacion: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      // Si es una tarea, los campos específicos son obligatorios
+      if (data.esTarea) {
+        return (
+          data.tituloTarea &&
+          data.tituloTarea.trim().length > 0 &&
+          data.descripcionTarea &&
+          data.descripcionTarea.trim().length > 0 &&
+          data.fechaEntrega
+        );
+      }
+      return true;
+    },
+    {
+      message:
+        "Los campos título, descripción y fecha son obligatorios para las tareas.",
+      path: ["tituloTarea"],
+    }
+  );
 
 // Tipo derivado del schema
+type ComentarioFormData = z.infer<typeof comentarioFormSchema>;
+
 interface CommentFormProps {
   isEditing?: boolean;
   comentarioInicial?: CommentWithRelations | null;
   onSubmitSuccess?: () => void;
+  vacanteId?: string; // ID de la vacante a la que pertenece el comentario
 }
 
 export const CommentSheet = ({
@@ -128,7 +174,7 @@ export const CommentSheet = ({
                   Agregar
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] z-[200]">
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
                 <DialogHeader>
                   <DialogTitle>Nuevo Comentario</DialogTitle>
                   <Separator />
@@ -265,27 +311,156 @@ export const NuevoComentarioForm = ({
   isEditing = false,
   comentarioInicial = null,
   onSubmitSuccess = () => {},
+  vacanteId,
 }: CommentFormProps) => {
-  const form = useForm({
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  const form = useForm<ComentarioFormData>({
+    resolver: zodResolver(comentarioFormSchema),
     defaultValues: {
       texto: comentarioInicial?.content || "",
       esTarea: comentarioInicial?.isTask || false,
+      tituloTarea: "",
+      descripcionTarea: "",
       fechaEntrega: comentarioInicial?.createdAt
         ? new Date(comentarioInicial.createdAt)
         : undefined,
+      notificarAlCompletar: false,
+      destinatariosNotificacion: [],
     },
   });
-  const esTarea = form.watch("esTarea");
 
-  const onSubmit = (data: any) => {
-    console.log(isEditing ? "Editando comentario:" : "Nuevo comentario:", data);
-    // Aquí iría la lógica para guardar o editar el comentario
-    onSubmitSuccess();
+  const esTarea = form.watch("esTarea");
+  const notificarAlCompletar = form.watch("notificarAlCompletar");
+  const destinatariosSeleccionados =
+    form.watch("destinatariosNotificacion") || [];
+
+  // Cargar usuarios cuando se abre el formulario y es una tarea
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!esTarea) return;
+
+      setIsLoadingUsers(true);
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
+        setUsers(data.users || []);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Error al cargar usuarios");
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+
+    if (esTarea) {
+      fetchUsers();
+    }
+  }, [esTarea]);
+
+  const removeUser = (userIdToRemove: string) => {
+    const currentUsers = form.getValues("destinatariosNotificacion") || [];
+    form.setValue(
+      "destinatariosNotificacion",
+      currentUsers.filter((id) => id !== userIdToRemove)
+    );
+  };
+
+  const onSubmit = async (data: ComentarioFormData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log(
+        isEditing ? "Editando comentario:" : "Nuevo comentario:",
+        data
+      );
+
+      let taskId: string | null = null;
+
+      if (data.esTarea) {
+        // Primero crear la tarea
+        console.log("Creando tarea:", {
+          title: data.tituloTarea,
+          description: data.descripcionTarea,
+          dueDate: data.fechaEntrega,
+          notifyOnComplete: data.notificarAlCompletar,
+          notificationRecipients: data.destinatariosNotificacion,
+        });
+
+        // TODO: Llamada al servidor para crear la tarea
+        // const taskResponse = await createTask({
+        //   title: data.tituloTarea!,
+        //   description: data.descripcionTarea!,
+        //   dueDate: data.fechaEntrega!,
+        //   notifyOnComplete: data.notificarAlCompletar || false,
+        //   notificationRecipients: data.destinatariosNotificacion || [],
+        //   vacanteId: vacanteId,
+        // });
+        // taskId = taskResponse.id;
+
+        // Simular respuesta del servidor
+        taskId = "task_" + Date.now();
+      }
+
+      // Luego crear el comentario
+      console.log("Creando comentario:", {
+        content: data.texto,
+        isTask: data.esTarea,
+        taskId: taskId,
+        vacanteId: vacanteId,
+      });
+
+      // TODO: Llamada al servidor para crear el comentario
+      // if (isEditing && comentarioInicial) {
+      //   await updateComment(comentarioInicial.id, {
+      //     content: data.texto,
+      //     isTask: data.esTarea,
+      //     taskId: taskId,
+      //   });
+      // } else {
+      //   await createComment({
+      //     content: data.texto,
+      //     isTask: data.esTarea,
+      //     taskId: taskId,
+      //     vacanteId: vacanteId,
+      //   });
+      // }
+
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      onSubmitSuccess();
+
+      // Limpiar formulario solo si es nuevo comentario
+      if (!isEditing) {
+        form.reset();
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Error al procesar el comentario"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Mostrar error si existe */}
+        {error && (
+          <div className="p-3 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            </div>
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="texto"
@@ -296,13 +471,20 @@ export const NuevoComentarioForm = ({
                 <Textarea
                   placeholder="Escribe tu comentario aquí..."
                   className="resize-none min-h-24"
+                  disabled={isLoading}
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="flex justify-between items-center">
+                <FormMessage />
+                <p className="text-xs text-gray-500">
+                  {field.value.length}/1000 caracteres
+                </p>
+              </div>
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="esTarea"
@@ -311,66 +493,242 @@ export const NuevoComentarioForm = ({
               <div className="space-y-0.5">
                 <FormLabel>Marcar como tarea</FormLabel>
                 <FormDescription>
-                  Las tareas requieren una fecha de entrega
+                  Las tareas requieren título, descripción y fecha límite
                 </FormDescription>
               </div>
               <FormControl>
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  disabled={isLoading}
                 />
               </FormControl>
             </FormItem>
           )}
         />
+
         {esTarea && (
-          <FormField
-            control={form.control}
-            name="fechaEntrega"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Fecha de entrega</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "EEE dd/MM/yy", { locale: es })
-                      ) : (
-                        <span>Seleccionar fecha</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[8888]">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date()}
-                      locale={es}
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="w-2 h-2 bg-blue-500 rounded-full" />
+              <span>Información de la tarea</span>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="tituloTarea"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Título de la tarea
+                    <span className="text-red-500 ml-1">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej: Terminar proyecto de React"
+                      disabled={isLoading}
+                      {...field}
                     />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="descripcionTarea"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Descripción de la tarea
+                    <span className="text-red-500 ml-1">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe los detalles de la tarea..."
+                      className="resize-none min-h-20"
+                      disabled={isLoading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="fechaEntrega"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>
+                    Fecha límite
+                    <span className="text-red-500 ml-1">*</span>
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                        disabled={isLoading}
+                      >
+                        {field.value ? (
+                          format(field.value, "d 'de' MMMM, yyyy", {
+                            locale: es,
+                          })
+                        ) : (
+                          <span>Selecciona una fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[8888]">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notificarAlCompletar"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <BellRing className="h-4 w-4" />
+                      <FormLabel>Notificar al completar</FormLabel>
+                    </div>
+                    <FormDescription>
+                      Al activar esta opción los usuarios serán notificados
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {notificarAlCompletar && (
+              <FormField
+                control={form.control}
+                name="destinatariosNotificacion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Destinatarios de la notificación</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const currentUsers = field.value || [];
+                        if (!currentUsers.includes(value)) {
+                          field.onChange([...currentUsers, value]);
+                        }
+                      }}
+                      disabled={isLoading || isLoadingUsers}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              isLoadingUsers
+                                ? "Cargando usuarios..."
+                                : "Seleccionar usuarios"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="z-[9999]">
+                        {users.map((user) => (
+                          <SelectItem
+                            key={user.id}
+                            value={user.id}
+                            disabled={destinatariosSeleccionados.includes(
+                              user.id
+                            )}
+                          >
+                            {user.name}
+                          </SelectItem>
+                        ))}
+                        {users.length === 0 && !isLoadingUsers && (
+                          <SelectItem value="" disabled>
+                            No hay usuarios disponibles
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    {destinatariosSeleccionados.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {destinatariosSeleccionados.map((userId) => {
+                          const user = users.find((u) => u.id === userId);
+                          return (
+                            <Badge
+                              key={userId}
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
+                              {user?.name || "Usuario desconocido"}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 hover:bg-transparent"
+                                onClick={() => removeUser(userId)}
+                                disabled={isLoading}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
+          </div>
         )}
+
         <div className="flex justify-end space-x-2 pt-2">
           <Button
             variant="outline"
             type="button"
             onClick={() => onSubmitSuccess()}
+            disabled={isLoading}
           >
             Cancelar
           </Button>
-          <Button type="submit">
-            {isEditing ? "Guardar cambios" : "Guardar"}
+          <Button type="submit" disabled={isLoading || !form.formState.isValid}>
+            {isLoading ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-white" />
+                Procesando...
+              </>
+            ) : isEditing ? (
+              "Guardar cambios"
+            ) : (
+              "Guardar"
+            )}
           </Button>
         </div>
       </form>

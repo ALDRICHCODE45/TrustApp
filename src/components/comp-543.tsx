@@ -59,7 +59,7 @@ export default function UploadProfileImage({ userId }: Props) {
       // Llamar a tu función uploadFile
       const { url } = await uploadFile(formData);
       const ImageFormData = new FormData();
-      ImageFormData.append("image", url);
+      ImageFormData.append("image", url!);
 
       const userUpdatedResult = await editUser(userId, ImageFormData);
 

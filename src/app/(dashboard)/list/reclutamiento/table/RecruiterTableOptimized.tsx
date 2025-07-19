@@ -54,6 +54,7 @@ import {
   Download,
   SlidersHorizontal,
   X,
+  SearchIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DateRange } from "react-day-picker";
@@ -72,6 +73,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Router } from "next/router";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 // Función de filtro personalizada para rangos de fechas
 const dateRangeFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
@@ -1043,6 +1045,18 @@ export function RecruiterTable<TData, TValue>({
       </div>
 
       {/* Componente de filtros optimizado */}
+      <div className="flex items-center pb-4">
+        <Input
+          placeholder="Buscar por nombre de posición"
+          value={
+            (table.getColumn("posicion")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("posicion")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
       <TableFilters
         reclutadores={reclutadores}
         clientes={clientes}

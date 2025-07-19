@@ -75,7 +75,7 @@ export default async function TasksPage({ params }: Props) {
     <div className="container max-w-7xl mx-auto p-4 lg:p-6">
       <div className="mb-6">
         <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-          Tareas de {user.name}
+          Actividades de {user.name}
         </h1>
         <p className="text-sm lg:text-base text-muted-foreground">
           Gestiona y organiza las tareas asignadas usando el tablero Kanban
