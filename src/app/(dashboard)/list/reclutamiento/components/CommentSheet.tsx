@@ -74,14 +74,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { z } from "zod";
-import { Comment, Prisma, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { toast } from "sonner";
-
-export type CommentWithRelations = Prisma.CommentGetPayload<{
-  include: {
-    author: true;
-  };
-}>;
+import { useComments } from "@/hooks/useComments";
+import { CommentWithRelations, CreateCommentData } from "@/types/comment";
 
 // Schema para validación del formulario
 const comentarioFormSchema = z
@@ -130,14 +126,18 @@ interface CommentFormProps {
   isEditing?: boolean;
   comentarioInicial?: CommentWithRelations | null;
   onSubmitSuccess?: () => void;
-  vacanteId?: string; // ID de la vacante a la que pertenece el comentario
+  vacancyId?: string; // ID de la vacante a la que pertenece el comentario
 }
 
 export const CommentSheet = ({
-  comments,
+  vacancyId,
+  vacancyOwnerId,
 }: {
-  comments: CommentWithRelations[];
+  vacancyId: string;
+  vacancyOwnerId: string;
 }) => {
+  const { comments, isLoading, error, addComment, deleteComment } =
+    useComments(vacancyId);
   const [commentToDelete, setCommentToDelete] =
     useState<CommentWithRelations | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -147,17 +147,25 @@ export const CommentSheet = ({
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    console.log("Eliminando comentario:", commentToDelete);
-    // Aquí iría la lógica para eliminar el comentario
-    setIsDeleteDialogOpen(false);
+  const confirmDelete = async () => {
+    if (!commentToDelete) return;
+
+    try {
+      await deleteComment(commentToDelete.id);
+      toast.success("Comentario eliminado exitosamente");
+      setIsDeleteDialogOpen(false);
+      setCommentToDelete(null);
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error("Error al eliminar el comentario");
+    }
   };
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <div className="flex justify-center items-center w-full">
-          <Button variant="outline">
+        <div className="flex justify-center items-center">
+          <Button variant="outline" className="" size="default">
             <MessageCircleMore />
           </Button>
         </div>
@@ -180,7 +188,14 @@ export const CommentSheet = ({
                   <Separator />
                 </DialogHeader>
                 {/* Formulario dentro del diálogo */}
-                <NuevoComentarioForm />
+                <NuevoComentarioForm
+                  vacancyId={vacancyId}
+                  vacancyOwnerId={vacancyOwnerId}
+                  onAddComment={addComment}
+                  onSubmitSuccess={() => {
+                    // El hook ya maneja la actualización automática
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -188,7 +203,24 @@ export const CommentSheet = ({
 
         {/* Lista de comentarios */}
         <div className="space-y-4 mt-6 h-[90%] overflow-y-auto pr-1">
-          {comments.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-40 text-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 mb-2" />
+              <p className="text-gray-500 dark:text-gray-400">
+                Cargando comentarios...
+              </p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-40 text-center">
+              <AlertCircle className="h-12 w-12 text-red-300 dark:text-red-600 mb-2" />
+              <p className="text-red-500 dark:text-red-400">
+                Error al cargar comentarios
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                {error}
+              </p>
+            </div>
+          ) : comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-center">
               <MessageCircleMore className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-2" />
               <p className="text-gray-500 dark:text-gray-400">
@@ -210,7 +242,7 @@ export const CommentSheet = ({
                       variant="outline"
                       className={cn(
                         "flex items-center gap-1",
-                        comentario.isTask
+                        comentario.taskId
                           ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800"
                           : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700"
                       )}
@@ -218,12 +250,12 @@ export const CommentSheet = ({
                       <div
                         className={cn(
                           "w-2 h-2 rounded-full",
-                          comentario.isTask
+                          comentario.taskId
                             ? "bg-blue-600 dark:bg-blue-400"
                             : "bg-gray-500 dark:bg-gray-400"
                         )}
                       ></div>
-                      {comentario.isTask ? "Tarea" : "Comentario"}
+                      {comentario.taskId ? "Tarea" : "Comentario"}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
@@ -262,7 +294,7 @@ export const CommentSheet = ({
                       {comentario.author.name} {comentario.author.role}
                     </span>
                   </p>
-                  {comentario.isTask && comentario.taskId && (
+                  {comentario.taskId && (
                     <p className="text-xs text-gray-400">
                       Entrega:{" "}
                       <span className="font-medium text-gray-600 dark:text-gray-300">
@@ -311,8 +343,13 @@ export const NuevoComentarioForm = ({
   isEditing = false,
   comentarioInicial = null,
   onSubmitSuccess = () => {},
-  vacanteId,
-}: CommentFormProps) => {
+  vacancyId,
+  vacancyOwnerId,
+  onAddComment,
+}: CommentFormProps & {
+  onAddComment?: (commentData: CreateCommentData) => Promise<any>;
+  vacancyOwnerId: string;
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -322,7 +359,7 @@ export const NuevoComentarioForm = ({
     resolver: zodResolver(comentarioFormSchema),
     defaultValues: {
       texto: comentarioInicial?.content || "",
-      esTarea: comentarioInicial?.isTask || false,
+      esTarea: comentarioInicial?.taskId ? true : false,
       tituloTarea: "",
       descripcionTarea: "",
       fechaEntrega: comentarioInicial?.createdAt
@@ -379,60 +416,44 @@ export const NuevoComentarioForm = ({
         data
       );
 
-      let taskId: string | null = null;
+      // Preparar los datos para enviar al servidor
+      const commentData: CreateCommentData = {
+        content: data.texto,
+        authorId: vacancyOwnerId,
+        vacancyId: vacancyId,
+        isTask: data.esTarea,
+        title: data.tituloTarea,
+        description: data.descripcionTarea,
+        assignedToId: vacancyOwnerId,
+        dueDate: data.fechaEntrega,
+        notifyOnComplete: data.notificarAlCompletar || false,
+        notificationRecipients: data.destinatariosNotificacion || [],
+      };
 
-      if (data.esTarea) {
-        // Primero crear la tarea
-        console.log("Creando tarea:", {
-          title: data.tituloTarea,
-          description: data.descripcionTarea,
-          dueDate: data.fechaEntrega,
-          notifyOnComplete: data.notificarAlCompletar,
-          notificationRecipients: data.destinatariosNotificacion,
+      // Usar la función del hook si está disponible, sino usar la API directamente
+      if (onAddComment) {
+        await onAddComment(commentData);
+      } else {
+        const response = await fetch("/api/comments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(commentData),
         });
 
-        // TODO: Llamada al servidor para crear la tarea
-        // const taskResponse = await createTask({
-        //   title: data.tituloTarea!,
-        //   description: data.descripcionTarea!,
-        //   dueDate: data.fechaEntrega!,
-        //   notifyOnComplete: data.notificarAlCompletar || false,
-        //   notificationRecipients: data.destinatariosNotificacion || [],
-        //   vacanteId: vacanteId,
-        // });
-        // taskId = taskResponse.id;
+        const result = await response.json();
 
-        // Simular respuesta del servidor
-        taskId = "task_" + Date.now();
+        if (!response.ok) {
+          throw new Error(result.error || "Error al crear el comentario");
+        }
+
+        if (!result.ok) {
+          throw new Error(result.message || "Error al crear el comentario");
+        }
       }
 
-      // Luego crear el comentario
-      console.log("Creando comentario:", {
-        content: data.texto,
-        isTask: data.esTarea,
-        taskId: taskId,
-        vacanteId: vacanteId,
-      });
-
-      // TODO: Llamada al servidor para crear el comentario
-      // if (isEditing && comentarioInicial) {
-      //   await updateComment(comentarioInicial.id, {
-      //     content: data.texto,
-      //     isTask: data.esTarea,
-      //     taskId: taskId,
-      //   });
-      // } else {
-      //   await createComment({
-      //     content: data.texto,
-      //     isTask: data.esTarea,
-      //     taskId: taskId,
-      //     vacanteId: vacanteId,
-      //   });
-      // }
-
-      // Simular delay de red
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      toast.success("Comentario creado exitosamente");
       onSubmitSuccess();
 
       // Limpiar formulario solo si es nuevo comentario
@@ -440,9 +461,10 @@ export const NuevoComentarioForm = ({
         form.reset();
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al procesar el comentario"
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al procesar el comentario";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -589,6 +611,7 @@ export const NuevoComentarioForm = ({
                     <PopoverContent className="w-auto p-0 z-[8888]">
                       <Calendar
                         mode="single"
+                        captionLayout="dropdown"
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) =>

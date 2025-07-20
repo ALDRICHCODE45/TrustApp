@@ -299,16 +299,16 @@ model Client {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   content   String
-  isTask    Boolean  @default(false)
   task      Task?    @relation(fields: [taskId], references: [id])
   taskId    String?  @unique
   vacancy   Vacancy? @relation(fields: [vacancyId], references: [id]) // Hecho opcional
   vacancyId String?
   author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
-  createdAt DateTime @default(now())
   Client    Client?  @relation(fields: [clientId], references: [id])
   clientId  String?
 }

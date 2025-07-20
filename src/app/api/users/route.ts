@@ -1,16 +1,12 @@
-import { NextResponse } from "next/server";
-
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) {
-      return new NextResponse("No autorizado", { status: 401 });
-    }
-
     const users = await prisma.user.findMany({
+      where: {
+        State: "ACTIVO",
+      },
       select: {
         id: true,
         name: true,
@@ -22,9 +18,14 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ users });
+    return NextResponse.json({
+      users,
+    });
   } catch (error) {
-    console.error("[USERS_GET]", error);
-    return new NextResponse("Error interno", { status: 500 });
+    console.error("Error fetching users:", error);
+    return NextResponse.json(
+      { error: "Error al obtener usuarios" },
+      { status: 500 }
+    );
   }
-} 
+}

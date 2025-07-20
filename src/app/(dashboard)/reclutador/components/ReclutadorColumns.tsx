@@ -322,7 +322,12 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     id: "comentarios",
     accessorKey: "comentarios",
     header: "Comentarios",
-    cell: ({ row }) => <CommentSheet comments={row.original.Comments} />,
+    cell: ({ row }) => (
+      <CommentSheet
+        vacancyId={row.original.id}
+        vacancyOwnerId={row.original.reclutador.id}
+      />
+    ),
   },
   {
     accessorKey: "fechaUltimaTerna",
