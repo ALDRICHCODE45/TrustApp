@@ -86,7 +86,7 @@ export const ClientProfileHeader = ({
                   </DialogHeader>
                   {/* Formulario dentro del diálogo */}
                   <div className="text-muted-foreground">
-                    <NuevoComentarioForm />
+                    {/* <NuevoComentarioForm /> */}
                   </div>
                 </DialogContent>
               </Dialog>

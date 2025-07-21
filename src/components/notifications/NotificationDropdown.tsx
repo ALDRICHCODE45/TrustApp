@@ -8,6 +8,7 @@ import {
   MoreVertical,
   Trash,
   UserSearch,
+  Settings,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
+import { NotificationCenter } from "./NotificationCenter";
 
 interface NotificationDropdownProps {
   userId: string;
@@ -62,28 +64,30 @@ type NotificationWithTask = Prisma.NotificationGetPayload<{
 export function NotificationDropdown({ userId }: NotificationDropdownProps) {
   const [isMarkingRead, setIsMarkingRead] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<NotificationWithTask[]>(
-    [],
+    []
   );
   const [unreadCount, setUnreadCount] = useState(0);
   const [selectedTask, setSelectedTask] = useState<NotificationWithTask | null>(
-    null,
+    null
   );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
 
- 
-  const fetchNotifications =useCallback( async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`/api/notifications?userId=${userId}`);
+      const response = await fetch(
+        `/api/notifications?userId=${userId}&limit=10`
+      );
       const data = await response.json();
       setNotifications(data.notifications);
       setUnreadCount(
         data.notifications.filter((n: Notification) => n.status === "UNREAD")
-          .length,
+          .length
       );
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  },[userId])
+  }, [userId]);
 
   useEffect(() => {
     fetchNotifications();
@@ -92,22 +96,25 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
     return () => clearInterval(interval);
   }, [userId, fetchNotifications]);
 
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      await fetch(`/api/notifications/${notificationId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: NotificationStatus.READ }),
-      });
-      await fetchNotifications();
-      toast.success("Notificacion leida");
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      toast.error("Error, intentalo de nuevo mas tarde");
-    }
-  }, [fetchNotifications]);
+  const markAsRead = useCallback(
+    async (notificationId: string) => {
+      try {
+        await fetch(`/api/notifications/${notificationId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: NotificationStatus.READ }),
+        });
+        await fetchNotifications();
+        toast.success("Notificacion leida");
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+        toast.error("Error, intentalo de nuevo mas tarde");
+      }
+    },
+    [fetchNotifications]
+  );
 
   const handleMarkAsRead = useCallback(
     async (notificationId: string) => {
@@ -129,7 +136,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
               n.status = NotificationStatus.READ;
             }
             return n;
-          }),
+          })
         );
         toast.success("Notificacion marcada como leida");
       } catch (err) {
@@ -139,7 +146,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
         setIsMarkingRead(false);
       }
     },
-    [isMarkingRead],
+    [isMarkingRead]
   );
 
   const handleDeleteNotification = useCallback(
@@ -153,7 +160,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
         if (result.ok) {
           // Actualizar el estado local inmediatamente
           setNotifications((prevNotifications) =>
-            prevNotifications.filter((n) => n.id !== notificationId),
+            prevNotifications.filter((n) => n.id !== notificationId)
           );
           setUnreadCount((prev) => Math.max(0, prev - 1));
           toast.success("Notificacion Eliminada");
@@ -167,131 +174,148 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
         setIsDeleting(false);
       }
     },
-    [isDeleting],
+    [isDeleting]
   );
 
   return (
-    <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
+    <>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <span>Notificaciones</span>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end" className="w-80">
+          <div className="flex items-center justify-between p-2 border-b">
+            <span className="text-sm font-medium">Notificaciones</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotificationCenter(true)}
+              className="h-6 px-2 text-xs"
+            >
+              <Settings className="h-3 w-3 mr-1" />
+              Ver todas
             </Button>
-          </DropdownMenuTrigger>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span>Notificaciones</span>
-        </TooltipContent>
-      </Tooltip>
-      <DropdownMenuContent align="end" className="w-80">
-        <ScrollArea className="h-[300px]">
-          {notifications.length === 0 ? (
-            <div className="flex flex-col items-center gap-5 p-4 text-center mt-10 text-sm text-muted-foreground">
-              <Ban className="text-center text-gray-400" size={25} />
-              No hay notificaciones
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <div key={notification.id}>
-                <DropdownMenuItem
-                  key={notification.id}
-                  className={`relative p-4 pr-12 cursor-pointer ${
-                    notification.status === "UNREAD"
-                      ? "border-l-4 border-blue-500 shadow"
-                      : ""
-                  }`}
-                >
-                  {/* Contenido de la notificación */}
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                        locale: es,
-                      })}
-                    </p>
-                  </div>
-
-                  {/* Menú de acciones en la esquina */}
-                  <div className="absolute top-2 right-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={isDeleting || isMarkingRead}
-                        >
-                          <span className="sr-only">Abrir Menú</span>
-                          <MoreVertical className="text-black" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDeleteNotification(notification.id);
-                          }}
-                          className="gap-2 text-red-600 hover:bg-red-50 focus:bg-red-100 cursor-pointer"
-                          disabled={isDeleting || isMarkingRead}
-                        >
-                          <Trash className="h-4 w-4" />
-                          {isDeleting ? "Eliminando..." : "Eliminar"}
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedTask(notification);
-                          }}
-                          className="gap-2 cursor-pointer"
-                          disabled={isDeleting || isMarkingRead}
-                        >
-                          <FileSymlink />
-                          Ver tarea
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem
-                          className="gap-2 cursor-pointer"
-                          disabled={isDeleting || isMarkingRead}
-                        >
-                          <Link
-                            href={`/profile/${notification.task?.assignedTo.id}`}
-                            className="flex gap-2"
-                          >
-                            <UserSearch />
-                            Ver usuario
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMarkAsRead(notification.id);
-                          }}
-                          className="gap-2 cursor-pointer"
-                          disabled={isMarkingRead || isDeleting}
-                        >
-                          <ListCheck />
-                          {isMarkingRead ? "Cargando..." : "Marcar como leído"}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </DropdownMenuItem>
+          </div>
+          <ScrollArea className="h-[300px]">
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center gap-5 p-4 text-center mt-10 text-sm text-muted-foreground">
+                <Ban className="text-center text-gray-400" size={25} />
+                No hay notificaciones
               </div>
-            ))
-          )}
-        </ScrollArea>
-      </DropdownMenuContent>
+            ) : (
+              notifications.map((notification) => (
+                <div key={notification.id}>
+                  <DropdownMenuItem
+                    key={notification.id}
+                    className={`relative p-4 pr-12 cursor-pointer ${
+                      notification.status === "UNREAD"
+                        ? "border-l-4 border-blue-500 shadow"
+                        : ""
+                    }`}
+                  >
+                    {/* Contenido de la notificación */}
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(notification.createdAt), {
+                          addSuffix: true,
+                          locale: es,
+                        })}
+                      </p>
+                    </div>
 
+                    {/* Menú de acciones en la esquina */}
+                    <div className="absolute top-2 right-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={isDeleting || isMarkingRead}
+                          >
+                            <span className="sr-only">Abrir Menú</span>
+                            <MoreVertical className="text-black" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteNotification(notification.id);
+                            }}
+                            className="gap-2 text-red-600 hover:bg-red-50 focus:bg-red-100 cursor-pointer"
+                            disabled={isDeleting || isMarkingRead}
+                          >
+                            <Trash className="h-4 w-4" />
+                            {isDeleting ? "Eliminando..." : "Eliminar"}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSelectedTask(notification);
+                            }}
+                            className="gap-2 cursor-pointer"
+                            disabled={isDeleting || isMarkingRead}
+                          >
+                            <FileSymlink />
+                            Ver tarea
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            className="gap-2 cursor-pointer"
+                            disabled={isDeleting || isMarkingRead}
+                          >
+                            <Link
+                              href={`/profile/${notification.task?.assignedTo.id}`}
+                              className="flex gap-2"
+                            >
+                              <UserSearch />
+                              Ver usuario
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleMarkAsRead(notification.id);
+                            }}
+                            className="gap-2 cursor-pointer"
+                            disabled={isMarkingRead || isDeleting}
+                          >
+                            <ListCheck />
+                            {isMarkingRead
+                              ? "Cargando..."
+                              : "Marcar como leído"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </DropdownMenuItem>
+                </div>
+              ))
+            )}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Diálogo para mostrar detalles de la tarea */}
       <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
         <DialogContent>
           <DialogHeader>
@@ -353,6 +377,13 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
           )}
         </DialogContent>
       </Dialog>
-    </DropdownMenu>
+
+      {/* Centro de Notificaciones */}
+      <NotificationCenter
+        userId={userId}
+        isOpen={showNotificationCenter}
+        onClose={() => setShowNotificationCenter(false)}
+      />
+    </>
   );
 }

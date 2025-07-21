@@ -168,7 +168,12 @@ export const vacantesColumns: ColumnDef<VacancyWithRelations>[] = [
   {
     id: "comentarios",
     header: "Comentarios",
-    cell: ({ row }) => <CommentSheet comments={row.original.Comments} />,
+    cell: ({ row }) => (
+      <CommentSheet
+        vacancyId={row.original.id}
+        vacancyOwnerId={row.original.reclutador.id}
+      />
+    ),
     accessorFn: (row) => row.Comments?.map((c) => c.content).join(" ") || "",
     enableGlobalFilter: true,
   },

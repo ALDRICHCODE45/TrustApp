@@ -32,7 +32,7 @@ export const ClientesComentariosSections = ({
                         <p className="text-xs text-muted-foreground">
                           lun 23-1-2025
                         </p>
-                        {comentario.isTask ? (
+                        {comentario.taskId ? (
                           <p className="text-xs text-muted-foreground">
                             entrega: {comentario.createdAt.getFullYear()}
                           </p>
@@ -41,7 +41,7 @@ export const ClientesComentariosSections = ({
                     </div>
                   </div>
                   <Badge variant="outline">
-                    {comentario.isTask ? "Tarea" : "Nota"}
+                    {comentario.taskId ? "Tarea" : "Nota"}
                   </Badge>
                 </div>
               </CardHeader>
