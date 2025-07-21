@@ -10,7 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
 
-//Schema para actualizar vacante (basado en el formulario de edición)
+//Schema para actualizar vacante optimizado
 const updateVacancySchema = z.object({
   id: z.string().min(1, "ID de vacante es requerido"),
   tipo: z
@@ -22,8 +22,9 @@ const updateVacancySchema = z.object({
       VacancyEstado.Cancelada,
       VacancyEstado.Entrevistas,
       VacancyEstado.Perdida,
-      VacancyEstado.Placement,
+      VacancyEstado.PrePlacement,
       VacancyEstado.QuickMeeting,
+      VacancyEstado.Placement,
     ])
     .optional(),
   posicion: z.string().min(1, "Posición es requerida").optional(),
@@ -70,29 +71,16 @@ export const updateVacancy = async (data: UpdateVacancyFormData) => {
     // Validar los datos con Zod
     const validatedData = updateVacancySchema.parse(data);
 
-    // Preparar los datos para la actualización
-    const updateData: any = {};
-    if (validatedData.tipo !== undefined) updateData.tipo = validatedData.tipo;
-    if (validatedData.estado !== undefined)
-      updateData.estado = validatedData.estado;
-    if (validatedData.posicion !== undefined)
-      updateData.posicion = validatedData.posicion;
-    if (validatedData.prioridad !== undefined)
-      updateData.prioridad = validatedData.prioridad;
-    if (validatedData.fechaAsignacion !== undefined)
-      updateData.fechaAsignacion = validatedData.fechaAsignacion;
-    if (validatedData.fechaEntrega !== undefined)
-      updateData.fechaEntrega = validatedData.fechaEntrega;
-    if (validatedData.salario !== undefined)
-      updateData.salario = validatedData.salario;
-    if (validatedData.valorFactura !== undefined)
-      updateData.valorFactura = validatedData.valorFactura;
-    if (validatedData.fee !== undefined) updateData.fee = validatedData.fee;
-    if (validatedData.monto !== undefined)
-      updateData.monto = validatedData.monto;
+    // Extraer el ID y preparar datos de actualización
+    const { id, ...updateData } = validatedData;
+
+    // Filtrar campos undefined para evitar sobrescribir con null
+    const filteredUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, value]) => value !== undefined)
+    );
 
     // Verificar que hay al menos un campo para actualizar
-    if (Object.keys(updateData).length === 0) {
+    if (Object.keys(filteredUpdateData).length === 0) {
       return {
         ok: false,
         message: "No hay campos para actualizar",
@@ -100,8 +88,8 @@ export const updateVacancy = async (data: UpdateVacancyFormData) => {
     }
 
     const updatedVacancy = await prisma.vacancy.update({
-      where: { id: validatedData.id },
-      data: updateData,
+      where: { id },
+      data: filteredUpdateData,
       include: {
         reclutador: true,
         cliente: true,
@@ -134,6 +122,19 @@ export const updateVacancy = async (data: UpdateVacancyFormData) => {
       return {
         ok: false,
         message: `Error de validación: ${errorMessages}`,
+      };
+    }
+
+    // Manejar error de registro no encontrado
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2025"
+    ) {
+      return {
+        ok: false,
+        message: "Vacante no encontrada",
       };
     }
 

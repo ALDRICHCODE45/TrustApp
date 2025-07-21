@@ -235,48 +235,53 @@ export const CommentSheet = ({
       </SheetTrigger>
       <SheetContent className="p-4">
         <SheetHeader className="mt-7">
-          <div className="flex justify-between items-center">
+          <>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-semibold">Comentarios</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={showFilters ? "default" : "outline"}
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="mr-1 h-4 w-4" />
+                  Filtros
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="mr-1 h-4 w-4" />
+                      Agregar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
+                    <DialogHeader>
+                      <DialogTitle>Nuevo Comentario</DialogTitle>
+                      <Separator />
+                    </DialogHeader>
+                    <NuevoComentarioForm
+                      vacancyId={vacancyId}
+                      vacancyOwnerId={vacancyOwnerId}
+                      onAddComment={addComment}
+                      onSubmitSuccess={() => {
+                        // El hook ya maneja la actualización automática
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
-              <p className="text-lg font-semibold">Comentarios</p>
               {hasActiveFilters && (
                 <Badge variant="secondary" className="text-xs">
                   {filteredComments.length} de {comments.length}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant={showFilters ? "default" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="mr-1 h-4 w-4" />
-                Filtros
-              </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <Plus className="mr-1 h-4 w-4" />
-                    Agregar
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
-                  <DialogHeader>
-                    <DialogTitle>Nuevo Comentario</DialogTitle>
-                    <Separator />
-                  </DialogHeader>
-                  <NuevoComentarioForm
-                    vacancyId={vacancyId}
-                    vacancyOwnerId={vacancyOwnerId}
-                    onAddComment={addComment}
-                    onSubmitSuccess={() => {
-                      // El hook ya maneja la actualización automática
-                    }}
-                  />
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
+          </>
         </SheetHeader>
 
         {/* Panel de filtros */}

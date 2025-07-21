@@ -10,7 +10,6 @@ export async function createCandidate(
   data: CreateCandidateFormData & { cvFile?: File | FileMetadata | undefined },
   vacancyId: string
 ) {
-  console.log("createCandidate", data, vacancyId);
   try {
     const user = await auth();
     if (!user?.user) {
@@ -27,15 +26,12 @@ export async function createCandidate(
     // 3. Crear el Person con el cvFileId si existe
     // 4. Retornar resultado con ok: boolean y message?: string
 
-    console.log("Datos recibidos:", data);
-
     // Ejemplo de lógica a implementar:
     if (data.cvFile) {
       // 1. Subir archivo a storage (S3, Cloudinary, etc.)
       const formData = new FormData();
       formData.append("file", data.cvFile);
       const uploadedUrl = await uploadFile(formData);
-      console.log("uploadedUrl", uploadedUrl);
 
       if (!uploadedUrl.ok || !uploadedUrl.url) {
         return {
@@ -55,7 +51,7 @@ export async function createCandidate(
         },
       });
       // 3. Crear Person con cvFileId
-      await prisma.person.create({
+      const person = await prisma.person.create({
         data: {
           name: data.name,
           email: data.email || undefined,
@@ -67,10 +63,18 @@ export async function createCandidate(
             },
           },
         },
+        include: {
+          cv: true,
+        },
       });
+      return {
+        ok: true,
+        message: "Candidato creado exitosamente",
+        person,
+      };
     } else {
       // Crear Person sin CV
-      await prisma.person.create({
+      const person = await prisma.person.create({
         data: {
           name: data.name,
           email: data.email || undefined,
@@ -81,15 +85,42 @@ export async function createCandidate(
             },
           },
         },
+        include: {
+          cv: true,
+        },
       });
+
+      return {
+        ok: true,
+        message: "Candidato creado exitosamente sin CV",
+        person,
+      };
     }
 
     return {
-      ok: true,
-      message: "Candidato creado exitosamente (función vacía)",
+      ok: false,
+      message: "Error al crear candidato",
     };
   } catch (error) {
     console.error("Error al crear candidato:", error);
     throw new Error("Error al crear candidato para la vacante");
+  }
+}
+
+export async function deleteCandidate(candidateId: string) {
+  try {
+    const person = await prisma.person.delete({
+      where: { id: candidateId },
+    });
+    return {
+      ok: true,
+      message: "Candidato eliminado exitosamente",
+    };
+  } catch (error) {
+    console.error("Error al eliminar candidato:", error);
+    return {
+      ok: false,
+      message: "Error al eliminar candidato",
+    };
   }
 }

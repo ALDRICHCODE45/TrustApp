@@ -37,11 +37,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { VacancyEstado, VacancyPrioridad, VacancyTipo } from "@prisma/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateVacancy } from "@/actions/vacantes/actions";
 import { toast } from "sonner";
-import { CircleCheckIcon, XIcon } from "lucide-react";
-import { useEffect } from "react";
 
 interface Props {
   open: boolean;
@@ -49,7 +47,7 @@ interface Props {
   vacancy: VacancyWithRelations;
 }
 
-// Esquema de validación (igual que en CreateVacanteForm)
+// Esquema de validación corregido para coincidir con los enums de Prisma
 const vacancySchema = z.object({
   tipo: z
     .enum([VacancyTipo.Nueva, VacancyTipo.Garantia, VacancyTipo.Recompra])
@@ -62,16 +60,29 @@ const vacancySchema = z.object({
       VacancyEstado.Perdida,
       VacancyEstado.Placement,
       VacancyEstado.QuickMeeting,
+      VacancyEstado.PrePlacement,
     ])
     .optional(),
   posicion: z.string().optional(),
-  prioridad: z.enum(["Alta", "Media", "Baja"]).optional(),
+  prioridad: z
+    .enum([
+      VacancyPrioridad.Alta,
+      VacancyPrioridad.Media,
+      VacancyPrioridad.Baja,
+    ])
+    .optional(),
   fechaAsignacion: z.date().optional(),
   fechaEntrega: z.date().optional(),
-  salario: z.number().optional(),
-  valorFactura: z.number().optional(),
-  fee: z.number().optional(),
-  monto: z.number().optional(),
+  salario: z
+    .number()
+    .min(0, "El salario debe ser mayor o igual a 0")
+    .optional(),
+  valorFactura: z
+    .number()
+    .min(0, "El valor de factura debe ser mayor o igual a 0")
+    .optional(),
+  fee: z.number().min(0, "El fee debe ser mayor o igual a 0").optional(),
+  monto: z.number().min(0, "El monto debe ser mayor o igual a 0").optional(),
 });
 
 type VacancyFormData = z.infer<typeof vacancySchema>;
@@ -137,41 +148,7 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
         return;
       }
 
-      toast.custom((t) => (
-        <div className="bg-background z-50 max-w-[400px] rounded-md border p-4 shadow-lg">
-          <div className="flex gap-2">
-            <div className="flex grow gap-3">
-              <CircleCheckIcon
-                className="mt-0.5 shrink-0 text-emerald-500"
-                size={16}
-                aria-hidden="true"
-              />
-              <div className="flex grow flex-col gap-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">
-                    Vacante actualizada correctamente
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Los datos de la vacante han sido actualizados correctamente
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
-                aria-label="Cerrar notificación"
-                onClick={() => toast.dismiss(t)}
-              >
-                <XIcon
-                  size={16}
-                  className="opacity-60 transition-opacity group-hover:opacity-100"
-                  aria-hidden="true"
-                />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ));
+      toast.success("Vacante actualizada correctamente");
       setOpen(false);
     } catch (error) {
       console.error("Error al actualizar la vacante:", error);
@@ -191,13 +168,11 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-4 mt-4">
+                <TabsList className="grid w-full grid-cols-2 mb-4 mt-4">
                   <TabsTrigger value="basic">Información Básica</TabsTrigger>
-                  <TabsTrigger value="files">Archivos</TabsTrigger>
                   <TabsTrigger value="financial">
                     Información Fiscal
                   </TabsTrigger>
-                  <TabsTrigger value="terna">Terna</TabsTrigger>
                 </TabsList>
                 {/* Información Básica */}
                 <TabsContent value="basic">
@@ -273,6 +248,11 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                                   </SelectItem>
                                   <SelectItem value={VacancyEstado.Placement}>
                                     Placement
+                                  </SelectItem>
+                                  <SelectItem
+                                    value={VacancyEstado.PrePlacement}
+                                  >
+                                    Pre Placement
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -434,22 +414,7 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                {/* Archivos (solo visualización, función vacía para editar) */}
-                <TabsContent value="files">
-                  <Card className="w-full">
-                    <CardHeader>
-                      <CardTitle>Documentos de la Vacante</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p>
-                          Edición de archivos no disponible en este formulario.
-                        </p>
-                        {/* Función vacía para editar archivos */}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+
                 {/* Información Fiscal */}
                 <TabsContent value="financial">
                   <Card>
@@ -457,7 +422,7 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                       <CardTitle>Detalles Financieros</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="salario"
@@ -467,13 +432,17 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                               <FormControl>
                                 <Input
                                   type="number"
+                                  min="0"
+                                  step="0.01"
                                   placeholder="0"
                                   {...field}
-                                  onChange={(e) =>
+                                  value={field.value ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
                                     field.onChange(
-                                      Number(e.target.value) || undefined
-                                    )
-                                  }
+                                      value === "" ? undefined : Number(value)
+                                    );
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -489,19 +458,25 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                               <FormControl>
                                 <Input
                                   type="number"
+                                  min="0"
+                                  step="0.01"
                                   placeholder="0"
                                   {...field}
-                                  onChange={(e) =>
+                                  value={field.value ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
                                     field.onChange(
-                                      Number(e.target.value) || undefined
-                                    )
-                                  }
+                                      value === "" ? undefined : Number(value)
+                                    );
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="fee"
@@ -511,13 +486,43 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                               <FormControl>
                                 <Input
                                   type="number"
+                                  min="0"
+                                  step="0.01"
                                   placeholder="0"
                                   {...field}
-                                  onChange={(e) =>
+                                  value={field.value ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
                                     field.onChange(
-                                      Number(e.target.value) || undefined
-                                    )
-                                  }
+                                      value === "" ? undefined : Number(value)
+                                    );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="monto"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Monto</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="0"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(
+                                      value === "" ? undefined : Number(value)
+                                    );
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -531,14 +536,7 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                {/* Terna */}
-                <TabsContent value="terna">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Terna</CardTitle>
-                    </CardHeader>
-                  </Card>
-                </TabsContent>
+
                 {/* Botón de guardar */}
                 <Button
                   type="submit"

@@ -35,6 +35,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { DocumentsSection } from "./DocumentsSection";
 
 export type VacancyWithRelations = Prisma.VacancyGetPayload<{
   include: {
@@ -46,6 +47,7 @@ export type VacancyWithRelations = Prisma.VacancyGetPayload<{
         cv: true;
       };
     };
+    files: true;
     Comments: {
       include: {
         author: true;
@@ -435,6 +437,16 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
       );
     },
   },
+  {
+    accessorKey: "files",
+    header: "Documentos",
+    cell: ({ row }) => (
+      <div className="w-full flex items-center justify-center">
+        <DocumentsSection vacante={row.original} />
+      </div>
+    ),
+  },
+
   // {
   //   accessorKey: "checklist",
   //   header: "Checklist",
@@ -467,7 +479,7 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
   // },
   {
     accessorKey: "ternaFinal",
-    header: "Terna Final",
+    header: "Candidatos",
     cell: ({ row }) => (
       <FinalTernaSheet
         vacancyId={row.original.id}

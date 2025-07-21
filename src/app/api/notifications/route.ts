@@ -63,6 +63,12 @@ export async function GET(request: Request) {
           include: {
             assignedTo: true,
             notificationRecipients: true,
+            vacancy: {
+              include: {
+                cliente: true,
+                reclutador: true,
+              },
+            },
           },
         },
       },

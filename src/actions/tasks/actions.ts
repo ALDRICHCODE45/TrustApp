@@ -127,7 +127,7 @@ export const createTask = async (formData: FormData) => {
 
     await prisma.$transaction(async (tx) => {
       // 1. Crear tarea
-      const task = await prisma.task.create({
+      const task = await tx.task.create({
         data: {
           description,
           dueDate,
@@ -152,7 +152,7 @@ export const createTask = async (formData: FormData) => {
       // 2. Crear notificaciones
       if (notificationRecipients.length > 0) {
         for (const recipientId of notificationRecipients) {
-          await prisma.notification.create({
+          await tx.notification.create({
             data: {
               type: "TASK_INITIALIZED",
               message: `El usuario ${task.assignedTo.name} ha iniciado una tarea compartida`,
@@ -581,6 +581,12 @@ export const getSharedTasks = async (userId: string) => {
         linkedInteraction: {
           include: {
             contacto: true,
+          },
+        },
+        vacancy: {
+          include: {
+            cliente: true,
+            reclutador: true,
           },
         },
       },

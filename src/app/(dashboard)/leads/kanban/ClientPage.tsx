@@ -159,7 +159,6 @@ export default function KanbanLeadsBoard({
 
       // Hacer una sola llamada que actualice todo
       //const promise = editLeadById(pendingLeadUpdate.leadId, formDataToSend);
-      //TODO: Crear un precliente en la base de datos con una funcion aparte
       const preClientPromise = editLeadByIdAndCreatePreClient(
         formDataToSend,
         pendingLeadUpdate.leadId

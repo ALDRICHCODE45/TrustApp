@@ -354,6 +354,7 @@ function TableFilters<TData, TValue>({
                   <SelectItem value="Entrevistas">Entrevistas</SelectItem>
                   <SelectItem value="Perdida">Perdida</SelectItem>
                   <SelectItem value="Placement">Placement</SelectItem>
+                  <SelectItem value="PrePlacement">Pre Placement</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>

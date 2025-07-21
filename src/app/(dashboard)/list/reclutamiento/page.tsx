@@ -30,6 +30,7 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
             cv: true,
           },
         },
+        files: true,
         Comments: {
           include: {
             author: true,

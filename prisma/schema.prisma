@@ -179,6 +179,7 @@ enum VacancyEstado {
   Cancelada
   Entrevistas
   Perdida
+  PrePlacement
   Placement
 }
 
@@ -210,8 +211,8 @@ model Vacancy {
   salario               Int?
   fechaComision         DateTime?
   monto                 Int?
-  valorFactura          Int?
-  fee                   Int?
+  valorFactura          Float?
+  fee                   Float?
   ternaFinal            Person[]         @relation("VacancyTernaFinal")
 
   // Relación con el cliente
@@ -224,6 +225,9 @@ model Vacancy {
   // Datos del usuario que creo la vacante
   creator   User?   @relation("VacancyCreator", fields: [creatorId], references: [id]) // Renombrado para claridad
   creatorId String?
+
+  // Relación con tareas
+  tasks Task[]
 }
 
 model VacancyFile {
@@ -359,7 +363,12 @@ model Task {
   linkedInteraction ContactInteraction? @relation(fields: [interactionId], references: [id])
   interactionId     String?
 
+  // Nueva relación opcional con Vacancy
+  vacancy   Vacancy? @relation(fields: [vacancyId], references: [id])
+  vacancyId String?
+
   @@index([interactionId]) // Índice para optimizar consultas por interacción vinculada
+  @@index([vacancyId]) // Índice para optimizar consultas por vacante vinculada
 }
 
 enum LogAction {

@@ -35,6 +35,12 @@ export type TaskWithUsers = Prisma.TaskGetPayload<{
         contacto: true;
       };
     };
+    vacancy: {
+      include: {
+        cliente: true;
+        reclutador: true;
+      };
+    };
   };
 }>;
 

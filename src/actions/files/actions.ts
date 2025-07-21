@@ -116,5 +116,6 @@ export async function uploadFile(formData: FormData) {
     url: fileUrl,
     fileName: file.name,
     fileType: file.type,
+    size: file.size,
   };
 }

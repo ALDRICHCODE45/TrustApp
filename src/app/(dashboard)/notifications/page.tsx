@@ -43,6 +43,12 @@ type NotificationWithTask = Prisma.NotificationGetPayload<{
       include: {
         assignedTo: true;
         notificationRecipients: true;
+        vacancy: {
+          include: {
+            cliente: true;
+            reclutador: true;
+          };
+        };
       };
     };
   };

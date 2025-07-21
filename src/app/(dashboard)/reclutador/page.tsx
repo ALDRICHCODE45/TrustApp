@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 import CreateVacanteForm from "../list/reclutamiento/components/CreateVacanteForm";
+import QuickStatsDialog from "./components/QuickStatsDialog";
 import prisma from "@/lib/db";
 
 export interface PageProps {}
@@ -44,6 +45,7 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
             author: true,
           },
         },
+        files: true,
       },
       orderBy: {
         updatedAt: "desc",
@@ -81,7 +83,8 @@ export default async function VacantesPage({}: PageProps): Promise<ReactElement>
     <>
       {/* LIST */}
       <ToastAlerts />
-      <div className="flex justify-end mt-2 w-full">
+      <div className="flex justify-end mt-2 w-full gap-2">
+        <QuickStatsDialog />
         <CreateVacanteForm reclutadores={reclutadores} clientes={clientes} />
       </div>
 

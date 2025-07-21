@@ -21,6 +21,12 @@ const getTaskByUserId = async (userId: string) => {
             contacto: true,
           },
         },
+        vacancy: {
+          include: {
+            cliente: true,
+            reclutador: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",

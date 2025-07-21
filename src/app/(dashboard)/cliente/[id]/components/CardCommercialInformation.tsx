@@ -23,7 +23,7 @@ export const CardCommercialInformation = ({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Origen</p>
-            <p className="font-medium">{client.lead?.origen.nombre}</p>
+            <p className="font-medium">{client.origen?.nombre}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Fee</p>

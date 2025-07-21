@@ -34,6 +34,7 @@ import {
   CheckCircle,
   AlertCircle,
   Edit,
+  Building2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -53,6 +54,12 @@ type NotificationWithTask = Prisma.NotificationGetPayload<{
       include: {
         assignedTo: true;
         notificationRecipients: true;
+        vacancy: {
+          include: {
+            cliente: true;
+            reclutador: true;
+          };
+        };
       };
     };
   };
@@ -76,6 +83,8 @@ export function NotificationItem({
   const [selectedTask, setSelectedTask] = useState<NotificationWithTask | null>(
     null
   );
+  const [selectedVacancy, setSelectedVacancy] =
+    useState<NotificationWithTask | null>(null);
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -203,6 +212,17 @@ export function NotificationItem({
                 </DropdownMenuItem>
               )}
 
+              {notification.task?.vacancy && (
+                <DropdownMenuItem
+                  onClick={() => setSelectedVacancy(notification)}
+                  className="gap-2 cursor-pointer"
+                  disabled={isDeleting || isMarkingRead}
+                >
+                  <Building2 className="h-4 w-4" />
+                  Ver Posición de Vacante
+                </DropdownMenuItem>
+              )}
+
               {notification.task?.assignedTo && (
                 <DropdownMenuItem
                   className="gap-2 cursor-pointer"
@@ -298,6 +318,116 @@ export function NotificationItem({
                       </TooltipContent>
                     </Tooltip>
                   ))}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para mostrar detalles de la vacante */}
+      <Dialog
+        open={!!selectedVacancy}
+        onOpenChange={() => setSelectedVacancy(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Posición de Vacante</DialogTitle>
+              {selectedVacancy?.task?.vacancy && (
+                <Badge variant="outline" className="gap-1.5">
+                  <span
+                    className="size-1.5 rounded-full bg-blue-500"
+                    aria-hidden="true"
+                  ></span>
+                  {selectedVacancy.task.vacancy.estado}
+                </Badge>
+              )}
+            </div>
+            <DialogDescription>
+              Detalles de la vacante vinculada a esta tarea
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedVacancy?.task?.vacancy && (
+            <>
+              <div className="flex flex-col gap-5">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Posición
+                  </label>
+                  <Input
+                    type="text"
+                    defaultValue={selectedVacancy.task.vacancy.posicion}
+                    readOnly
+                    className="bg-muted"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Cliente
+                  </label>
+                  <Input
+                    type="text"
+                    defaultValue={
+                      selectedVacancy.task.vacancy.cliente.cuenta ||
+                      "Sin especificar"
+                    }
+                    readOnly
+                    className="bg-muted"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      Estado
+                    </label>
+                    <Input
+                      type="text"
+                      defaultValue={selectedVacancy.task.vacancy.estado}
+                      readOnly
+                      className="bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      Prioridad
+                    </label>
+                    <Input
+                      type="text"
+                      defaultValue={selectedVacancy.task.vacancy.prioridad}
+                      readOnly
+                      className="bg-muted"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <DialogTitle className="text-lg mb-3">
+                  Información del Reclutador
+                </DialogTitle>
+                <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+                  <Image
+                    className="ring-background rounded-full ring-2"
+                    src={
+                      selectedVacancy.task.vacancy.reclutador.image ??
+                      "/default.png"
+                    }
+                    width={40}
+                    height={40}
+                    alt={selectedVacancy.task.vacancy.reclutador.name}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">
+                      {selectedVacancy.task.vacancy.reclutador.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedVacancy.task.vacancy.reclutador.email}
+                    </p>
+                  </div>
                 </div>
               </div>
             </>

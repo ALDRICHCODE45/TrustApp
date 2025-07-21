@@ -14,11 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   Building,
   FileText,
@@ -38,6 +42,12 @@ import {
   X,
   Loader2,
   Filter,
+  File,
+  UploadIcon,
+  CloudUpload,
+  Eye,
+  Trash2,
+  CheckSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -53,14 +63,13 @@ import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
-  DragOverlay,
   DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
   closestCorners,
   KeyboardSensor,
-  DragOverlay as DragOverlayComponent,
+  DragOverlay,
   useDroppable,
 } from "@dnd-kit/core";
 import {
@@ -77,11 +86,62 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Role } from "@prisma/client";
+import { Role, VacancyFile } from "@prisma/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { User, Client } from "@prisma/client";
 import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useFileUpload } from "@/hooks/use-file-upload";
+import {
+  addFileToVacancy,
+  deleteFileFromVacancy,
+} from "@/actions/vacantes/files/actions";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialog,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createCandidateSchema,
+  CreateCandidateFormData,
+} from "@/zod/createCandidateSchema";
+import {
+  createCandidate,
+  deleteCandidate,
+} from "@/actions/person/createCandidate";
+import { PersonWithRelations } from "../../list/reclutamiento/components/FinalTernaSheet";
+import { NuevoComentarioForm } from "../../list/reclutamiento/components/CommentSheet";
+import { useComments } from "@/hooks/useComments";
+import { CommentWithRelations } from "@/types/comment";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { differenceInDays, startOfDay, isAfter } from "date-fns";
 
 // Types
 interface ColumnProps {
@@ -158,22 +218,20 @@ const getEstadoColor = (estado: string) => {
 
 // Nueva función para calcular días transcurridos desde la asignación
 const calculateDaysFromAssignment = (fechaAsignacion: Date): number => {
-  const today = new Date();
-  const assignmentDate = new Date(fechaAsignacion);
-  const diffTime = today.getTime() - assignmentDate.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  const today = startOfDay(new Date());
+  const assignmentDate = startOfDay(new Date(fechaAsignacion));
+  const diffDays = differenceInDays(today, assignmentDate);
+  return Math.max(0, diffDays); // Nunca menos de 0 días transcurridos
 };
 
-// Nueva función para calcular días restantes hasta la entrega
+// Nueva función para calcular días restantes hasta la entrega o días de retraso
 const calculateDaysToDelivery = (fechaEntrega: Date | null): number => {
   if (!fechaEntrega) return 0;
 
-  const today = new Date();
-  const deliveryDate = new Date(fechaEntrega);
-  const diffTime = deliveryDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  const today = startOfDay(new Date());
+  const deliveryDate = startOfDay(new Date(fechaEntrega));
+  const diffDays = differenceInDays(deliveryDate, today);
+  return diffDays; // Positivo = días restantes, negativo = días de retraso
 };
 
 // Nueva función para obtener el color de progreso basado en los días restantes
@@ -196,26 +254,30 @@ const getProgressColor = (daysRemaining: number): string => {
   }
 };
 
-//Nuava funcion para obtener los dias de diferencia entre la fecha de asignacion y la fecha de entrega
+// Nueva función para obtener los días de diferencia entre la fecha de asignación y la fecha de entrega
 const getDaysDifference = (
   fechaAsignacion: Date,
-  fechaEntrega: Date
+  fechaEntrega: Date | null
 ): number => {
-  const fechaAsignacionDate = new Date("2024-07-01");
-  const fechaEntregaDate = new Date("2024-07-10");
+  if (!fechaEntrega) return 0;
 
-  const diferenciaMs =
-    fechaEntregaDate.getTime() - fechaAsignacionDate.getTime();
-  const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
-  return diferenciaDias;
+  const assignmentDate = startOfDay(new Date(fechaAsignacion));
+  const deliveryDate = startOfDay(new Date(fechaEntrega));
+
+  const diferenciaDias = differenceInDays(deliveryDate, assignmentDate);
+  return Math.max(0, diferenciaDias); // El total de días asignados para el proyecto
 };
 
 // Nueva función para obtener el porcentaje de progreso
 const getProgressPercentage = (
-  daysTranscurred: number,
-  daysRemaining: number
+  fechaAsignacion: Date,
+  fechaEntrega: Date | null
 ): number => {
-  const totalDays = daysTranscurred + Math.max(0, daysRemaining);
+  if (!fechaEntrega) return 0;
+
+  const daysTranscurred = calculateDaysFromAssignment(fechaAsignacion);
+  const totalDays = getDaysDifference(fechaAsignacion, fechaEntrega);
+
   if (totalDays === 0) return 0;
 
   const percentage = (daysTranscurred / totalDays) * 100;
@@ -227,8 +289,9 @@ const getProgressStatusText = (
   daysRemaining: number
 ): { text: string; color: string } => {
   if (daysRemaining < 0) {
+    const diasRetraso = Math.abs(daysRemaining);
     return {
-      text: `${Math.abs(daysRemaining)} días de retraso`,
+      text: `${diasRetraso} día${diasRetraso === 1 ? "" : "s"} de retraso`,
       color: "text-red-600 font-semibold",
     };
   } else if (daysRemaining === 0) {
@@ -238,7 +301,9 @@ const getProgressStatusText = (
     };
   } else if (daysRemaining <= 3) {
     return {
-      text: `${daysRemaining} días restantes`,
+      text: `${daysRemaining} día${daysRemaining === 1 ? "" : "s"} restante${
+        daysRemaining === 1 ? "" : "s"
+      }`,
       color: "text-red-600 font-semibold",
     };
   } else if (daysRemaining <= 7) {
@@ -383,7 +448,7 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
               </span>
             </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-1" />
+              <CalendarIcon className="h-4 w-4 mr-1" />
               <span>
                 {vacante.fechaEntrega?.toLocaleDateString() || "Sin fecha"}
               </span>
@@ -397,8 +462,8 @@ const DraggableVacanteCard: React.FC<VacanteCardProps> = ({
             );
             const daysRemaining = calculateDaysToDelivery(vacante.fechaEntrega);
             const progressPercentage = getProgressPercentage(
-              daysTranscurred,
-              daysRemaining
+              vacante.fechaAsignacion,
+              vacante.fechaEntrega
             );
             const progressColor = getProgressColor(daysRemaining);
 
@@ -557,7 +622,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
             </span>
           </div>
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
               Fecha entrega:
             </span>
@@ -610,8 +675,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
                 )}`}
                 style={{
                   width: `${getProgressPercentage(
-                    calculateDaysFromAssignment(vacante.fechaAsignacion),
-                    calculateDaysToDelivery(vacante.fechaEntrega)
+                    vacante.fechaAsignacion,
+                    vacante.fechaEntrega
                   )}%`,
                 }}
               ></div>
@@ -621,7 +686,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
               <span>
                 {getDaysDifference(
                   vacante.fechaAsignacion,
-                  vacante.fechaEntrega || new Date()
+                  vacante.fechaEntrega
                 )}
                 d
               </span>
@@ -703,378 +768,1486 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
   </div>
 );
 
-const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => (
-  <div className="space-y-6 mt-4">
-    {/* Existing candidates section content */}
-    {/* ... (Keep the existing candidates section content) ... */}
-    {vacante.ternaFinal && vacante.ternaFinal.length > 0 ? (
-      <div className="space-y-6 mt-4 w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold text-muted-foreground">
-            Terna final
-          </h4>
-          <Badge variant="outline" className="px-3 py-1 bg-background">
-            {vacante.ternaFinal.length} candidato(s)
-          </Badge>
-        </div>
-        {/* Lista de candidatos */}
-        <div className="space-y-3">
-          {vacante.ternaFinal.map((candidato, index) => (
-            <Card
-              key={index}
-              className="group hover:shadow-sm transition-shadow duration-200"
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  {/* Avatar compacto */}
-                  <div className="relative">
-                    <Avatar className="h-11 w-11">
-                      <AvatarImage
-                        src={
-                          typeof candidato.cv === "string"
-                            ? candidato.cv
-                            : (candidato.cv as any)?.url || "" || ""
-                        }
-                        alt={candidato.name}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-muted text-muted-foreground font-medium">
-                        {candidato.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Indicador de estado minimalista */}
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  </div>
+const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [candidates, setCandidates] = useState<PersonWithRelations[]>(
+    vacante.ternaFinal || []
+  );
 
-                  {/* Información del candidato */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm text-foreground mb-1 truncate">
-                          {candidato.name}
-                        </h3>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            <span className="truncate">
-                              {candidato.email || "Sin email"}
-                            </span>
+  const form = useForm<CreateCandidateFormData>({
+    resolver: zodResolver(createCandidateSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+      cvFile: undefined,
+    },
+  });
+
+  const [fileUploadState, fileUploadActions] = useFileUpload({
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024, // 5MB
+    accept: ".pdf,.docx,.doc,.txt",
+    multiple: false,
+  });
+
+  const onSubmit = async (data: CreateCandidateFormData) => {
+    setIsSubmitting(true);
+    try {
+      // Limpiar campos vacíos antes de enviar
+      const cleanData = {
+        name: data.name,
+        phone: data.phone?.trim() || undefined,
+        email: data.email?.trim() || undefined,
+      };
+
+      // Agregar archivo CV si existe (solo si es un File, no FileMetadata)
+      const cvFile = fileUploadState.files[0]?.file
+        ? fileUploadState.files[0]?.file
+        : undefined;
+
+      const dataWithFile = {
+        ...cleanData,
+        cvFile,
+      };
+
+      console.log("candidates", { candidates });
+
+      const result = await createCandidate(dataWithFile, vacante.id);
+
+      if (!result.ok || !result.person) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al crear candidato"
+            message="El candidato no pudo ser agregado a la vacante"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato agregado exitosamente"
+          message="El candidato ha sido agregado correctamente a la vacante"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+      console.log("candidates", { candidates });
+      form.reset();
+      fileUploadActions.clearFiles();
+      setIsDialogOpen(false);
+      setCandidates([...candidates, result.person]);
+    } catch (error) {
+      console.error("Error al crear candidato:", error);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al crear candidato"
+          message="El candidato no pudo ser agregado a la vacante"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      fileUploadActions.addFiles(files);
+    }
+  };
+
+  const removeFile = (fileId: string) => {
+    fileUploadActions.removeFile(fileId);
+  };
+
+  const handleDeleteCandidate = async (candidateId: string) => {
+    try {
+      const result = await deleteCandidate(candidateId);
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar candidato"
+            message="El candidato no pudo ser eliminado"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato eliminado exitosamente"
+          message="El candidato ha sido eliminado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+      setCandidates(
+        candidates.filter((candidato) => candidato.id !== candidateId)
+      );
+    } catch (error) {
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al eliminar candidato"
+          message="El candidato no pudo ser eliminado"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    }
+  };
+
+  return (
+    <div className="space-y-6 mt-4">
+      {/* Existing candidates section content */}
+      {candidates && candidates.length > 0 ? (
+        <div className="space-y-6 mt-4 w-full">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-muted-foreground">
+              Candidatos
+            </h4>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="px-3 py-1 bg-background">
+                {candidates.length} candidato(s)
+              </Badge>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-1">
+                    <Plus size={16} />
+                    <span>Agregar</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+                  <DialogHeader className="contents space-y-0 text-left">
+                    <DialogTitle className="border-b px-6 py-4 text-base">
+                      Agregar candidato
+                    </DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription className="sr-only">
+                    Completar la información del nuevo candidato.
+                  </DialogDescription>
+                  <div className="px-6 pt-4 pb-2">
+                    <p className="text-sm text-muted-foreground">
+                      Complete la información del candidato. El nombre es
+                      requerido.
+                    </p>
+                  </div>
+                  <div className="overflow-y-auto">
+                    <div className="px-6 pt-4 pb-6">
+                      <Form {...form}>
+                        <form
+                          onSubmit={form.handleSubmit(onSubmit)}
+                          className="space-y-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row">
+                            <div className="flex-1">
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Nombre completo *</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="Juan Pérez"
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Teléfono</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="555-123-4567"
+                                        type="tel"
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            <span>{candidato.phone || "Sin teléfono"}</span>
+
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Correo electrónico</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="candidato@ejemplo.com"
+                                    type="email"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="space-y-2">
+                            <Label htmlFor="cv-upload-kanban">
+                              Curriculum Vitae (CV)
+                            </Label>
+                            {fileUploadState.files.length === 0 ? (
+                              <div
+                                className="border-input bg-background hover:bg-accent flex w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-6 transition-colors"
+                                onClick={() =>
+                                  document
+                                    .getElementById("cv-upload-kanban")
+                                    ?.click()
+                                }
+                              >
+                                <UploadIcon className="text-muted-foreground mb-2 h-6 w-6" />
+                                <div className="text-muted-foreground text-sm">
+                                  Arrastra y suelta o haz clic para subir
+                                </div>
+                                <div className="text-muted-foreground/80 text-xs mt-1">
+                                  PDF, DOCX o TXT (máx. 5MB)
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {fileUploadState.files.map((file) => (
+                                  <div
+                                    key={file.id}
+                                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="h-4 w-4 text-blue-600" />
+                                      <span className="text-sm font-medium truncate">
+                                        {file.file.name}
+                                      </span>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeFile(file.id)}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    document
+                                      .getElementById("cv-upload-kanban")
+                                      ?.click()
+                                  }
+                                  className="w-full"
+                                >
+                                  <UploadIcon className="h-4 w-4 mr-2" />
+                                  Cambiar archivo
+                                </Button>
+                              </div>
+                            )}
+                            <input
+                              id="cv-upload-kanban"
+                              type="file"
+                              className="sr-only"
+                              accept=".pdf,.docx,.doc,.txt"
+                              onChange={handleFileUpload}
+                            />
+                            {fileUploadState.errors.length > 0 && (
+                              <div className="text-sm text-red-600">
+                                {fileUploadState.errors.map((error, index) => (
+                                  <div key={index}>{error}</div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </form>
+                      </Form>
+                    </div>
+                  </div>
+                  <DialogFooter className="border-t px-6 py-4">
+                    <DialogClose asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSubmitting}
+                      >
+                        Cancelar
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      type="submit"
+                      onClick={form.handleSubmit(onSubmit)}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Guardando..." : "Guardar candidato"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+          {/* Lista de candidatos */}
+          <div className="space-y-3">
+            {candidates.map((candidato, index) => (
+              <Card
+                key={index}
+                className="group hover:shadow-sm transition-shadow duration-200"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar compacto */}
+                    <div className="relative">
+                      <Avatar className="h-11 w-11">
+                        <AvatarImage
+                          src={
+                            typeof candidato.cv === "string"
+                              ? candidato.cv
+                              : (candidato.cv as any)?.url || "" || ""
+                          }
+                          alt={candidato.name}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-muted text-muted-foreground font-medium">
+                          {candidato.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Indicador de estado minimalista */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+
+                    {/* Información del candidato */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm text-foreground mb-1 truncate">
+                            {candidato.name}
+                          </h3>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              <span className="truncate">
+                                {candidato.email || "Sin email"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              <span>{candidato.phone || "Sin teléfono"}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Dropdown de acciones */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        {/* Dropdown de acciones */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-40 z-[9999]"
                           >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-40 z-[9999]"
-                        >
-                          {candidato.cv?.url && (
+                            {candidato.cv?.url && (
+                              <DropdownMenuItem
+                                asChild
+                                className="cursor-pointer"
+                              >
+                                <Link
+                                  href={candidato.cv.url || ""}
+                                  target="_blank"
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  Ver CV
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
-                              asChild
+                              onClick={() =>
+                                handleDeleteCandidate(candidato.id)
+                              }
                               className="cursor-pointer"
                             >
-                              <Link
-                                href={candidato.cv.url || ""}
-                                target="_blank"
-                              >
-                                <FileText className="h-4 w-4 mr-2" />
-                                Ver CV
-                              </Link>
+                              <UserCheck className="h-4 w-4 mr-2" />
+                              Seleccionar
                             </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="cursor-pointer">
-                            <UserCheck className="h-4 w-4 mr-2" />
-                            Seleccionar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleDeleteCandidate(candidato.id)
+                              }
+                              className="cursor-pointer"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Información de estado */}
-                <div className="mt-3 pt-2 border-t">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary" className="text-xs">
-                      Candidato #{index + 1}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      En terna final
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    ) : (
-      <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground bg-muted/10 rounded-lg mt-4">
-        <AlertCircle className="h-10 w-10 mb-4 text-muted-foreground/60" />
-        <p className="text-base font-medium mb-2">
-          No hay candidatos en la terna final
-        </p>
-        <p className="text-sm text-center max-w-sm">
-          Cuando se agreguen candidatos a la terna final, aparecerán aquí para
-          su revisión.
-        </p>
-        <Button className="mt-4" variant="outline" size="sm">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Agregar candidatos
-        </Button>
-      </div>
-    )}
-  </div>
-);
-
-const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => (
-  <div className="space-y-6 mt-4">
-    {/* Existing comments section content */}{" "}
-    {/* ... (Keep the existing comments section content) ... */}
-    <div className="space-y-6 mt-4 h-[300px] overflow-auto p-3">
-      {/* Encabezado con título y botón de añadir */}{" "}
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium uppercase text-muted-foreground flex items-center">
-          <MessageSquare className="h-4 w-4 mr-2" /> Historial de comentarios
-        </h4>
-        <Button size="sm" variant="outline" className="h-8">
-          <Plus className="h-4 w-4 mr-2" /> Añadir comentario
-        </Button>
-      </div>
-      {/* Contenido de los comentarios */}
-      {vacante.Comments && vacante.Comments.length > 0 ? (
-        <div className="space-y-4">
-          {/* Barra de tiempo para comentarios */}
-          <div className="relative pb-2">
-            <div className="absolute left-4 top-0 bottom-0 w-px bg-border"></div>
-
-            {vacante.Comments.map((comentario, index) => (
-              <div key={comentario.id} className="relative mb-6 last:mb-0">
-                {/* Indicador de tiempo */}
-                <div className="absolute left-4 top-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary z-10"></div>
-
-                <Card className={`ml-8 ${index === 0 ? "border-primary" : ""}`}>
-                  <CardHeader className="p-4 pb-2">
+                  {/* Información de estado */}
+                  <div className="mt-3 pt-2 border-t">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={comentario.author.image || ""}
-                            alt={comentario.author.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <AvatarFallback>
-                            {comentario.author.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium leading-none">
-                            {comentario.author.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {comentario.author.role || "Reclutador"}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {format(comentario.createdAt, "EE, dd MMMM yyyy", {
-                            locale: es,
-                          })}
-                        </Badge>
-                        {index === 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            Más reciente
-                          </Badge>
-                        )}
-                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        Candidato #{index + 1}
+                      </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-2">
-                    <p className="text-sm">{comentario.content}</p>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-48 bg-muted/30 rounded-lg border border-dashed">
-          <MessageSquareOff className="h-10 w-10 mb-2 text-muted-foreground" />
-          <p className="text-muted-foreground">No hay comentarios todavía</p>
-          <Button variant="outline" size="sm" className="mt-4">
-            <Plus className="h-4 w-4 mr-2" />
-            Añadir el primer comentario
-          </Button>
+        <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground bg-muted/10 rounded-lg mt-4">
+          <AlertCircle className="h-10 w-10 mb-4 text-muted-foreground/60" />
+          <p className="text-base font-medium mb-2">
+            No hay candidatos en la terna final
+          </p>
+          <p className="text-sm text-center max-w-sm mb-4">
+            Cuando se agreguen candidatos a la terna final, aparecerán aquí para
+            su revisión.
+          </p>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Agregar candidatos
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+              <DialogHeader className="contents space-y-0 text-left">
+                <DialogTitle className="border-b px-6 py-4 text-base">
+                  Agregar candidato
+                </DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="sr-only">
+                Completar la información del nuevo candidato.
+              </DialogDescription>
+              <div className="px-6 pt-4 pb-2">
+                <p className="text-sm text-muted-foreground">
+                  Complete la información del candidato. El nombre es requerido.
+                </p>
+              </div>
+              <div className="overflow-y-auto">
+                <div className="px-6 pt-4 pb-6">
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row">
+                        <div className="flex-1">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nombre completo *</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Juan Pérez" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Teléfono</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="555-123-4567"
+                                    type="tel"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Correo electrónico</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="candidato@ejemplo.com"
+                                type="email"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-2">
+                        <Label htmlFor="cv-upload-kanban-empty">
+                          Curriculum Vitae (CV)
+                        </Label>
+                        {fileUploadState.files.length === 0 ? (
+                          <div
+                            className="border-input bg-background hover:bg-accent flex w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-6 transition-colors"
+                            onClick={() =>
+                              document
+                                .getElementById("cv-upload-kanban-empty")
+                                ?.click()
+                            }
+                          >
+                            <UploadIcon className="text-muted-foreground mb-2 h-6 w-6" />
+                            <div className="text-muted-foreground text-sm">
+                              Arrastra y suelta o haz clic para subir
+                            </div>
+                            <div className="text-muted-foreground/80 text-xs mt-1">
+                              PDF, DOCX o TXT (máx. 5MB)
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {fileUploadState.files.map((file) => (
+                              <div
+                                key={file.id}
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-4 w-4 text-blue-600" />
+                                  <span className="text-sm font-medium truncate">
+                                    {file.file.name}
+                                  </span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeFile(file.id)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                document
+                                  .getElementById("cv-upload-kanban-empty")
+                                  ?.click()
+                              }
+                              className="w-full"
+                            >
+                              <UploadIcon className="h-4 w-4 mr-2" />
+                              Cambiar archivo
+                            </Button>
+                          </div>
+                        )}
+                        <input
+                          id="cv-upload-kanban-empty"
+                          type="file"
+                          className="sr-only"
+                          accept=".pdf,.docx,.doc,.txt"
+                          onChange={handleFileUpload}
+                        />
+                        {fileUploadState.errors.length > 0 && (
+                          <div className="text-sm text-red-600">
+                            {fileUploadState.errors.map((error, index) => (
+                              <div key={index}>{error}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </form>
+                  </Form>
+                </div>
+              </div>
+              <DialogFooter className="border-t px-6 py-4">
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="submit"
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Guardando..." : "Guardar candidato"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </div>
-  </div>
-);
+  );
+};
 
-const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => (
-  <div className="space-y-6 mt-4">
-    {/* Existing documents section content */}
-    {/* ... (Keep the existing documents section content) ... */}
-    <div className="space-y-6 mt-6">
+const CommentsSection: React.FC<CommentsSectionProps> = ({ vacante }) => {
+  const { comments, isLoading, error, addComment, deleteComment } = useComments(
+    vacante.id
+  );
+  const [commentToDelete, setCommentToDelete] =
+    useState<CommentWithRelations | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+
+  const [filters, setFilters] = useState({
+    dateRange: null as { from: Date; to: Date } | null,
+    month: "all",
+    type: "all" as "all" | "comments" | "tasks",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Meses del año para el filtro
+  const meses = [
+    { value: "0", label: "Enero" },
+    { value: "1", label: "Febrero" },
+    { value: "2", label: "Marzo" },
+    { value: "3", label: "Abril" },
+    { value: "4", label: "Mayo" },
+    { value: "5", label: "Junio" },
+    { value: "6", label: "Julio" },
+    { value: "7", label: "Agosto" },
+    { value: "8", label: "Septiembre" },
+    { value: "9", label: "Octubre" },
+    { value: "10", label: "Noviembre" },
+    { value: "11", label: "Diciembre" },
+  ];
+
+  const handleDelete = (comment: CommentWithRelations) => {
+    setCommentToDelete(comment);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!commentToDelete) return;
+
+    try {
+      await deleteComment(commentToDelete.id);
+      toast.success("Comentario eliminado exitosamente");
+      setIsDeleteDialogOpen(false);
+      setCommentToDelete(null);
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error("Error al eliminar el comentario");
+    }
+  };
+
+  // Función para filtrar comentarios
+  const filteredComments = comments.filter((comment) => {
+    const commentDate = new Date(comment.createdAt);
+
+    // Filtrar por tipo
+    if (filters.type === "tasks" && !comment.taskId) return false;
+    if (filters.type === "comments" && comment.taskId) return false;
+
+    // Filtrar por rango de fechas
+    if (filters.dateRange) {
+      const isInRange =
+        commentDate >= filters.dateRange.from &&
+        commentDate <= filters.dateRange.to;
+      if (!isInRange) return false;
+    }
+
+    // Filtrar por mes
+    if (filters.month && filters.month !== "all") {
+      const commentMonth = commentDate.getMonth().toString();
+      if (commentMonth !== filters.month) return false;
+    }
+
+    return true;
+  });
+
+  const clearFilters = () => {
+    setFilters({
+      dateRange: null,
+      month: "all",
+      type: "all",
+    });
+  };
+
+  const hasActiveFilters =
+    filters.dateRange || filters.month !== "all" || filters.type !== "all";
+
+  return (
+    <div className="space-y-6 mt-4 h-[400px] overflow-hidden flex flex-col">
+      {/* Encabezado con título y controles */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h4 className="text-sm font-medium uppercase text-muted-foreground flex items-center">
+            <MessageSquare className="h-4 w-4 mr-2" /> Historial de comentarios
+          </h4>
+          {hasActiveFilters && (
+            <Badge variant="secondary" className="text-xs">
+              {filteredComments.length} de {comments?.length || 0}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={showFilters ? "default" : "outline"}
+            onClick={() => setShowFilters(!showFilters)}
+            className="h-7 px-2"
+          >
+            <Filter className="h-3 w-3" />
+          </Button>
+          <Dialog
+            open={isCommentDialogOpen}
+            onOpenChange={setIsCommentDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="h-7">
+                <Plus className="h-3 w-3 mr-1" /> Añadir
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
+              <DialogHeader>
+                <DialogTitle>Nuevo Comentario</DialogTitle>
+                <Separator />
+              </DialogHeader>
+              <NuevoComentarioForm
+                vacancyId={vacante.id}
+                vacancyOwnerId={vacante.reclutadorId}
+                onAddComment={addComment}
+                onSubmitSuccess={() => {
+                  setIsCommentDialogOpen(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Panel de filtros minimalista */}
+      {showFilters && (
+        <div className="p-3 bg-muted/30 rounded-lg border space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium">Filtros</span>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-xs h-6 px-2"
+              >
+                Limpiar
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {/* Filtro por tipo */}
+            <Select
+              value={filters.type}
+              onValueChange={(value: "all" | "comments" | "tasks") =>
+                setFilters({ ...filters, type: value })
+              }
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[9999]">
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="comments">Comentarios</SelectItem>
+                <SelectItem value="tasks">Tareas</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Filtro por mes */}
+            <Select
+              value={filters.month}
+              onValueChange={(value) =>
+                setFilters({ ...filters, month: value })
+              }
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Mes" />
+              </SelectTrigger>
+              <SelectContent className="z-[9999]">
+                <SelectItem value="all">Todos</SelectItem>
+                {meses.map((mes) => (
+                  <SelectItem key={mes.value} value={mes.value}>
+                    {mes.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Filtro por rango de fechas */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-7 px-2 text-xs justify-start text-left font-normal"
+                >
+                  {filters.dateRange ? (
+                    <>
+                      {format(filters.dateRange.from, "dd/MM", { locale: es })}{" "}
+                      - {format(filters.dateRange.to, "dd/MM", { locale: es })}
+                    </>
+                  ) : (
+                    "Rango"
+                  )}
+                  <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[9999]">
+                <Calendar
+                  mode="range"
+                  selected={filters.dateRange || undefined}
+                  onSelect={(range) =>
+                    setFilters({
+                      ...filters,
+                      dateRange: range
+                        ? { from: range.from!, to: range.to || range.from! }
+                        : null,
+                    })
+                  }
+                  numberOfMonths={2}
+                  locale={es}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de comentarios */}
+      <div className="flex-1 overflow-y-auto space-y-3">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-32 text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 mb-2" />
+            <p className="text-sm text-muted-foreground">
+              Cargando comentarios...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-32 text-center">
+            <AlertCircle className="h-8 w-8 text-red-400 mb-2" />
+            <p className="text-sm text-red-500">Error al cargar comentarios</p>
+          </div>
+        ) : filteredComments.length > 0 ? (
+          <div className="space-y-4">
+            {/* Barra de tiempo para comentarios */}
+            <div className="relative pb-2">
+              <div className="absolute left-4 top-0 bottom-0 w-px bg-border"></div>
+
+              {filteredComments.map((comentario, index) => (
+                <div key={comentario.id} className="relative mb-6 last:mb-0">
+                  {/* Indicador de tiempo */}
+                  <div
+                    className={`absolute left-4 top-0 -translate-x-1/2 w-2 h-2 rounded-full z-10 ${
+                      comentario.taskId ? "bg-blue-500" : "bg-primary"
+                    }`}
+                  ></div>
+
+                  <Card
+                    className={cn(
+                      `ml-8 ${index === 0 ? "border-primary" : ""}`,
+                      comentario.taskId
+                        ? "border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/10"
+                        : ""
+                    )}
+                  >
+                    <CardHeader className="p-4 pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "flex items-center gap-1.5 font-medium",
+                              comentario.taskId
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                                : "bg-gray-50 dark:bg-gray-800/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600"
+                            )}
+                          >
+                            {comentario.taskId ? (
+                              <CheckSquare className="w-3 h-3" />
+                            ) : (
+                              <MessageSquare className="w-3 h-3" />
+                            )}
+                            {comentario.taskId ? "Tarea" : "Comentario"}
+                          </Badge>
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage
+                              src={comentario.author.image || ""}
+                              alt={comentario.author.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <AvatarFallback className="text-xs">
+                              {comentario.author.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <div className="text-xs font-medium leading-none">
+                              {comentario.author.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {comentario.author.role || "Reclutador"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {format(comentario.createdAt, "dd/MM/yy", {
+                              locale: es,
+                            })}
+                          </Badge>
+                          {index === 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              Reciente
+                            </Badge>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                              >
+                                <MoreVertical className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-40 z-[9999]"
+                            >
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(comentario)}
+                                className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Eliminar</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-2">
+                      <p className="text-sm">{comentario.content}</p>
+                      {/* Mostrar información adicional si es una tarea */}
+                      {comentario.taskId && comentario.task && (
+                        <div className="mt-3 p-2 bg-blue-50/50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                              Tarea: {comentario.task.title}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <CalendarIcon className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs text-blue-600">
+                                {format(comentario.task.dueDate, "dd/MM/yy", {
+                                  locale: es,
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : hasActiveFilters ? (
+          <div className="flex flex-col items-center justify-center h-32 bg-muted/30 rounded-lg border border-dashed">
+            <Filter className="h-8 w-8 mb-2 text-muted-foreground" />
+            <p className="text-muted-foreground text-sm">
+              No hay comentarios que coincidan con los filtros
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={clearFilters}
+            >
+              Limpiar filtros
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-32 bg-muted/30 rounded-lg border border-dashed">
+            <MessageSquareOff className="h-8 w-8 mb-2 text-muted-foreground" />
+            <p className="text-muted-foreground text-sm">
+              No hay comentarios todavía
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => setIsCommentDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Añadir el primer comentario
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Dialog para confirmar eliminación */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] z-[9999]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              Confirmar eliminación
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            ¿Estás seguro de que deseas eliminar este comentario? Esta acción no
+            se puede deshacer.
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => {
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [documentTitle, setDocumentTitle] = useState("");
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [files, setFiles] = useState<VacancyFile[]>(vacante.files || []);
+
+  const [fileUploadState, fileUploadActions] = useFileUpload({
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024, // 10MB
+    accept: ".pdf,.docx,.doc,.txt,.xlsx,.xls,.pptx,.ppt",
+    multiple: false,
+  });
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      fileUploadActions.addFiles(files);
+    }
+  };
+
+  const removeFile = (fileId: string) => {
+    fileUploadActions.removeFile(fileId);
+  };
+
+  const handleSubmit = async () => {
+    if (!documentTitle.trim()) {
+      toast.error("Por favor ingresa un título para el documento");
+      return;
+    }
+
+    if (fileUploadState.files.length === 0) {
+      toast.error("Por favor selecciona un archivo para subir");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const documentFile = fileUploadState.files[0]?.file as File;
+      const documentData = {
+        title: documentTitle,
+        file: documentFile,
+        vacancyId: vacante.id,
+        authorId: vacante.reclutador.id,
+      };
+      const response = await addFileToVacancy({
+        ...documentData,
+        name: documentData.title,
+      });
+
+      if (!response?.ok || !response.file) {
+        toast.error(response?.message || "Error al subir el documento");
+        console.error("error", response);
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title={response.message || "Documento subido exitosamente"}
+          type="success"
+          message={
+            response.message || "El documento ha sido subido exitosamente"
+          }
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+      setFiles([...files, response.file!]);
+
+      // Limpiar formulario
+      setDocumentTitle("");
+      fileUploadActions.clearFiles();
+      setOpen(false);
+    } catch (error) {
+      console.error("Error al subir documento:", error);
+      toast.error("Error al subir el documento");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDownloadDocument = (fileUrl: string, fileName: string) => {
+    window.open(fileUrl, "_blank");
+  };
+
+  const handleDeleteDocument = async (fileId: string) => {
+    try {
+      const response = await deleteFileFromVacancy(fileId);
+      if (!response?.ok) {
+        toast.error(response?.message || "Error al eliminar el archivo");
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title={response.message}
+          type="success"
+          message={response.message}
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+      setFiles(files.filter((file) => file.id !== fileId));
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al eliminar el archivo");
+    }
+  };
+
+  // Función para formatear el tamaño del archivo
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  // Función para obtener el tipo de archivo desde el mimeType
+  const getFileTypeFromMimeType = (mimeType: string): string => {
+    if (mimeType.includes("pdf")) return "PDF";
+    if (mimeType.includes("word") || mimeType.includes("document"))
+      return "DOCX";
+    if (mimeType.includes("excel") || mimeType.includes("sheet")) return "XLSX";
+    if (mimeType.includes("powerpoint") || mimeType.includes("presentation"))
+      return "PPTX";
+    if (mimeType.includes("text")) return "TXT";
+    return "DOC";
+  };
+
+  // Función para formatear la fecha
+  const formatDate = (date: Date): string => {
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(date));
+  };
+
+  return (
+    <div className="space-y-6 mt-4">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold">Documentos</h3>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Plus className="h-4 w-4" /> <span>Añadir documento</span>
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Documento 1 */}
-        <Card className="group hover:shadow-md transition-all duration-200">
-          <CardContent className="p-5">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="z-[9999]">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Download />
-                      <span>Descargar</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Edit />
-                      <span>Editar</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-500 cursor-pointer ">
-                      <Trash />
-                      <span>Eliminar</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <div>
-                <div className="font-medium text-lg mb-1">Checklist</div>
-                <div className="text-sm text-muted-foreground">
-                  Actualizado el 26 Feb, 2025
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 mt-2">
-                <Badge
-                  variant="outline"
-                  className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
-                >
-                  PDF
-                </Badge>
-                <span className="text-xs text-muted-foreground">2.4 MB</span>
-              </div>
-
-              <Button variant="outline" size="sm">
-                <Download />
-                <span>Descargar</span>
-              </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> <span>Añadir documento</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+            <DialogHeader className="contents space-y-0 text-left">
+              <DialogTitle className="border-b px-6 py-4 text-base">
+                Añadir documento
+              </DialogTitle>
+            </DialogHeader>
+            <div className="px-6 pt-4 pb-2">
+              <p className="text-sm text-muted-foreground">
+                Sube un documento relacionado con esta vacante. Ingresa un
+                título descriptivo y selecciona el archivo.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Documento 2 */}
-        <Card className="group hover:shadow-md transition-all duration-200">
-          <CardContent className="p-5">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <FileText className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="overflow-y-auto">
+              <div className="px-6 pt-4 pb-6 space-y-4">
+                {/* Campo título del documento */}
+                <div className="space-y-2">
+                  <Label htmlFor="document-title">Título del documento *</Label>
+                  <Input
+                    id="document-title"
+                    placeholder="Ej: Descripción del puesto, Contrato tipo, etc."
+                    value={documentTitle}
+                    onChange={(e) => setDocumentTitle(e.target.value)}
+                  />
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="z-[9999]">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Download />
-                      <span>Descargar</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Edit />
-                      <span>Editar</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600 dark:text-red-400 cursor-pointer">
-                      <Trash />
-                      <span>Eliminar</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
 
-              <div>
-                <div className="font-medium text-lg mb-1">
-                  Muestra de perfil
+                {/* Campo de subida de archivos */}
+                <div className="space-y-2">
+                  <Label htmlFor="document-upload">Archivo del documento</Label>
+                  {fileUploadState.files.length === 0 ? (
+                    <div
+                      className="border-input bg-background hover:bg-accent flex w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-6 transition-colors"
+                      onClick={() =>
+                        document.getElementById("document-upload")?.click()
+                      }
+                    >
+                      <UploadIcon className="text-muted-foreground mb-2 h-6 w-6" />
+                      <div className="text-muted-foreground text-sm">
+                        Arrastra y suelta o haz clic para subir
+                      </div>
+                      <div className="text-muted-foreground/80 text-xs mt-1">
+                        PDF, DOCX, TXT, XLSX, PPTX (máx. 10MB)
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {fileUploadState.files.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md border"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm font-medium truncate">
+                              {file.file.name}
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(file.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById("document-upload")?.click()
+                        }
+                        className="w-full"
+                      >
+                        <UploadIcon className="h-4 w-4 mr-2" />
+                        Cambiar archivo
+                      </Button>
+                    </div>
+                  )}
+                  <input
+                    id="document-upload"
+                    type="file"
+                    className="sr-only"
+                    accept=".pdf,.docx,.doc,.txt,.xlsx,.xls,.pptx,.ppt"
+                    onChange={handleFileUpload}
+                  />
+                  {fileUploadState.errors.length > 0 && (
+                    <div className="text-sm text-red-600">
+                      {fileUploadState.errors.map((error, index) => (
+                        <div key={index}>{error}</div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Actualizado el 1 Mar, 2025
-                </div>
               </div>
-
-              <div className="flex items-center gap-2 mt-2">
-                <Badge
-                  variant="outline"
-                  className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-                >
-                  DOCX
-                </Badge>
-                <span className="text-xs text-muted-foreground">1.8 MB</span>
-              </div>
-
+            </div>
+            <DialogFooter className="border-t px-6 py-4">
               <Button
+                type="button"
                 variant="outline"
-                size="sm"
-                className="w-full mt-2 flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                onClick={() => setOpen(false)}
               >
-                <Download className="h-4 w-4" />
-                <span>Descargar</span>
+                Cancelar
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Añadir documento (card) */}
-        <Card className="border-dashed hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-200 cursor-pointer">
-          <CardContent className="p-5 flex flex-col items-center justify-center h-full text-center">
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
-              <Plus className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h4 className="font-medium mb-2">Añadir nuevo documento</h4>
-            <p className="text-sm text-muted-foreground">
-              Sube archivos PDF, DOCX, XLSX o imágenes
-            </p>
-          </CardContent>
-        </Card>
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Subiendo..." : "Subir documento"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-      {/* Documentos recientes (sección opcional) */}
+
+      {/* Documentos existentes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {files && files.length > 0 ? (
+          files.map((file) => (
+            <Card
+              key={file.id}
+              className="group hover:shadow-md transition-all duration-200"
+            >
+              <CardContent className="p-5">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-start">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="z-[9999]">
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() =>
+                            handleDownloadDocument(file.url, file.name)
+                          }
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          <span>Ver</span>
+                        </DropdownMenuItem>
+                        <AlertDialog
+                          open={openDeleteDialog}
+                          onOpenChange={setOpenDeleteDialog}
+                        >
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem
+                              className="text-red-500 cursor-pointer"
+                              onSelect={(e) => e.preventDefault()}
+                            >
+                              <Trash className="h-4 w-4 mr-2" />
+                              <span>Eliminar</span>
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="z-[9999]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                ¿Estás seguro de querer eliminar este documento?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. Se eliminará
+                                el documento permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteDocument(file.id)}
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-lg mb-1">{file.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Actualizado el {formatDate(file.updatedAt)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
+                    >
+                      {getFileTypeFromMimeType(file.mimeType)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadDocument(file.url, file.name)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    <span>Descargar</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-8">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">
+              No hay documentos asociados a esta vacante
+            </p>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const VacanteTabs: React.FC<{
   vacante: VacancyWithRelations;
@@ -1088,7 +2261,7 @@ const VacanteTabs: React.FC<{
   <Tabs defaultValue="detalles">
     <TabsList className="grid w-full grid-cols-4">
       <TabsTrigger value="detalles">Detalles</TabsTrigger>
-      <TabsTrigger value="candidatos">Terna Final</TabsTrigger>
+      <TabsTrigger value="candidatos">Candidatos</TabsTrigger>
       <TabsTrigger value="comentarios">Comentarios</TabsTrigger>
       <TabsTrigger value="documentos">Documentos</TabsTrigger>
     </TabsList>
@@ -1295,6 +2468,7 @@ export const KanbanBoardPage = ({
     { id: "QuickMeeting", title: "Quick Meeting" },
     { id: "Hunting", title: "Hunting" },
     { id: "Entrevistas", title: "Entrevistas" },
+    { id: "PrePlacement", title: "Pre Placement" },
     { id: "Placement", title: "Placement" },
     { id: "Perdida", title: "Perdida" },
     { id: "Cancelada", title: "Cancelada" },

@@ -49,6 +49,8 @@ import {
   XCircle,
   MessageSquareReply,
   FolderCheck,
+  Building2,
+  UserIcon,
 } from "lucide-react";
 import { TaskStatus } from "@prisma/client";
 import Link from "next/link";
@@ -137,6 +139,7 @@ const TaskActions = ({ activity, onToggleStatus, onDelete, onEdit }: Props) => {
   const isTaskDone = activity.status === "Done";
   const [alertOpen, setAlertOpen] = useState(false);
   const [interactionDialogOpen, setInteractionDialogOpen] = useState(false);
+  const [vacancyDialogOpen, setVacancyDialogOpen] = useState(false);
 
   const handleToggleStatus = () => {
     setAlertOpen(false);
@@ -145,6 +148,10 @@ const TaskActions = ({ activity, onToggleStatus, onDelete, onEdit }: Props) => {
 
   const handleViewInteraction = () => {
     setInteractionDialogOpen(true);
+  };
+
+  const handleViewVacancy = () => {
+    setVacancyDialogOpen(true);
   };
 
   return (
@@ -186,6 +193,70 @@ const TaskActions = ({ activity, onToggleStatus, onDelete, onEdit }: Props) => {
                 className="bg-muted resize-none min-h-[100px]"
                 aria-label="Contenido de la interacción"
               />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cerrar</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para ver vacante vinculada */}
+      <Dialog open={vacancyDialogOpen} onOpenChange={setVacancyDialogOpen}>
+        <DialogContent
+          className="sm:max-w-[500px]"
+          aria-describedby="vacancy-dialog-description"
+        >
+          <DialogHeader>
+            <DialogTitle>Posición de Vacante</DialogTitle>
+            <DialogDescription id="vacancy-dialog-description">
+              Esta tarea está vinculada a la siguiente vacante
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-3">
+              <Label htmlFor="vacancy-position">Posición</Label>
+              <Input
+                id="vacancy-position"
+                value={activity.vacancy?.posicion || "Sin posición"}
+                readOnly
+                className="bg-muted"
+                aria-label="Posición de la vacante"
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="vacancy-client">Cliente</Label>
+              <Input
+                id="vacancy-client"
+                value={activity.vacancy?.cliente.cuenta || "Sin especificar"}
+                readOnly
+                className="bg-muted"
+                aria-label="Cliente de la vacante"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-3">
+                <Label htmlFor="vacancy-status">Estado</Label>
+                <Input
+                  id="vacancy-status"
+                  value={activity.vacancy?.estado || "Sin estado"}
+                  readOnly
+                  className="bg-muted"
+                  aria-label="Estado de la vacante"
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="vacancy-priority">Prioridad</Label>
+                <Input
+                  id="vacancy-priority"
+                  value={activity.vacancy?.prioridad || "Sin prioridad"}
+                  readOnly
+                  className="bg-muted"
+                  aria-label="Prioridad de la vacante"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -261,6 +332,20 @@ const TaskActions = ({ activity, onToggleStatus, onDelete, onEdit }: Props) => {
                   aria-hidden="true"
                 />
                 Ver Interacción
+              </DropdownMenuItem>
+            )}
+
+            {/* Opción para ver vacante */}
+            {activity.vacancy && (
+              <DropdownMenuItem
+                onClick={handleViewVacancy}
+                className="cursor-pointer"
+              >
+                <Building2
+                  className="opacity-60 h-4 w-4 mr-2"
+                  aria-hidden="true"
+                />
+                Ver Posición
               </DropdownMenuItem>
             )}
           </DropdownMenuGroup>
@@ -365,6 +450,21 @@ export const TaskCard = ({
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             {activity.description}
           </p>
+
+          {/* Información de la vacante (si está vinculada) */}
+          {activity.vacancy && (
+            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-700">
+              <Building2 className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-200 truncate">
+                  {activity.vacancy.posicion}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 truncate">
+                  {activity.vacancy.cliente.cuenta || "Cliente no especificado"}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Indicador de progreso */}
           <div className="flex items-center justify-between">

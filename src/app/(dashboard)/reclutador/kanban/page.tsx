@@ -4,6 +4,7 @@ import { VacancyWithRelations } from "../components/ReclutadorColumns";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
+import QuickStatsDialog from "../components/QuickStatsDialog";
 
 const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
   const vacancies = await prisma.vacancy.findMany({
@@ -21,6 +22,7 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
           cv: true,
         },
       },
+      files: true,
     },
     orderBy: {
       updatedAt: "desc",
@@ -74,6 +76,9 @@ export default async function KanbanReclutadorPage() {
 
   return (
     <>
+      <div className="flex justify-end mt-2 mb-4 w-full gap-2">
+        <QuickStatsDialog />
+      </div>
       <KanbanBoardPage
         initialVacantes={vacancies}
         user_logged={user_logged_data}

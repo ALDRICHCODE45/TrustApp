@@ -76,6 +76,7 @@ const vacancySchema = z.object({
       VacancyEstado.Perdida,
       VacancyEstado.Placement,
       VacancyEstado.QuickMeeting,
+      VacancyEstado.PrePlacement,
     ])
     .optional(),
   posicion: z.string().optional(),
@@ -92,9 +93,6 @@ const vacancySchema = z.object({
 
   // Cliente (requerido según el esquema de Prisma)
   clienteId: z.string().min(1, "El cliente es requerido"),
-
-  // Archivos (por ahora vacío como solicitaste)
-  files: z.array(z.any()).optional(),
 });
 
 type VacancyFormData = z.infer<typeof vacancySchema>;
@@ -150,69 +148,6 @@ export const CreateVacanteForm = ({ reclutadores, clientes }: Props) => {
   );
 };
 
-// Componente de archivo (manteniendo el original)
-const FileCard = ({ file }: { file: File }) => (
-  <Card className="group hover:shadow-md transition-all duration-200">
-    <CardContent className="p-5">
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-start">
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            {file.icon}
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-[9999]">
-              <DropdownMenuItem className="cursor-pointer">
-                <Download className="h-4 w-4 mr-2" />
-                <span>Descargar</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Edit className="h-4 w-4 mr-2" />
-                <span>Editar</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-500 cursor-pointer">
-                <Trash className="h-4 w-4 mr-2" />
-                <span>Eliminar</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div>
-          <div className="font-medium text-lg mb-1">{file.name}</div>
-          <div className="text-sm text-muted-foreground">
-            Actualizado el {file.lastUpdated}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 mt-2">
-          <Badge
-            variant="outline"
-            className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
-          >
-            {file.type}
-          </Badge>
-          <span className="text-xs text-muted-foreground">{file.size}</span>
-        </div>
-
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          <span>Descargar</span>
-        </Button>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-const uploadFiles = async (files: File[]) => {
-  // TODO: Implementar lógica de subida de archivos
-  console.log("Subir archivos:", files);
-};
-
 // Componente principal del formulario con react-hook-form
 function VacancyForm({ reclutadores, clientes }: Props) {
   const form = useForm<VacancyFormData>({
@@ -227,7 +162,7 @@ function VacancyForm({ reclutadores, clientes }: Props) {
       salario: undefined,
       valorFactura: undefined,
       fee: undefined,
-      files: [],
+      monto: undefined,
     },
   });
 
@@ -253,9 +188,8 @@ function VacancyForm({ reclutadores, clientes }: Props) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 mt-4">
+          <TabsList className="grid w-full grid-cols-2 mb-4 mt-4">
             <TabsTrigger value="basic">Información Básica</TabsTrigger>
-            <TabsTrigger value="files">Archivos</TabsTrigger>
             <TabsTrigger value="financial">Información Fiscal</TabsTrigger>
           </TabsList>
 
@@ -266,11 +200,6 @@ function VacancyForm({ reclutadores, clientes }: Props) {
               reclutadores={reclutadores}
               clientes={clientes}
             />
-          </TabsContent>
-
-          {/* Tab de Archivos */}
-          <TabsContent value="files">
-            <FilesTab files={demoFiles} />
           </TabsContent>
 
           {/* Tab de Información Fiscal */}
@@ -369,6 +298,9 @@ const BasicInformationTab = ({
                     </SelectItem>
                     <SelectItem value={VacancyEstado.Perdida}>
                       Perdida
+                    </SelectItem>
+                    <SelectItem value={VacancyEstado.PrePlacement}>
+                      Pre Placement
                     </SelectItem>
                     <SelectItem value={VacancyEstado.Placement}>
                       Placement
@@ -647,55 +579,6 @@ const BasicInformationTab = ({
             )}
           />
         </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Componente para la pestaña de archivos (simplificado como solicitaste)
-const FilesTab = ({ files }: { files: File[] }) => {
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // TODO: Implementar lógica de subida de archivos
-    console.log("Archivos seleccionados:", event.target.files);
-  };
-
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">Documentos de la Vacante</div>
-          <label htmlFor="file-upload" className="cursor-pointer">
-            <Button variant="outline" size="sm">
-              <Upload className="mr-2 h-4 w-4" />
-              Subir Archivo
-            </Button>
-            <input
-              type="file"
-              id="file-upload"
-              className="hidden"
-              accept=".pdf,.docx,.doc"
-              multiple
-              onChange={handleFileUpload}
-            />
-          </label>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4">
-          {files.map((file) => (
-            <FileCard key={file.id} file={file} />
-          ))}
-        </div>
-
-        {files.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <p>No hay documentos subidos</p>
-            <p className="text-sm">
-              Sube tus archivos usando el botón Subir Archivo
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

@@ -3,7 +3,9 @@
 import prisma from "@/lib/db";
 import { CreateCommentData, CreateTaskData } from "@/types/comment";
 
-export async function CreateTask(args: CreateTaskData) {
+export async function CreateTask(
+  args: CreateTaskData & { vacancyId?: string }
+) {
   try {
     const {
       title,
@@ -12,6 +14,7 @@ export async function CreateTask(args: CreateTaskData) {
       assignedToId,
       notifyOnComplete = false,
       notificationRecipients = [],
+      vacancyId,
     } = args;
 
     // Verificar que el usuario asignado existe
@@ -40,6 +43,20 @@ export async function CreateTask(args: CreateTaskData) {
       }
     }
 
+    // Verificar que la vacante existe si se proporciona
+    if (vacancyId) {
+      const vacancy = await prisma.vacancy.findUnique({
+        where: { id: vacancyId },
+      });
+
+      if (!vacancy) {
+        return {
+          ok: false,
+          message: "Vacante no encontrada",
+        };
+      }
+    }
+
     const task = await prisma.task.create({
       data: {
         title,
@@ -47,6 +64,7 @@ export async function CreateTask(args: CreateTaskData) {
         dueDate,
         assignedToId,
         notifyOnComplete,
+        vacancyId, // Vincular la tarea con la vacante si se proporciona
         notificationRecipients: {
           connect: notificationRecipients.map((id) => ({ id })),
         },
@@ -134,6 +152,7 @@ export async function CreateComment(args: CreateCommentData) {
         assignedToId,
         notifyOnComplete,
         notificationRecipients,
+        vacancyId, // Pasar el vacancyId si se proporciona
       });
 
       if (!taskResult.ok) {

@@ -33,6 +33,8 @@ export const editLeadByIdAndCreatePreClient = async (
       },
     });
 
+    console.log({ formData, existingLead });
+
     if (!existingLead) {
       throw Error("Lead does not exists");
     }
@@ -53,6 +55,8 @@ export const editLeadByIdAndCreatePreClient = async (
       data: {
         leadId: leadId,
         usuarioId: existingLead.generadorId,
+        cuenta: existingLead.empresa,
+        origenId: existingLead.origenId,
       },
     });
   } catch (err) {
@@ -419,16 +423,30 @@ export const editLeadById = async (leadId: string, formData: FormData) => {
 
     const clientName = updatedLead.empresa;
 
-    //verificamos si el estado cambio a Asignadas y creamos el precliente
-    if (newStatus === "Asignadas") {
-      await prisma.client.create({
-        data: {
+    //verificamos si el estado cambio a Asignadas y creamos/actualizamos el precliente
+    if (newStatus === LeadStatus.Asignadas) {
+      // Verificar si ya existe un cliente para este lead
+      const existingClient = await prisma.client.findFirst({
+        where: {
           leadId: leadId,
-          usuarioId: existingLead.generadorId,
-          cuenta: clientName,
-          origenId: updatedLead.origenId,
         },
       });
+
+      if (existingClient) {
+        return;
+      } else {
+        // Si no existe, creamos uno nuevo
+        const clienteCreated = await prisma.client.create({
+          data: {
+            leadId: leadId,
+            usuarioId: existingLead.generadorId,
+            cuenta: clientName,
+            origenId: updatedLead.origenId,
+          },
+        });
+
+        console.log({ updatedLead, clienteCreated });
+      }
     }
 
     revalidatePath("/leads");
