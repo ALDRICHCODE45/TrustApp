@@ -23,6 +23,9 @@ import { Clipboard, MoreHorizontal, SquarePen, Trash2 } from "lucide-react";
 import { Row } from "@tanstack/react-table";
 import { VacancyWithRelations } from "@/app/(dashboard)/reclutador/components/ReclutadorColumns";
 import { EditVacancyForm } from "./EditVacancyForm";
+import { toast } from "sonner";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import { deleteVacancy } from "@/actions/vacantes/actions";
 
 export const ActionsRecruitment = ({
   row,
@@ -38,6 +41,46 @@ export const ActionsRecruitment = ({
 
   const handleCloseEdit = () => {
     setOpenEdit(false);
+  };
+
+  const handleDeleteVacancy = async (vacancyId: string) => {
+    try {
+      const result = await deleteVacancy(vacancyId);
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar la vacante"
+            message="La vacante no pudo ser eliminada"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+            type="error"
+          />
+        ));
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Vacante eliminada correctamente"
+          message="La vacante ha sido eliminada correctamente"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+          type="success"
+        />
+      ));
+    } catch (err) {
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al eliminar la vacante"
+          message="La vacante no pudo ser eliminada"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+          type="error"
+        />
+      ));
+    }
   };
 
   return (
@@ -90,7 +133,7 @@ export const ActionsRecruitment = ({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                console.log("Vacante eliminada");
+                handleDeleteVacancy(row.original.id);
                 setOpen(false);
               }}
             >

@@ -250,3 +250,23 @@ export const getRecruiters = async (): Promise<User[]> => {
     throw Error("error");
   }
 };
+
+export const deleteVacancy = async (vacancyId: string) => {
+  try {
+    const vacancy = await prisma.vacancy.delete({
+      where: { id: vacancyId },
+    });
+
+    revalidatePath("/list/reclutamiento");
+    revalidatePath("/reclutador");
+    revalidatePath("/");
+
+    return { ok: true, message: "Vacante eliminada correctamente", vacancy };
+  } catch (err) {
+    console.log(err);
+    return {
+      ok: false,
+      message: "Error al eliminar la vacante",
+    };
+  }
+};
