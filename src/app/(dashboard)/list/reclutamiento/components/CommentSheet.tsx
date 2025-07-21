@@ -45,6 +45,9 @@ import {
   AlertCircle,
   BellRing,
   X,
+  Filter,
+  Calendar as CalendarLucide,
+  CheckSquare,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -142,6 +145,30 @@ export const CommentSheet = ({
     useState<CommentWithRelations | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Estados para filtros
+  const [filters, setFilters] = useState({
+    dateRange: null as { from: Date; to: Date } | null,
+    month: "all",
+    type: "all" as "all" | "comments" | "tasks",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Meses del año para el filtro
+  const meses = [
+    { value: "0", label: "Enero" },
+    { value: "1", label: "Febrero" },
+    { value: "2", label: "Marzo" },
+    { value: "3", label: "Abril" },
+    { value: "4", label: "Mayo" },
+    { value: "5", label: "Junio" },
+    { value: "6", label: "Julio" },
+    { value: "7", label: "Agosto" },
+    { value: "8", label: "Septiembre" },
+    { value: "9", label: "Octubre" },
+    { value: "10", label: "Noviembre" },
+    { value: "11", label: "Diciembre" },
+  ];
+
   const handleDelete = (comment: CommentWithRelations) => {
     setCommentToDelete(comment);
     setIsDeleteDialogOpen(true);
@@ -161,6 +188,42 @@ export const CommentSheet = ({
     }
   };
 
+  // Función para filtrar comentarios
+  const filteredComments = comments.filter((comment) => {
+    const commentDate = new Date(comment.createdAt);
+
+    // Filtrar por tipo
+    if (filters.type === "tasks" && !comment.taskId) return false;
+    if (filters.type === "comments" && comment.taskId) return false;
+
+    // Filtrar por rango de fechas
+    if (filters.dateRange) {
+      const isInRange =
+        commentDate >= filters.dateRange.from &&
+        commentDate <= filters.dateRange.to;
+      if (!isInRange) return false;
+    }
+
+    // Filtrar por mes
+    if (filters.month && filters.month !== "all") {
+      const commentMonth = commentDate.getMonth().toString();
+      if (commentMonth !== filters.month) return false;
+    }
+
+    return true;
+  });
+
+  const clearFilters = () => {
+    setFilters({
+      dateRange: null,
+      month: "all",
+      type: "all",
+    });
+  };
+
+  const hasActiveFilters =
+    filters.dateRange || filters.month !== "all" || filters.type !== "all";
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -171,35 +234,167 @@ export const CommentSheet = ({
         </div>
       </SheetTrigger>
       <SheetContent className="p-4">
-        {/* Botón para abrir el diálogo */}
         <SheetHeader className="mt-7">
           <div className="flex justify-between items-center">
-            <p className="text-lg font-semibold"></p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Plus className="mr-1 h-4 w-4" />
-                  Agregar
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
-                <DialogHeader>
-                  <DialogTitle>Nuevo Comentario</DialogTitle>
-                  <Separator />
-                </DialogHeader>
-                {/* Formulario dentro del diálogo */}
-                <NuevoComentarioForm
-                  vacancyId={vacancyId}
-                  vacancyOwnerId={vacancyOwnerId}
-                  onAddComment={addComment}
-                  onSubmitSuccess={() => {
-                    // El hook ya maneja la actualización automática
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-semibold">Comentarios</p>
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="text-xs">
+                  {filteredComments.length} de {comments.length}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={showFilters ? "default" : "outline"}
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="mr-1 h-4 w-4" />
+                Filtros
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Plus className="mr-1 h-4 w-4" />
+                    Agregar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
+                  <DialogHeader>
+                    <DialogTitle>Nuevo Comentario</DialogTitle>
+                    <Separator />
+                  </DialogHeader>
+                  <NuevoComentarioForm
+                    vacancyId={vacancyId}
+                    vacancyOwnerId={vacancyOwnerId}
+                    onAddComment={addComment}
+                    onSubmitSuccess={() => {
+                      // El hook ya maneja la actualización automática
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </SheetHeader>
+
+        {/* Panel de filtros */}
+        {showFilters && (
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Filtros</h3>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-xs"
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {/* Filtro por tipo */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2 block">
+                  Tipo
+                </label>
+                <Select
+                  value={filters.type}
+                  onValueChange={(value: "all" | "comments" | "tasks") =>
+                    setFilters({ ...filters, type: value })
+                  }
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="comments">Solo comentarios</SelectItem>
+                    <SelectItem value="tasks">Solo tareas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por mes */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2 block">
+                  Mes
+                </label>
+                <Select
+                  value={filters.month}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, month: value })
+                  }
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Seleccionar mes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los meses</SelectItem>
+                    {meses.map((mes) => (
+                      <SelectItem key={mes.value} value={mes.value}>
+                        {mes.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por rango de fechas */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2 block">
+                  Rango de fechas
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-8 w-full pl-3 text-left font-normal text-xs",
+                        !filters.dateRange && "text-muted-foreground"
+                      )}
+                    >
+                      {filters.dateRange ? (
+                        <>
+                          {format(filters.dateRange.from, "dd/MM/yy", {
+                            locale: es,
+                          })}{" "}
+                          -{" "}
+                          {format(filters.dateRange.to, "dd/MM/yy", {
+                            locale: es,
+                          })}
+                        </>
+                      ) : (
+                        <span>Seleccionar rango</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[8888]">
+                    <Calendar
+                      mode="range"
+                      selected={filters.dateRange || undefined}
+                      onSelect={(range) =>
+                        setFilters({
+                          ...filters,
+                          dateRange: range
+                            ? { from: range.from!, to: range.to || range.from! }
+                            : null,
+                        })
+                      }
+                      numberOfMonths={2}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Lista de comentarios */}
         <div className="space-y-4 mt-6 h-[90%] overflow-y-auto pr-1">
@@ -220,54 +415,59 @@ export const CommentSheet = ({
                 {error}
               </p>
             </div>
-          ) : comments.length === 0 ? (
+          ) : filteredComments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-center">
               <MessageCircleMore className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-2" />
               <p className="text-gray-500 dark:text-gray-400">
-                No hay comentarios
+                {hasActiveFilters
+                  ? "No hay comentarios que coincidan con los filtros"
+                  : "No hay comentarios"}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Agrega un comentario usando el botón de arriba
+                {hasActiveFilters
+                  ? "Prueba ajustando los filtros"
+                  : "Agrega un comentario usando el botón de arriba"}
               </p>
             </div>
           ) : (
-            comments.map((comentario, index) => (
+            filteredComments.map((comentario, index) => (
               <Card
-                key={index}
-                className="shadow-sm hover:shadow-md transition-shadow"
+                key={comentario.id || index}
+                className={cn(
+                  "shadow-sm hover:shadow-md transition-all duration-200",
+                  comentario.taskId
+                    ? "border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/10"
+                    : "border-l-4 border-l-gray-300 dark:border-l-gray-600"
+                )}
               >
-                <CardHeader className="p-3 pb-1 flex flex-row justify-between items-center">
-                  <div className="flex items-center gap-2">
+                <CardHeader className="p-4 pb-3">
+                  {/* Fila superior: Badge y menú */}
+                  <div className="flex justify-between items-start mb-2">
                     <Badge
                       variant="outline"
                       className={cn(
-                        "flex items-center gap-1",
+                        "flex items-center gap-1.5 font-medium",
                         comentario.taskId
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-                          : "bg-gray-50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                          : "bg-gray-50 dark:bg-gray-800/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600"
                       )}
                     >
-                      <div
-                        className={cn(
-                          "w-2 h-2 rounded-full",
-                          comentario.taskId
-                            ? "bg-blue-600 dark:bg-blue-400"
-                            : "bg-gray-500 dark:bg-gray-400"
-                        )}
-                      ></div>
+                      {comentario.taskId ? (
+                        <CheckSquare className="w-3 h-3" />
+                      ) : (
+                        <MessageCircleMore className="w-3 h-3" />
+                      )}
                       {comentario.taskId ? "Tarea" : "Comentario"}
                     </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-gray-400" />
-                    <p className="text-xs text-gray-400">
-                      Lun {format(comentario.createdAt, "EEE dd/MM/yy")} •{" "}
-                      {format(comentario.createdAt, "HH:mm")}
-                    </p>
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4 text-gray-500" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-400 hover:text-gray-600"
+                        >
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
@@ -281,27 +481,50 @@ export const CommentSheet = ({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
+
+                  {/* Fila inferior: Fecha y hora */}
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Clock size={12} />
+                    <span>
+                      {format(comentario.createdAt, "EEE dd/MM/yy", {
+                        locale: es,
+                      })}{" "}
+                      • {format(comentario.createdAt, "HH:mm")}
+                    </span>
+                  </div>
                 </CardHeader>
-                <CardContent className="p-3 pt-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+
+                <CardContent className="px-4 pb-4">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {comentario.content}
                   </p>
                 </CardContent>
-                <CardFooter className="flex flex-row items-center justify-between w-full p-3 pt-2 border-t border-gray-100 dark:border-gray-800">
-                  <p className="text-xs text-gray-400">
-                    By:{" "}
-                    <span className="text-gray-500 dark:text-gray-300">
-                      {comentario.author.name} {comentario.author.role}
-                    </span>
-                  </p>
-                  {comentario.taskId && (
-                    <p className="text-xs text-gray-400">
-                      Entrega:{" "}
-                      <span className="font-medium text-gray-600 dark:text-gray-300">
-                        {format(comentario.createdAt, "EEE dd/MM/yy")}
+
+                <CardFooter className="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Por:
                       </span>
-                    </p>
-                  )}
+                      <span className="text-xs font-medium text-gray-700 max-w-[100px] truncate dark:text-gray-300">
+                        {comentario.author.name}
+                      </span>
+                    </div>
+
+                    {comentario.taskId && (
+                      <div className="flex items-center gap-1">
+                        <CalendarLucide size={12} className="text-gray-400" />
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Entrega:{" "}
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {format(comentario.task!.dueDate, "EEE dd/MM/yy", {
+                              locale: es,
+                            })}
+                          </span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             ))
