@@ -98,6 +98,103 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     enableHiding: false,
   },
   {
+    id: "reclutador",
+    accessorKey: "reclutador",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Reclutador" />
+    ),
+    cell: ({ row }) => {
+      return <RecruiterDropDown row={row} />;
+    },
+    accessorFn: (row) => row.reclutador.id,
+  },
+  {
+    id: "cliente",
+    accessorKey: "cliente",
+    header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
+    cell: ({ row }) => {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.cliente.cuenta}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Cliente</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
+    accessorFn: (row) => row.cliente.cuenta,
+  },
+  {
+    accessorKey: "posicion",
+    header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
+    cell: ({ row }) => {
+      //return <PosicionPopOver row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="flex items-center gap-2" variant="outline">
+              <BriefcaseBusiness size={15} />
+              <div className="max-w-[100px] truncate">
+                {row.original.posicion}
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="h-6 w-6 p-0">
+                    <Info size={16} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-52">
+                  <div className="grid gap-1">
+                    <p className="text-sm">{row.original.posicion}</p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Posicion de la vacante</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    id: "estado",
+    accessorKey: "estado",
+    header: ({ column }) => <SortableHeader column={column} title="Estado" />,
+
+    cell: ({ row }) => {
+      //return <StatusDropdown row={row} />;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" className="w-full">
+              {row.original.estado}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Estado de la vacante</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    id: "comentarios",
+    accessorKey: "comentarios",
+    header: "Comentarios",
+    cell: ({ row }) => (
+      <CommentSheet
+        vacancyId={row.original.id}
+        vacancyOwnerId={row.original.reclutador.id}
+      />
+    ),
+  },
+  {
     id: "asignacion",
     header: "Asignacion",
     accessorKey: "fechaAsignacion",
@@ -195,15 +292,26 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     },
   },
   {
-    id: "reclutador",
-    accessorKey: "reclutador",
+    id: "tiempoTranscurrido",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Reclutador" />
+      <SortableHeader column={column} title="Tiempo trranscurrido" />
     ),
     cell: ({ row }) => {
-      return <RecruiterDropDown row={row} />;
+      const tiempo = row.original.tiempoTranscurrido;
+      return (
+        <div className="flex items-center justify-center">
+          <Button variant="outline" className="w-full">
+            <p>
+              {tiempo ? (
+                <span>{tiempo} dias</span>
+              ) : (
+                <span className="text-red-500">N/A</span>
+              )}
+            </p>
+          </Button>
+        </div>
+      );
     },
-    accessorFn: (row) => row.reclutador.id,
   },
   {
     id: "tipo",
@@ -246,92 +354,6 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorFn: (row) => row.tipo,
   },
   {
-    id: "cliente",
-    accessorKey: "cliente",
-    header: ({ column }) => <SortableHeader column={column} title="Cliente" />,
-    cell: ({ row }) => {
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" className="w-full">
-              {row.original.cliente.cuenta}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Cliente</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
-    accessorFn: (row) => row.cliente.cuenta,
-  },
-  {
-    id: "estado",
-    accessorKey: "estado",
-    header: ({ column }) => <SortableHeader column={column} title="Estado" />,
-
-    cell: ({ row }) => {
-      //return <StatusDropdown row={row} />;
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" className="w-full">
-              {row.original.estado}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Estado de la vacante</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
-  },
-  {
-    accessorKey: "posicion",
-    header: ({ column }) => <SortableHeader column={column} title="Posicion" />,
-    cell: ({ row }) => {
-      //return <PosicionPopOver row={row} />;
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button className="flex items-center gap-2" variant="outline">
-              <BriefcaseBusiness size={15} />
-              <div className="max-w-[100px] truncate">
-                {row.original.posicion}
-              </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="h-6 w-6 p-0">
-                    <Info size={16} />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-52">
-                  <div className="grid gap-1">
-                    <p className="text-sm">{row.original.posicion}</p>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Posicion de la vacante</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
-  },
-  {
-    id: "comentarios",
-    accessorKey: "comentarios",
-    header: "Comentarios",
-    cell: ({ row }) => (
-      <CommentSheet
-        vacancyId={row.original.id}
-        vacancyOwnerId={row.original.reclutador.id}
-      />
-    ),
-  },
-  {
     accessorKey: "fechaUltimaTerna",
     header: ({ column }) => (
       <SortableHeader column={column} title="Fecha Terna" />
@@ -345,28 +367,6 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
             console.log("Fecha actualizada:", nuevaFecha);
           }}
         />
-      );
-    },
-  },
-  {
-    id: "tiempoTranscurrido",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Tiempo trranscurrido" />
-    ),
-    cell: ({ row }) => {
-      const tiempo = row.original.tiempoTranscurrido;
-      return (
-        <div className="flex items-center justify-center">
-          <Button variant="outline" className="w-full">
-            <p>
-              {tiempo ? (
-                <span>{tiempo} dias</span>
-              ) : (
-                <span className="text-red-500">N/A</span>
-              )}
-            </p>
-          </Button>
-        </div>
       );
     },
   },
