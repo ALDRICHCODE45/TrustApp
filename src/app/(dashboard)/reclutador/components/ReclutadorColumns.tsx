@@ -41,7 +41,11 @@ export type VacancyWithRelations = Prisma.VacancyGetPayload<{
   include: {
     reclutador: true;
     cliente: true;
-    candidatoContratado: true;
+    candidatoContratado: {
+      include: {
+        cv: true;
+      };
+    };
     ternaFinal: {
       include: {
         cv: true;
@@ -137,26 +141,13 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
         <Tooltip>
           <TooltipTrigger asChild>
             <Button className="flex items-center gap-2" variant="outline">
-              <BriefcaseBusiness size={15} />
-              <div className="max-w-[100px] truncate">
+              <div className="max-w-[90px] truncate">
                 {row.original.posicion}
               </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="h-6 w-6 p-0">
-                    <Info size={16} />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-52">
-                  <div className="grid gap-1">
-                    <p className="text-sm">{row.original.posicion}</p>
-                  </div>
-                </PopoverContent>
-              </Popover>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Posicion de la vacante</p>
+            <p>{row.original.posicion}</p>
           </TooltipContent>
         </Tooltip>
       );

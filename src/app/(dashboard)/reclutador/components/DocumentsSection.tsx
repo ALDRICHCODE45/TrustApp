@@ -64,6 +64,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AlertDialog } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Función para formatear el tamaño del archivo
 const formatFileSize = (bytes: number): string => {
@@ -235,7 +240,7 @@ export const DocumentsSection = ({
           </SheetHeader>
 
           {/* Documentos existentes */}
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-4 overflow-y-auto h-[calc(100vh-200px)]">
             {vacante.files && vacante.files.length > 0 ? (
               vacante.files.map((file) => (
                 <Card
@@ -308,9 +313,16 @@ export const DocumentsSection = ({
                       </AlertDialog>
 
                       <div>
-                        <div className="font-medium text-lg mb-1">
-                          {file.name}
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="font-medium text-lg mb-1 max-w-[130px] truncate">
+                              {file.name}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-sm">{file.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
                         <div className="text-sm text-muted-foreground">
                           Actualizado el {formatDate(file.updatedAt)}
                         </div>

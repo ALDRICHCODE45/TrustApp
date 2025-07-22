@@ -48,17 +48,30 @@ import {
   Eye,
   Trash2,
   CheckSquare,
+  LoaderCircleIcon,
+  UserRoundX,
+  Pencil,
+  Waypoints,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { KanbanFilters, FilterState } from "./KanbanFilters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { updateVacancyStatus } from "@/actions/vacantes/actions";
+import {
+  deseleccionarCandidato,
+  seleccionarCandidato,
+  updateVacancyStatus,
+} from "@/actions/vacantes/actions";
 import {
   DndContext,
   DragEndEvent,
@@ -142,6 +155,11 @@ import { CommentWithRelations } from "@/types/comment";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { differenceInDays, startOfDay, isAfter } from "date-fns";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Types
 interface ColumnProps {
@@ -752,15 +770,18 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({
               </div>
               <div>
                 <h4 className="font-medium">Candidato contratado</h4>
-                <p className="text-muted-foreground text-sm">
-                  {vacante.candidatoContratado.name}
+                <p className="text-muted-foreground text-sm flex justify-center gap-2 items-center">
+                  {vacante.candidatoContratado.name} -{" "}
+                  {vacante.candidatoContratado.email}
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm">
-              <FileText className="h-4 w-4 mr-1" />
-              Ver CV
-            </Button>
+            <a href={vacante.candidatoContratado.cv?.url || ""} target="_blank">
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-1" />
+                Ver CV
+              </Button>
+            </a>
           </div>
         </CardContent>
       </Card>
@@ -774,6 +795,9 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => {
   const [candidates, setCandidates] = useState<PersonWithRelations[]>(
     vacante.ternaFinal || []
   );
+  const [isSelecting, setIsSelecting] = useState<boolean>(false);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [alertDialogDelete, setAlertDialogDelete] = useState<boolean>(false);
 
   const form = useForm<CreateCandidateFormData>({
     resolver: zodResolver(createCandidateSchema),
@@ -782,6 +806,19 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => {
       phone: "",
       email: "",
       cvFile: undefined,
+    },
+  });
+
+  const onSubmitEdit = (data: CreateCandidateFormData) => {
+    console.log(data);
+  };
+
+  const formEdit = useForm<CreateCandidateFormData>({
+    resolver: zodResolver(createCandidateSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
     },
   });
 
@@ -913,6 +950,98 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => {
           }}
         />
       ));
+    }
+  };
+
+  const handleMarkCandidateAsContratado = async (candidateId: string) => {
+    try {
+      setIsSelecting(true);
+      const response = await seleccionarCandidato(candidateId, vacante.id);
+      if (!response.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al seleccionar al candidato"
+            message={
+              response.message || "El candidato no pudo ser seleccionado"
+            }
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato seleccionado correctamente"
+          message="El candidato ha sido SELECCIONADO"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } catch (err) {
+      console.error(err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al seleccionar al candidato"
+          message="El candidato no pudo ser seleccionado"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } finally {
+      setIsSelecting(false);
+    }
+  };
+
+  const handleDeseleccionarCandidato = async () => {
+    try {
+      setIsSelecting(true);
+      const response = await deseleccionarCandidato(vacante.id);
+      if (!response.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al deseleccionar al candidato"
+            message={
+              response.message || "El candidato no pudo ser deseleccionado"
+            }
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato deseleccionado correctamente"
+          message="El candidato ha sido DESSELECCIONADO"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } catch (err) {
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al deseleccionar al candidato"
+          message="El candidato no pudo ser deseleccionado"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } finally {
+      setIsSelecting(false);
     }
   };
 
@@ -1198,29 +1327,143 @@ const CandidatesSection: React.FC<CandidatesSectionProps> = ({ vacante }) => {
                                 </Link>
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleDeleteCandidate(candidato.id)
-                              }
-                              className="cursor-pointer"
-                            >
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              Seleccionar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleDeleteCandidate(candidato.id)
-                              }
-                              className="cursor-pointer"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                              Eliminar
-                            </DropdownMenuItem>
+
+                            {vacante.candidatoContratadoId === candidato.id ? (
+                              <DropdownMenuItem
+                                onClick={() => handleDeseleccionarCandidato()}
+                                className="cursor-pointer"
+                              >
+                                <UserRoundX className="h-4 w-4 mr-2" />
+                                Deseleccionar
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleMarkCandidateAsContratado(candidato.id);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                {isSelecting ? (
+                                  <LoaderCircleIcon
+                                    className="-ms-1 animate-spin"
+                                    size={16}
+                                    aria-hidden="true"
+                                  />
+                                ) : (
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                )}
+                                Seleccionar
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger>
+                                <Waypoints className="h-4 w-4 mr-2" />
+                                Acciones
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuPortal>
+                                <DropdownMenuSubContent className="z-[9999]">
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      setDialogOpen(true);
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Pencil className="h-4 w-4 mr-2 " />
+                                    Editar
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuItem
+                                    onClick={() => setAlertDialogDelete(true)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuPortal>
+                            </DropdownMenuSub>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
                   </div>
+                  {/* DIALOG PARA ELIMINAR EL CANDIDATO */}
+                  <AlertDialog
+                    open={alertDialogDelete}
+                    onOpenChange={setAlertDialogDelete}
+                  >
+                    <AlertDialogContent className="z-[9999]">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar candidato</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta acción no se puede deshacer. Este candidato será
+                          eliminado permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel asChild>
+                          <Button variant="outline">Cancelar</Button>
+                        </AlertDialogCancel>
+                        <AlertDialogAction asChild>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteCandidate(candidato.id)}
+                          >
+                            Eliminar
+                          </Button>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  {/* DIALOG PARA EDITAR EL CANDIDATO */}
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <form onSubmit={formEdit.handleSubmit(onSubmit)}>
+                      <DialogContent className="z-[9999]">
+                        <DialogHeader>
+                          <DialogTitle>Editar candidato</DialogTitle>
+                          <DialogDescription>
+                            Edite la información del candidato.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4">
+                          <div className="grid gap-3">
+                            <Label htmlFor="name">Nombre completo</Label>
+                            <Input
+                              id="name"
+                              name="name"
+                              defaultValue={candidato.name}
+                            />
+                          </div>
+                          <div className="grid gap-3">
+                            <Label htmlFor="phone">Teléfono</Label>
+                            <Input
+                              id="phone"
+                              name="phone"
+                              defaultValue={candidato.phone || ""}
+                            />
+                          </div>
+
+                          <div className="grid gap-3">
+                            <Label htmlFor="email">Correo electrónico</Label>
+                            <Input
+                              id="email"
+                              name="email"
+                              defaultValue={candidato.email || ""}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancelar</Button>
+                          </DialogClose>
+                          <Button type="submit">Guardar cambios</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </form>
+                  </Dialog>
 
                   {/* Información de estado */}
                   <div className="mt-3 pt-2 border-t">
@@ -2206,7 +2449,16 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ vacante }) => {
                   </div>
 
                   <div>
-                    <div className="font-medium text-lg mb-1">{file.name}</div>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="font-medium text-lg mb-1 max-w-[130px] truncate">
+                          {file.name}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">{file.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <div className="text-sm text-muted-foreground">
                       Actualizado el {formatDate(file.updatedAt)}
                     </div>

@@ -34,7 +34,11 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
       include: {
         reclutador: true,
         cliente: true,
-        candidatoContratado: true,
+        candidatoContratado: {
+          include: {
+            cv: true,
+          },
+        },
         ternaFinal: {
           include: {
             cv: true,

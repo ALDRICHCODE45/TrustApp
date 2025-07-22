@@ -270,3 +270,95 @@ export const deleteVacancy = async (vacancyId: string) => {
     };
   }
 };
+
+export const deseleccionarCandidato = async (vacancyId: string) => {
+  try {
+    const vacancy = await prisma.vacancy.update({
+      where: { id: vacancyId },
+      data: { candidatoContratadoId: null },
+    });
+
+    if (!vacancy) {
+      return {
+        ok: false,
+        message: "La vacante no existe",
+      };
+    }
+
+    revalidatePath("/reclutador");
+    revalidatePath("/reclutador/kanban");
+
+    return { ok: true, message: "Candidato deseleccionado", vacancy };
+  } catch (err) {
+    return {
+      ok: false,
+      message: "Ha ocurrido un error inesperado al deseleccionar al candidato",
+    };
+  }
+};
+
+export const seleccionarCandidato = async (
+  candidateId: string,
+  vacancyId: string
+) => {
+  try {
+    const candidateExists = await prisma.person.findUnique({
+      where: {
+        id: candidateId,
+      },
+    });
+    if (!candidateExists) {
+      return {
+        ok: false,
+        message: "El candidato no existe",
+      };
+    }
+
+    if (
+      !candidateExists.cvFileId ||
+      !candidateExists.email ||
+      !candidateExists.name ||
+      !candidateExists.phone
+    ) {
+      return {
+        ok: false,
+        message:
+          "Los datos del candidato deben llenarse completamente para poder seleccionarlo",
+      };
+    }
+
+    const findVacancyById = await prisma.vacancy.findUnique({
+      where: {
+        id: vacancyId,
+      },
+    });
+    if (!findVacancyById) {
+      return {
+        ok: false,
+        message: "La vacante no existe.. contacte con soporte",
+      };
+    }
+
+    await prisma.vacancy.update({
+      where: {
+        id: vacancyId,
+      },
+      data: {
+        candidatoContratadoId: candidateExists.id,
+      },
+    });
+
+    revalidatePath("/reclutador");
+    revalidatePath("/reclutador/kanban");
+
+    return {
+      ok: true,
+      message: "Candidato seleccionado",
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      message: "Ha ocurrido un error inesperado",
+    };
+  }
+};

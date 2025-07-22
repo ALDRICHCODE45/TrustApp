@@ -14,7 +14,11 @@ const fetchVacancies = async (): Promise<VacancyWithRelations[]> => {
           author: true,
         },
       },
-      candidatoContratado: true,
+      candidatoContratado: {
+        include: {
+          cv: true,
+        },
+      },
       reclutador: true,
       cliente: true,
       ternaFinal: {
