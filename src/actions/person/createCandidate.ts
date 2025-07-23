@@ -5,6 +5,7 @@ import prisma from "@/lib/db";
 import { CreateCandidateFormData } from "@/zod/createCandidateSchema";
 import { uploadFile } from "../files/actions";
 import { FileMetadata } from "@/hooks/use-file-upload";
+import { revalidatePath } from "next/cache";
 
 export async function createCandidate(
   data: CreateCandidateFormData & { cvFile?: File | FileMetadata | undefined },
@@ -39,15 +40,16 @@ export async function createCandidate(
           message: "Error al subir el archivo",
         };
       }
-      // 2. Crear VacancyFile con los datos del archivo
+      // 2. Crear VacancyFile con los datos del archivo,
+      // No se necesita vacancyId porque solo queremos que el documento
+      // aparezca en el person no el documentos de la vacante
       const vacancyFile = await prisma.vacancyFile.create({
         data: {
           url: uploadedUrl.url!,
           name: data.cvFile.name,
           mimeType: data.cvFile.type,
           size: data.cvFile.size,
-          authorId: currentUserId, // obtener del contexto
-          vacancyId: vacancyId,
+          authorId: currentUserId,
         },
       });
       // 3. Crear Person con cvFileId
@@ -96,11 +98,6 @@ export async function createCandidate(
         person,
       };
     }
-
-    return {
-      ok: false,
-      message: "Error al crear candidato",
-    };
   } catch (error) {
     console.error("Error al crear candidato:", error);
     throw new Error("Error al crear candidato para la vacante");
@@ -109,9 +106,12 @@ export async function createCandidate(
 
 export async function deleteCandidate(candidateId: string) {
   try {
-    const person = await prisma.person.delete({
+    await prisma.person.delete({
       where: { id: candidateId },
     });
+    revalidatePath("/list/reclutamiento");
+    revalidatePath("/reclutador/kanban");
+    revalidatePath("/reclutador");
     return {
       ok: true,
       message: "Candidato eliminado exitosamente",
@@ -124,3 +124,41 @@ export async function deleteCandidate(candidateId: string) {
     };
   }
 }
+
+export const updateCandidate = async (
+  candidateId: string,
+  data: CreateCandidateFormData
+) => {
+  try {
+    const user = await auth();
+    if (!user?.user) {
+      return {
+        ok: false,
+        message: "Usuario no autenticado",
+      };
+    }
+    // TODO: Implementar la lógica para actualizar el candidato
+    const person = await prisma.person.update({
+      where: { id: candidateId },
+      data: {
+        name: data.name,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+      },
+    });
+    revalidatePath("/list/reclutamiento");
+    revalidatePath("/reclutador/kanban");
+    revalidatePath("/reclutador");
+    return {
+      ok: true,
+      message: "Candidato actualizado exitosamente",
+      person,
+    };
+  } catch (error) {
+    console.error("Error al actualizar candidato:", error);
+    return {
+      ok: false,
+      message: "Error al actualizar candidato",
+    };
+  }
+};

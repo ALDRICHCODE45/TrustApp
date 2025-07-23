@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Ban,
   Bell,
@@ -260,7 +259,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                             disabled={isDeleting || isMarkingRead}
                           >
                             <span className="sr-only">Abrir Menú</span>
-                            <MoreVertical className="text-black" />
+                            <MoreVertical />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

@@ -1,16 +1,9 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -21,6 +14,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -47,26 +46,39 @@ import {
   X,
   Phone,
   ExternalLink,
-  CircleUser,
-  File,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Download,
 } from "lucide-react";
-import { Person, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   createCandidateSchema,
   CreateCandidateFormData,
 } from "@/zod/createCandidateSchema";
-import { createCandidate } from "@/actions/person/createCandidate";
-import { useFileUpload } from "@/hooks/use-file-upload";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import Link from "next/link";
+  createCandidate,
+  deleteCandidate,
+  updateCandidate,
+} from "@/actions/person/createCandidate";
+import { useFileUpload } from "@/hooks/use-file-upload";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import {
+  AlertDialog,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  uploadNewCvToCandidate,
+  updateNewCvToCandidate,
+  deleteCvFromCandidate,
+} from "@/actions/person/actions";
 
 export type PersonWithRelations = Prisma.PersonGetPayload<{
   include: {
@@ -81,8 +93,17 @@ export const FinalTernaSheet = ({
   ternaFinal: PersonWithRelations[];
   vacancyId: string;
 }) => {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentEditingCandidate, setCurrentEditingCandidate] =
+    useState<PersonWithRelations | null>(null);
+
+  const formEdit = useForm<CreateCandidateFormData>({
+    resolver: zodResolver(createCandidateSchema),
+  });
 
   const form = useForm<CreateCandidateFormData>({
     resolver: zodResolver(createCandidateSchema),
@@ -100,6 +121,217 @@ export const FinalTernaSheet = ({
     accept: ".pdf,.docx,.doc,.txt",
     multiple: false,
   });
+
+  // Hook separado para manejo de CV en edición
+  const [cvEditUploadState, cvEditUploadActions] = useFileUpload({
+    maxFiles: 1,
+    maxSize: 5 * 1024 * 1024, // 5MB
+    accept: ".pdf,.docx,.doc,.txt",
+    multiple: false,
+  });
+
+  // Funciones para manejo del CV (vacías para que las implemente el usuario)
+  const handleUploadNewCV = async (file: File, candidateId: string) => {
+    try {
+      const result = await uploadNewCvToCandidate(candidateId, file);
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al subir el CV"
+            message="El CV no pudo ser subido"
+            type="error"
+            onClick={() => toast.dismiss(t)}
+          />
+        ));
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="CV subido exitosamente"
+          message="El CV ha sido subido exitosamente"
+          type="success"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    } catch (err) {
+      console.error("Error al subir el CV:", err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al subir el CV"
+          message="El CV no pudo ser subido"
+          type="error"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    }
+  };
+
+  const handleUpdateCV = async (file: File, candidateId: string) => {
+    try {
+      const result = await updateNewCvToCandidate(candidateId, file);
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al actualizar el CV"
+            message="El CV no pudo ser actualizado"
+            type="error"
+            onClick={() => toast.dismiss(t)}
+          />
+        ));
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="CV actualizado exitosamente"
+          message="El CV ha sido actualizado exitosamente"
+          type="success"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    } catch (err) {
+      console.error("Error al actualizar el CV:", err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al actualizar el CV"
+          message="El CV no pudo ser actualizado"
+          type="error"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    }
+  };
+
+  const handleDeleteCV = async (candidateId: string) => {
+    try {
+      const result = await deleteCvFromCandidate(candidateId);
+      if (!result?.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar el CV"
+            message="El CV no pudo ser eliminado"
+            type="error"
+            onClick={() => toast.dismiss(t)}
+          />
+        ));
+        return;
+      }
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="CV eliminado exitosamente"
+          message="El CV ha sido eliminado exitosamente"
+          type="success"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    } catch (err) {
+      console.error("Error al eliminar el CV:", err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al eliminar el CV"
+          message="El CV no pudo ser eliminado"
+          type="error"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    }
+  };
+
+  // Funciones para manejo de archivos CV en edición
+  const handleCvEditFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files) {
+      cvEditUploadActions.addFiles(files);
+    }
+  };
+
+  const removeCvEditFile = (fileId: string) => {
+    cvEditUploadActions.removeFile(fileId);
+  };
+
+  const handleSaveCV = async () => {
+    if (!currentEditingCandidate?.id) return;
+
+    const cvFile = cvEditUploadState.files[0]?.file as File;
+    if (!cvFile) return;
+
+    try {
+      if (currentEditingCandidate.cvFileId) {
+        // Ya tiene CV, actualizar
+        await handleUpdateCV(cvFile, currentEditingCandidate.id);
+      } else {
+        // No tiene CV, subir nuevo
+        await handleUploadNewCV(cvFile, currentEditingCandidate.id);
+      }
+
+      // Limpiar estado después de guardar
+      cvEditUploadActions.clearFiles();
+    } catch (error) {
+      console.error("Error al procesar CV:", error);
+    }
+  };
+
+  const handleRemoveCurrentCV = async () => {
+    if (!currentEditingCandidate?.id || !currentEditingCandidate.cvFileId)
+      return;
+
+    try {
+      await handleDeleteCV(currentEditingCandidate.id);
+    } catch (error) {
+      console.error("Error al eliminar CV:", error);
+    }
+  };
+
+  const onSubmitEdit = async (data: CreateCandidateFormData) => {
+    try {
+      if (!currentEditingCandidate?.id) {
+        return;
+      }
+      console.log("Editando candidato:", {
+        candidatoId: currentEditingCandidate?.id,
+        datosOriginales: currentEditingCandidate,
+        datosNuevos: data,
+      });
+
+      const result = await updateCandidate(currentEditingCandidate.id, data);
+      console.log("Resultado de la actualización:", result);
+
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al actualizar candidato"
+            message="El candidato no pudo ser actualizado"
+            type="error"
+            onClick={() => toast.dismiss(t)}
+          />
+        ));
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato actualizado exitosamente"
+          message="El candidato ha sido actualizado exitosamente"
+          type="success"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+      formEdit.reset();
+      setIsEditDialogOpen(false);
+      setCurrentEditingCandidate(null);
+      formEdit.reset();
+    } catch (err) {
+      console.error("Error al actualizar candidato:", err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al actualizar candidato"
+          message="El candidato no pudo ser actualizado"
+          type="error"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    }
+  };
 
   const onSubmit = async (data: CreateCandidateFormData) => {
     setIsSubmitting(true);
@@ -149,6 +381,58 @@ export const FinalTernaSheet = ({
 
   const removeFile = (fileId: string) => {
     fileUploadActions.removeFile(fileId);
+  };
+
+  const handleEditCandidate = (candidato: PersonWithRelations) => {
+    setCurrentEditingCandidate(candidato);
+    // Limpiar estado del CV al abrir el dialog
+    cvEditUploadActions.clearFiles();
+    // Configurar los valores del formulario con los datos del candidato
+    formEdit.reset({
+      name: candidato.name,
+      phone: candidato.phone || "",
+      email: candidato.email || "",
+      cvFile: undefined,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteCandidate = async (candidateId: string) => {
+    try {
+      console.log("Eliminando candidato:", candidateId);
+
+      const result = await deleteCandidate(candidateId);
+      if (!result.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar candidato"
+            message="El candidato no pudo ser eliminado"
+            type="error"
+            onClick={() => toast.dismiss(t)}
+          />
+        ));
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Candidato eliminado exitosamente"
+          message="El candidato ha sido eliminado exitosamente"
+          type="success"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    } catch (err) {
+      console.error("Error al eliminar candidato:", err);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al eliminar candidato"
+          message="El candidato no pudo ser eliminado (Error desconocido)"
+          type="error"
+          onClick={() => toast.dismiss(t)}
+        />
+      ));
+    }
   };
 
   return (
@@ -346,15 +630,297 @@ export const FinalTernaSheet = ({
                 className="shadow-sm hover:shadow-md transition-shadow border-l-2 border-l-primary"
               >
                 <CardHeader className="p-3 pb-1 flex flex-row justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base font-medium">
-                      {candidato.name}
-                    </CardTitle>
-                    <CardDescription className="text-xs text-gray-400">
-                      {candidato.position}
-                    </CardDescription>
+                  <div className="flex  justify-between items-center w-full">
+                    <div className="space-y-1">
+                      <CardTitle className="text-base font-medium">
+                        {candidato.name}
+                      </CardTitle>
+                    </div>
+                    <div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Abrir menú</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-32">
+                          <DropdownMenuItem
+                            onClick={() => handleEditCandidate(candidato)}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setIsDeleteDialogOpen(true)}
+                            className="text-red-600 focus:text-red-600 cursor-pointer"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
+                {/* DIALOG PARA EDITAR CANDIDATO */}
+                <Dialog
+                  open={isEditDialogOpen}
+                  onOpenChange={setIsEditDialogOpen}
+                >
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Editar candidato</DialogTitle>
+                      <DialogDescription>
+                        Modifica la información del candidato y guarda los
+                        cambios.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...formEdit}>
+                      <form
+                        onSubmit={formEdit.handleSubmit(onSubmitEdit)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={formEdit.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre completo *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Juan Pérez" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={formEdit.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Teléfono</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="555-123-4567"
+                                  type="tel"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={formEdit.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Correo electrónico</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="candidato@ejemplo.com"
+                                  type="email"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant="outline">
+                              Cancelar
+                            </Button>
+                          </DialogClose>
+                          <Button type="submit">Guardar cambios</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+
+                    {/* Sección separada para manejo del CV */}
+                    <div className="border-t pt-4 mt-4">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="cv-edit-upload">
+                            Curriculum Vitae (CV)
+                          </Label>
+
+                          {/* Mostrar CV actual si existe */}
+                          {currentEditingCandidate?.cvFileId && (
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-4 w-4 text-blue-600" />
+                                  <div>
+                                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                      CV Actual
+                                    </span>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <a
+                                        href={
+                                          typeof currentEditingCandidate.cv ===
+                                          "string"
+                                            ? currentEditingCandidate.cv
+                                            : (
+                                                currentEditingCandidate.cv as any
+                                              )?.url || ""
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                                      >
+                                        <Download className="h-3 w-3" />
+                                        Ver/Descargar
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleRemoveCurrentCV}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Área para subir nuevo CV o reemplazar actual */}
+                          {cvEditUploadState.files.length === 0 ? (
+                            <div
+                              className="border-input bg-background hover:bg-accent flex w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-6 transition-colors"
+                              onClick={() =>
+                                document
+                                  .getElementById("cv-edit-upload")
+                                  ?.click()
+                              }
+                            >
+                              <UploadIcon className="text-muted-foreground mb-2 h-6 w-6" />
+                              <div className="text-muted-foreground text-sm">
+                                {currentEditingCandidate?.cvFileId
+                                  ? "Arrastra y suelta o haz clic para reemplazar CV"
+                                  : "Arrastra y suelta o haz clic para subir CV"}
+                              </div>
+                              <div className="text-muted-foreground/80 text-xs mt-1">
+                                PDF, DOCX o TXT (máx. 5MB)
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {cvEditUploadState.files.map((file) => (
+                                <div
+                                  key={file.id}
+                                  className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-green-600" />
+                                    <div>
+                                      <span className="text-sm font-medium text-green-900 dark:text-green-100 truncate">
+                                        {file.file.name}
+                                      </span>
+                                      <div className="text-xs text-green-600 dark:text-green-400">
+                                        Nuevo CV - No guardado
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeCvEditFile(file.id)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    document
+                                      .getElementById("cv-edit-upload")
+                                      ?.click()
+                                  }
+                                  className="flex-1"
+                                >
+                                  <UploadIcon className="h-4 w-4 mr-2" />
+                                  Cambiar archivo
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={handleSaveCV}
+                                  className="flex-1"
+                                >
+                                  Guardar CV
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          <input
+                            id="cv-edit-upload"
+                            type="file"
+                            className="sr-only"
+                            accept=".pdf,.docx,.doc,.txt"
+                            onChange={handleCvEditFileUpload}
+                          />
+
+                          {cvEditUploadState.errors.length > 0 && (
+                            <div className="text-sm text-red-600">
+                              {cvEditUploadState.errors.map((error, index) => (
+                                <div key={index}>{error}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {/* Alert DIALOG PARA ELIMINAR CANDIDATO */}
+                <AlertDialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Eliminar candidato</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no puede ser deshecha. Esto eliminará el
+                        candidato permanentemente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleDeleteCandidate(candidato.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 <CardContent className="p-3 pt-1 space-y-2">
                   <div className="flex items-center gap-2 justify-between">

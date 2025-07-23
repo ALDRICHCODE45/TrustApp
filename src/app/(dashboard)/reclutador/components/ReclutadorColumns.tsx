@@ -2,22 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  BookCheck,
-  BriefcaseBusiness,
-  ChevronDown,
-  ChevronUp,
-  Info,
-  SortAsc,
-  UserPen,
-  UserX,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, SortAsc } from "lucide-react";
 import { ChangeDateComponent } from "../../list/reclutamiento/components/AsignacionDatePickerComponent";
 import { RecruiterDropDown } from "../../list/reclutamiento/components/RecruiterDropdown";
-import { ClientesDropDown } from "../../list/reclutamiento/components/ClientesDropdown";
-import { TypeDropdown } from "../../list/reclutamiento/components/TypeDropDown";
-import { StatusDropdown } from "../../list/reclutamiento/components/StatusDropdown";
-import { PosicionPopOver } from "../../list/reclutamiento/components/PosicionPopOver";
 import { CommentSheet } from "../../list/reclutamiento/components/CommentSheet";
 import { FinalTernaSheet } from "../../list/reclutamiento/components/FinalTernaSheet";
 import { ActionsRecruitment } from "../../list/reclutamiento/components/ActionsRecruitment";
@@ -28,14 +15,10 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { es, id } from "date-fns/locale";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { DocumentsSection } from "./DocumentsSection";
+import { CandidatoContratadoDrawer } from "./CandidatoContratadoDrawer";
 
 export type VacancyWithRelations = Prisma.VacancyGetPayload<{
   include: {
@@ -382,13 +365,11 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     accessorKey: "candidatoContratado",
     header: "Contratado",
     cell: ({ row }) => (
-      <Button variant="outline" className="w-full">
-        {row.original.candidatoContratado ? (
-          <p>{row.original.candidatoContratado.name}</p>
-        ) : (
-          <UserX className="text-gray-400" />
-        )}
-      </Button>
+      <div className="flex items-center justify-center w-full">
+        <CandidatoContratadoDrawer
+          candidatoContratado={row.original.candidatoContratado!}
+        />
+      </div>
     ),
   },
   {
