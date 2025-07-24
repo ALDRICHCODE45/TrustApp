@@ -219,7 +219,7 @@ export function NotificationItem({
                   disabled={isDeleting || isMarkingRead}
                 >
                   <Building2 className="h-4 w-4" />
-                  Ver Posición de Vacante
+                  Vacante
                 </DropdownMenuItem>
               )}
 

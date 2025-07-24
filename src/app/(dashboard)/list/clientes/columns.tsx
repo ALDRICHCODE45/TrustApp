@@ -16,7 +16,7 @@ import { ComentariosSheet } from "../../cliente/[id]/components/ComentariosSheet
 import { FacturacionSheet } from "./components/Facturacion_instrucciones";
 import { ClientesActions } from "./components/ClientesActions";
 import { UserClientDropDown } from "./components/UserClientDropDown";
-import { ClienteModalidad, Prisma } from "@prisma/client";
+import { ClienteModalidad, Prisma, VacancyEstado } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -24,6 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { GetCounStatusByClient } from "./columnComponents/GetCounStatusByClient";
 
 export type ClientWithRelations = Prisma.ClientGetPayload<{
   include: {
@@ -123,43 +124,20 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     accessorKey: "asignadas",
     header: "Asignadas",
     cell: ({ row }) => {
-      const asignadas = row.original.asignadas;
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" className="flex gap-1 items-center">
-              <ArrowRightToLine size={15} className="text-gray-500" />
-              <span>
-                {asignadas ?? <span className="text-red-500">N/A</span>}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Vacantes asignadas</p>
-          </TooltipContent>
-        </Tooltip>
-      );
+      return <GetCounStatusByClient clientId={row.original.id} />;
     },
   },
   {
     accessorKey: "perdidas",
     header: "Perdidas",
     cell: ({ row }) => {
-      const perdidas = row.original.perdidas;
       return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline">
-              <p className="flex gap-1 items-center">
-                <ArrowDownToLine size={15} className="text-gray-500" />
-                {perdidas ?? <span className="text-red-500">N/A</span>}
-              </p>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Vacantes perdidas</p>
-          </TooltipContent>
-        </Tooltip>
+        <>
+          <GetCounStatusByClient
+            clientId={row.original.id}
+            status={VacancyEstado.Perdida}
+          />
+        </>
       );
     },
   },
@@ -167,23 +145,12 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     accessorKey: "canceladas",
     header: "Canceladas",
     cell: ({ row }) => {
-      const canceladas = row.original.canceladas;
-
       return (
         <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline">
-                <p className="flex gap-1 items-center">
-                  <CircleOff size={15} className="text-gray-500" />
-                  {canceladas ?? <span className="text-red-500">N/A</span>}
-                </p>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Vacantes canceladas</p>
-            </TooltipContent>
-          </Tooltip>
+          <GetCounStatusByClient
+            clientId={row.original.id}
+            status={VacancyEstado.Cancelada}
+          />
         </>
       );
     },
@@ -192,21 +159,13 @@ export const clientesColumns: ColumnDef<ClientWithRelations>[] = [
     accessorKey: "placements",
     header: "Placements",
     cell: ({ row }) => {
-      const placements = row.original.placements;
       return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline">
-              <p className="flex gap-1 items-center">
-                <CircleCheck size={15} className="text-gray-500" />
-                {placements ?? <span className="text-red-500">N/A</span>}
-              </p>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Vacantes reclutadas</p>
-          </TooltipContent>
-        </Tooltip>
+        <>
+          <GetCounStatusByClient
+            clientId={row.original.id}
+            status={VacancyEstado.Placement}
+          />
+        </>
       );
     },
   },

@@ -12,56 +12,87 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { createSubSector } from "@/actions/subsectores/actions";
 import { toast } from "sonner";
+import { Building2, Plus, Loader2 } from "lucide-react";
 
 export const CreateSubSectorForm = () => {
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const formData = new FormData(e.target as HTMLFormElement);
     const subsector = formData.get("subsector") as string;
 
     try {
       const response = await createSubSector(subsector);
       if (response.ok) {
-        toast.success(response.message);
+        toast.success("¡Subsector creado exitosamente!");
         // Limpiar el formulario después del éxito
         (e.target as HTMLFormElement).reset();
       } else {
-        toast.error(response.message);
+        toast.error("Error al crear el subsector");
       }
     } catch (error) {
-      toast.error("Error al crear el subsector");
+      toast.error("Error inesperado");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card>
       <CardHeader>
-        <CardTitle>Crea un nuevo subsector</CardTitle>
-        <CardDescription>
-          Ingresa el nombre del subsector que deseas crear.
-        </CardDescription>
+        <div className="">
+          <div>
+            <CardTitle>Crear Subsector</CardTitle>
+            <CardDescription>
+              Define un nuevo subsector para categorizar mejor tus leads
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} id="subsector-form">
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="subsector">Nombre del subsector</Label>
-              <Input
-                id="subsector"
-                name="subsector"
-                type="text"
-                placeholder="Ej: Tecnologia"
-                required
-              />
-            </div>
+      <Separator />
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} id="subsector-form" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="subsector">Nombre del subsector</Label>
+            <Input
+              id="subsector"
+              name="subsector"
+              type="text"
+              placeholder="Ej: Tecnología, Marketing Digital, Consultoría..."
+              required
+              disabled={isLoading}
+            />
+            <p className="text-xs text-muted-foreground">
+              Usa nombres descriptivos para una mejor organización
+            </p>
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button type="submit" form="subsector-form" className="w-full">
-          Crear subsector
+      <Separator />
+      <CardFooter>
+        <Button
+          type="submit"
+          form="subsector-form"
+          disabled={isLoading}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creando...
+            </>
+          ) : (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Crear Subsector
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

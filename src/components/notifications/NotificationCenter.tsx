@@ -13,12 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Bell, Ban, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Notification,
-  NotificationStatus,
-  NotificationType,
-  Prisma,
-} from "@prisma/client";
+import { NotificationStatus, Prisma } from "@prisma/client";
 import {
   NotificationFilters,
   NotificationFilters as NotificationFiltersType,
@@ -29,7 +24,6 @@ import {
   deleteNotification,
   markAllAsRead,
   deleteAllRead,
-  getNotificationStats,
 } from "@/actions/notifications/actions";
 
 type NotificationWithTask = Prisma.NotificationGetPayload<{

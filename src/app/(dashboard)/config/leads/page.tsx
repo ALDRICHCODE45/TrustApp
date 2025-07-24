@@ -1,16 +1,17 @@
 import prisma from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrigenesSections } from "./components/OrigenesSection";
-import { SectoresSection } from "./components/SectoresSection";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { CreateSubSectorForm } from "./components/CreateSubSectorForm";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Construction } from "lucide-react";
 
 const getAllOrigenes = async () => {
   try {
@@ -29,55 +30,84 @@ const getAllSectores = async () => {
     throw new Error("Error al cargar sectores");
   }
 };
+
 const LeadsPage = async () => {
   const origenes = await getAllOrigenes();
   const sectores = await getAllSectores();
 
   return (
-    <div className="flex flex-col h-screen ">
-      {/* Header fijo */}
-      <div className="flex-shrink-0 px-6 py-4">
-        <div className="mb-2">
-          <h1 className="text-3xl font-bold">Configuración de Leads</h1>
-          <p className="mt-1">
-            Configure sus ajustes y preferencias de gestión de leads.
-          </p>
+    <div className="space-y-6">
+      {/* Header simple */}
+      <div>
+        <div className="">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Configuración de Leads
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Gestiona los orígenes y sectores de tus leads
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Tabs con scroll */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs defaultValue="origenes" className="flex flex-col h-full">
-          {/* TabsList fijo */}
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="origenes">Orígenes</TabsTrigger>
-            <TabsTrigger value="sectores">Sectores</TabsTrigger>
-          </TabsList>
+      {/* Tabs minimalistas */}
+      <Tabs defaultValue="origenes" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="origenes" className="">
+            Orígenes
+            <Badge variant="secondary" className="text-xs">
+              {origenes.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="sectores" className="">
+            Sectores
+            <Badge variant="secondary" className="text-xs">
+              {sectores.length}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Contenido con scroll */}
-          <div className="flex-1 overflow-hidden">
-            <TabsContent
-              value="origenes"
-              className="h-full overflow-y-auto px-6 py-6 space-y-6 data-[state=inactive]:hidden"
-            >
-              <OrigenesSections origenes={origenes} />
-            </TabsContent>
+        <TabsContent value="origenes" className="space-y-6">
+          <OrigenesSections origenes={origenes} />
+        </TabsContent>
 
-            <TabsContent
-              value="sectores"
-              className="h-full overflow-y-auto px-6 py-6 space-y-6 data-[state=inactive]:hidden"
-            >
-              {/* <SectoresSection sectores={sectores} /> */}
+        <TabsContent value="sectores" className="space-y-6">
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
               <Card>
-                <CardHeader>En Construccion</CardHeader>
-                <CardContent>Seccion en Construccion.</CardContent>
-                <CardFooter>Pronta liberacion</CardFooter>
-                <CreateSubSectorForm />
+                <CardHeader>
+                  <div className="">
+                    <div>
+                      <CardTitle>Gestión de Sectores</CardTitle>
+                      <CardDescription>
+                        Esta sección está en desarrollo
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <Separator />
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <Construction className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      Funcionalidad en Desarrollo
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Estamos trabajando en nuevas características para la
+                      gestión de sectores que estarán disponibles pronto.
+                    </p>
+                    <Badge variant="outline">Próximamente</Badge>
+                  </div>
+                </CardContent>
               </Card>
-            </TabsContent>
+            </div>
+            <div className="lg:col-span-1">
+              <CreateSubSectorForm />
+            </div>
           </div>
-        </Tabs>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -297,7 +297,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
                               disabled={isDeleting || isMarkingRead}
                             >
                               <Building2 />
-                              Ver Posición de Vacante
+                              Vacante
                             </DropdownMenuItem>
                           )}
 
