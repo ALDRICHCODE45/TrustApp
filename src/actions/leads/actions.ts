@@ -8,6 +8,64 @@ import { revalidatePath } from "next/cache";
 import { User, Role, LeadStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
+export const addEtiqueta = async (
+  contactoId: string,
+  etiqueta: LeadStatus | "none"
+) => {
+  try {
+    const contacto = await prisma.person.findUnique({
+      where: {
+        id: contactoId,
+      },
+    });
+    console.log({ contacto });
+
+    if (!contacto) {
+      return {
+        ok: false,
+        message: "Contacto no encontrado",
+      };
+    }
+    if (etiqueta !== "none") {
+      await prisma.person.update({
+        where: {
+          id: contactoId,
+        },
+        data: {
+          etiqueta: etiqueta,
+        },
+      });
+      revalidatePath("/leads/kanban");
+      revalidatePath("/leads");
+      revalidatePath("/list/leads");
+      return {
+        ok: true,
+        message: "Etiqueta agregada correctamente",
+      };
+    }
+    await prisma.person.update({
+      where: {
+        id: contactoId,
+      },
+      data: {
+        etiqueta: undefined,
+      },
+    });
+    revalidatePath("/leads/kanban");
+    revalidatePath("/leads");
+    revalidatePath("/list/leads");
+    return {
+      ok: true,
+      message: "Etiqueta eliminada correctamente",
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      message: "Error al agregar la etiqueta",
+    };
+  }
+};
+
 export const editLeadByIdAndCreatePreClient = async (
   formData: FormData,
   leadId: string

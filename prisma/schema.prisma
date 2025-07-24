@@ -114,15 +114,16 @@ enum LeadStatus {
 }
 
 model Lead {
-  id               String     @id @default(cuid())
+  id               String      @id @default(cuid())
   empresa          String
   link             String
-  status           LeadStatus @default(Contacto)
+  status           LeadStatus  @default(Contacto)
   contactos        Person[]
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
   numero_empleados Int?
   ubicacion        String?
+  etiqueta         LeadStatus? @default(Contacto)
 
   // Relaciones con Sector y Origen
   sectorId       String

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   MoreVertical,
@@ -17,6 +17,7 @@ import {
   Calendar,
   CalendarPlus,
   CircleUser,
+  Tag,
 } from "lucide-react";
 import {
   Card,
@@ -34,11 +35,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Person, Prisma } from "@prisma/client";
+import { LeadStatus, Person, Prisma } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -70,7 +78,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createTaskFromContact } from "@/actions/tasks/actions";
@@ -81,6 +89,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LeadWithRelations } from "../kanban/page";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import { addEtiqueta } from "@/actions/leads/actions";
+import { Badge } from "@/components/ui/badge";
+
+const getEtiquetaColor = (etiqueta: LeadStatus | "none") => {
+  switch (etiqueta) {
+    case LeadStatus.ContactoCalido:
+      return "bg-blue-500 text-white";
+    case LeadStatus.SocialSelling:
+      return "bg-green-500 text-white";
+    case LeadStatus.CitaAgendada:
+      return "bg-yellow-500 text-white";
+    case LeadStatus.CitaAtendida:
+      return "bg-red-500 text-white";
+    case LeadStatus.CitaValidada:
+      return "bg-purple-500 text-white";
+    case LeadStatus.Asignadas:
+      return "bg-orange-500 text-white";
+    case LeadStatus.StandBy:
+      return "bg-gray-500 text-white";
+    default:
+      return "bg-gray-500 text-white";
+  }
+};
 
 // Definición de tipos
 interface ContactoCardProps {
@@ -139,6 +171,10 @@ export const ContactoCard = ({
   const [openSeguimiento, setOpenSeguimiento] = useState<boolean>(false);
   const [openDelete, setIsOpenDelete] = useState(false);
 
+  const [etiqueta, setEtiqueta] = useState<LeadStatus | "none">(
+    contacto.etiqueta ?? "none"
+  );
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsPending(true);
@@ -177,6 +213,48 @@ export const ContactoCard = ({
     } finally {
       setIsPending(false);
       setOpenDialog(false);
+    }
+  };
+
+  const handleAddEtiqueta = async (newEtiqueta: LeadStatus | "none") => {
+    try {
+      const response = await addEtiqueta(contacto.id, newEtiqueta);
+      if (!response.ok) {
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+            message={response.message}
+            type="error"
+          />
+        ));
+        return;
+      }
+
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Etiqueta agregada"
+          message={response.message}
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
+    } catch (error) {
+      console.error("Error adding etiqueta:", error);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Ah ocurrido un error"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 
@@ -258,6 +336,49 @@ export const ContactoCard = ({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2">
+                  <Tag />
+                  <span>Etiqueta</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="z-[9999]">
+                    <DropdownMenuRadioGroup
+                      value={etiqueta}
+                      onValueChange={async (value) => {
+                        const newEtiqueta = value as LeadStatus | "none";
+                        setEtiqueta(newEtiqueta);
+                        await handleAddEtiqueta(newEtiqueta);
+                      }}
+                    >
+                      <DropdownMenuRadioItem value="none">
+                        Sin etiqueta
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.ContactoCalido}>
+                        Contacto calido
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.SocialSelling}>
+                        Social selling
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.CitaAgendada}>
+                        Cita agendada
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.CitaAtendida}>
+                        Cita atendida
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.CitaValidada}>
+                        Cita validada
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.Asignadas}>
+                        Asignadas
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value={LeadStatus.StandBy}>
+                        Stand by
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
 
               <DropdownMenuItem
                 onClick={() => setOpenSeguimiento(true)}
@@ -307,6 +428,11 @@ export const ContactoCard = ({
                     "Sin Linkedin"
                   )}
                 </p>
+              </div>
+              <div className="flex gap-1 items-center mt-2">
+                <Badge variant="outline" className={getEtiquetaColor(etiqueta)}>
+                  {etiqueta === "none" ? "Ninguna" : etiqueta}
+                </Badge>
               </div>
             </div>
           </div>
