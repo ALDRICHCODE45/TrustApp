@@ -24,6 +24,7 @@ import { TaskCard } from "./TaskCard";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 
 // Tipos
 export type TaskWithUsers = Prisma.TaskGetPayload<{
@@ -232,7 +233,16 @@ export const TaskKanbanBoard = ({
       const reorderedTasks = [...otherTasks, ...sourceColumnTasks];
 
       setTasks(reorderedTasks);
-      toast.success("Orden actualizado");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Orden actualizado"
+          message="El orden de las tareas se ha actualizado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       return;
     }
 
@@ -248,11 +258,29 @@ export const TaskKanbanBoard = ({
 
       try {
         await toggleTaskStatus(user.id, draggableId);
-        toast.success("Estado actualizado");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Estado actualizado"
+            message="El estado de la tarea se ha actualizado correctamente"
+            type="success"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } catch (error) {
         // Revertir cambio si hay error
         setTasks(tasks);
-        toast.error("Error al actualizar");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message="Error al actualizar"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     }
   };
@@ -279,7 +307,16 @@ export const TaskKanbanBoard = ({
         )
       );
     } catch (error) {
-      toast.error("Error al actualizar");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Error al actualizar"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 
@@ -288,14 +325,41 @@ export const TaskKanbanBoard = ({
     try {
       const result = await deleteTask(user.id, taskId);
       if (!result.ok) {
-        toast.error(result.message);
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message={result.message}
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
         return;
       }
 
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-      toast.success("Tarea eliminada");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Tarea eliminada"
+          message="La tarea se ha eliminado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } catch (error) {
-      toast.error("Error al eliminar");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Error al eliminar"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 
@@ -329,7 +393,16 @@ export const TaskKanbanBoard = ({
         )
       );
     } catch (error) {
-      toast.error("Error al editar");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Error al editar"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 
@@ -357,16 +430,43 @@ export const TaskKanbanBoard = ({
     try {
       const { ok, message } = await createTask(formData);
       if (!ok) {
-        toast.error(message);
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message={message}
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
         return;
       }
 
-      toast.success("Tarea creada");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Tarea creada"
+          message="La tarea se ha creado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
 
       // Recargar para obtener las tareas ordenadas correctamente
       window.location.reload();
     } catch (error) {
-      toast.error("Error al crear");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Error al crear"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 

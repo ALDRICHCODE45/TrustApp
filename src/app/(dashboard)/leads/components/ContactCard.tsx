@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Mail,
   MoreVertical,
@@ -299,43 +299,6 @@ export const ContactoCard = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-[9999]">
-              <DropdownMenuItem
-                onClick={() => setOpenDialog(true)}
-                className="cursor-pointer"
-              >
-                <Edit />
-                <span>Editar</span>
-              </DropdownMenuItem>
-              <AlertDialog open={openDelete} onOpenChange={setIsOpenDelete}>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className="cursor-pointer text-red-500"
-                  >
-                    <Trash2 className=" h-4 w-4" />
-                    Eliminar
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Se eliminará
-                      permanentemente.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setIsOpenDelete(false)}>
-                      Cancelar
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deleteContact(contacto.id)}
-                    >
-                      Sí, eliminar.
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2">
                   <Tag />
@@ -387,6 +350,48 @@ export const ContactoCard = ({
                 <GalleryHorizontalEnd />
                 <span>Seguimiento</span>
               </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => setOpenDialog(true)}
+                className="cursor-pointer"
+              >
+                <Edit />
+                <span>Editar</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <AlertDialog open={openDelete} onOpenChange={setIsOpenDelete}>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer"
+                    variant="destructive"
+                  >
+                    <Trash2 className=" h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer. Se eliminará
+                      permanentemente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setIsOpenDelete(false)}>
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteContact(contacto.id)}
+                    >
+                      Sí, eliminar.
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>

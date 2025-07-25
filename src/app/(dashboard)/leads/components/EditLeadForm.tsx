@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getAllOrigenes, getAllSectores } from "@/actions/sectores/actions";
 import { toast } from "sonner";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 
 interface EditLeadFormProps {
   leadData: LeadWithRelations;
@@ -44,10 +45,10 @@ export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
   const [empresa, setEmpresa] = useState(leadData.empresa);
 
   const [selectedSector, setSelectedSector] = useState<Sector | null>(
-    leadData.sector,
+    leadData.sector
   );
   const [selectedOrigen, setSelectedOrigen] = useState<LeadOrigen | null>(
-    leadData.origen,
+    leadData.origen
   );
   const [status, setStatus] = useState<LeadStatus>(leadData.status);
 
@@ -57,7 +58,16 @@ export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
         const sectores = await getAllSectores();
         setSectores(sectores);
       } catch (err) {
-        toast.error("No se pueden obtener los sectores");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message="No se pueden obtener los sectores"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     };
 
@@ -66,7 +76,16 @@ export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
         const origenes = await getAllOrigenes();
         setOrigenes(origenes);
       } catch (err) {
-        toast.error("No se pueden obtener los origenes");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message="No se pueden obtener los origenes"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     };
     getSectores();
@@ -94,12 +113,30 @@ export const EditLeadForm = ({ leadData, closeDialog }: EditLeadFormProps) => {
       if (selectedOrigen) formData.set("origen", selectedOrigen.id);
 
       await editLeadById(String(leadData.id), formData);
-      toast.success("Lead actualizado correctamente");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Lead actualizado correctamente"
+          message="El lead se ha actualizado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al editar el lead";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message={errorMessage}
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } finally {
       setIsPending(false);
       closeDialog(false);

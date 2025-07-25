@@ -38,13 +38,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { toast } from "sonner";
-import {
-  Notification,
-  NotificationStatus,
-  NotificationType,
-  Prisma,
-} from "@prisma/client";
+import { NotificationType, Prisma } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -240,7 +234,8 @@ export function NotificationItem({
 
               <DropdownMenuItem
                 onClick={handleDelete}
-                className="gap-2 text-red-600 hover:bg-red-50 focus:bg-red-100 cursor-pointer"
+                className="gap-2 cursor-pointer"
+                variant="destructive"
                 disabled={isDeleting || isMarkingRead}
               >
                 <Trash className="h-4 w-4" />

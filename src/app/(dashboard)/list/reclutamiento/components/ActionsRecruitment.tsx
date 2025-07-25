@@ -103,7 +103,8 @@ export const ActionsRecruitment = ({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="cursor-pointer flex items-center gap-2 text-red-500"
+            className="cursor-pointer"
+            variant="destructive"
             onClick={() => setOpen(true)}
           >
             <Trash2 />

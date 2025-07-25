@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -35,6 +34,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { User } from "@prisma/client";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 
 interface Props {
   onAddActivity: (activity: {
@@ -73,7 +73,16 @@ export const AddTaskDialog = ({
         setUsers(data.users || []);
       } catch (error) {
         console.error("Error fetching users:", error);
-        toast.error("Error al cargar usuarios");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message="Error al cargar usuarios"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsLoadingUsers(false);
       }
@@ -104,19 +113,46 @@ export const AddTaskDialog = ({
     setIsSubmitting(true);
 
     if (!title.trim()) {
-      toast.error("Por favor, añade un título para la tarea");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Por favor, añade un título para la tarea"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       setIsSubmitting(false);
       return;
     }
 
     if (!description.trim()) {
-      toast.error("Por favor añade una descripción para la tarea");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Por favor añade una descripción para la tarea"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       setIsSubmitting(false);
       return;
     }
 
     if (!date) {
-      toast.error("Por favor, selecciona una fecha límite");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Por favor, selecciona una fecha límite"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       setIsSubmitting(false);
       return;
     }

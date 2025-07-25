@@ -40,6 +40,7 @@ import { VacancyEstado, VacancyPrioridad, VacancyTipo } from "@prisma/client";
 import { useState, useEffect } from "react";
 import { updateVacancy } from "@/actions/vacantes/actions";
 import { toast } from "sonner";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 
 interface Props {
   open: boolean;
@@ -144,15 +145,42 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
       const result = await updateVacancy(updateData);
 
       if (!result.ok) {
-        toast.error(result.message || "Error al actualizar la vacante");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message={result.message || "Error al actualizar la vacante"}
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
         return;
       }
 
-      toast.success("Vacante actualizada correctamente");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Vacante actualizada correctamente"
+          message="La vacante se ha actualizado correctamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       setOpen(false);
     } catch (error) {
       console.error("Error al actualizar la vacante:", error);
-      toast.error("Error al actualizar la vacante");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error"
+          message="Error al actualizar la vacante"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } finally {
       setLoading(false);
     }
