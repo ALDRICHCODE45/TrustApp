@@ -18,10 +18,13 @@ import {
   calculateDaysFromAssignment,
   calculateDaysToDelivery,
   getDaysDifference,
+  getEstadoColor,
   getProgressColor,
   getProgressPercentage,
   getTipoColor,
 } from "../../components/kanbanReclutadorBoard";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import { VacancyDetailsChecklist } from "./VacancyDetailsChecklist";
 
 interface DetailsSectionProps {
   vacante: VacancyWithRelations;
@@ -62,8 +65,17 @@ export const DetailsSectionReclutador = ({
             </div>
           </div>
           <div className="flex gap-2">
-            <Badge className={getTipoColor(vacante.tipo)}>{vacante.tipo}</Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className={getTipoColor(vacante.tipo)}>
+              {vacante.tipo}
+            </Badge>
+            <Badge
+              variant="outline"
+              className={`${getEstadoColor(vacante.estado)}`}
+            >
+              {vacante.estado}
+            </Badge>
+
+            <Badge variant="outline" className="bg-muted">
               {vacante.cliente?.cuenta || "Sin cliente"}
             </Badge>
           </div>
@@ -196,6 +208,17 @@ export const DetailsSectionReclutador = ({
             </>
           )}
         </div>
+      </div>
+      <div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-1" />
+              Checklist
+            </Button>
+          </SheetTrigger>
+          <VacancyDetailsChecklist vacante={vacante} />
+        </Sheet>
       </div>
       {/* Candidato contratado (condicional) */}
       {vacante.candidatoContratado && (

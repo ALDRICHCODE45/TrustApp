@@ -64,6 +64,7 @@ import { DetailsSectionReclutador } from "../kanban/components/detailsSection";
 import { CandidatesSectionReclutador } from "../kanban/components/CandidatosSection";
 import { CommentsSectionReclutador } from "../kanban/components/ComentariosSectionReclutador";
 import { DocumentsSectionReclutador } from "../kanban/components/DocumentSectionReclutador";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 
 // Types
 interface ColumnProps {
@@ -811,13 +812,40 @@ export const KanbanBoardPage = ({
           );
           updateVacantes(updatedVacantes);
 
-          toast.success(`Vacante actualizada a ${targetColumn.title}`);
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Vacante actualizada"
+              message={`Vacante actualizada a ${targetColumn.title}`}
+              type="success"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         } else {
-          toast.error(result.message || "Error al actualizar la vacante");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error"
+              message={result.message || "Error al actualizar la vacante"}
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         }
       } catch (error) {
         console.error("Error updating vacancy status:", error);
-        toast.error("Error al actualizar el estado de la vacante");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error"
+            message="Error al actualizar el estado de la vacante"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsUpdating(false);
       }
@@ -845,13 +873,40 @@ export const KanbanBoardPage = ({
               columns.find((col) => col.id === overVacante.estado)?.title ||
               overVacante.estado;
 
-            toast.success(`Vacante actualizada a ${targetColumnTitle}`);
+            toast.custom((t) => (
+              <ToastCustomMessage
+                title="Vacante actualizada"
+                message={`Vacante actualizada a ${targetColumnTitle}`}
+                type="success"
+                onClick={() => {
+                  toast.dismiss(t);
+                }}
+              />
+            ));
           } else {
-            toast.error(result.message || "Error al actualizar la vacante");
+            toast.custom((t) => (
+              <ToastCustomMessage
+                title="Error"
+                message={result.message || "Error al actualizar la vacante"}
+                type="error"
+                onClick={() => {
+                  toast.dismiss(t);
+                }}
+              />
+            ));
           }
         } catch (error) {
           console.error("Error updating vacancy status:", error);
-          toast.error("Error al actualizar el estado de la vacante");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error"
+              message="Error al actualizar el estado de la vacante"
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         } finally {
           setIsUpdating(false);
         }
