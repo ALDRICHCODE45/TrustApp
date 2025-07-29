@@ -81,12 +81,16 @@ export default async function ClientesList({}: pageProps): Promise<ReactElement>
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
 
   return (
-    <>
-      {/* LIST */}
-      <div className="flex justify-end mb-4">
-        <CreateClientModal users={users} origenes={origenes} />
+    <div className="p-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+          {/* LIST */}
+          <div className="flex justify-end mb-4">
+            <CreateClientModal users={users} origenes={origenes} />
+          </div>
+          <DataTable columns={columns} data={data} />
+        </div>
       </div>
-      <DataTable columns={columns} data={data} />
-    </>
+    </div>
   );
 }

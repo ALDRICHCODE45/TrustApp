@@ -124,7 +124,7 @@ export function UsersTable<TData extends User, TValue>({
     1;
   const endRow = Math.min(
     startRow + table.getState().pagination.pageSize - 1,
-    table.getFilteredRowModel().rows.length,
+    table.getFilteredRowModel().rows.length
   );
 
   const handleDelete = async () => {
@@ -160,8 +160,8 @@ export function UsersTable<TData extends User, TValue>({
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0;
 
   return (
-    <Card className="w-full shadow-sm border-0 max-w-[93vw]">
-      <CardContent className="p-4 md:p-6">
+    <Card className="shadow-sm">
+      <CardContent className="p-6">
         {/* Encabezado de la tabla con título y contador */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
@@ -186,13 +186,13 @@ export function UsersTable<TData extends User, TValue>({
         {/* Barra de herramientas */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center mb-4">
           {/* Buscador */}
-          <div className="flex-grow relative ]">
+          <div className="flex-grow relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-9 w-1/3"
+              className="pl-9"
             />
           </div>
 
@@ -284,8 +284,6 @@ export function UsersTable<TData extends User, TValue>({
                   })}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Aquí se pueden agregar más acciones de tabla según sea necesario */}
 
             {/* Menú de filtros */}
             <DropdownMenu>
@@ -421,9 +419,9 @@ export function UsersTable<TData extends User, TValue>({
         </div>
 
         {/* Tabla principal */}
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-md border">
           <div className="overflow-x-auto">
-            <Table className="downloadable-table min-w-full">
+            <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
@@ -439,7 +437,7 @@ export function UsersTable<TData extends User, TValue>({
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     ))}
@@ -458,7 +456,7 @@ export function UsersTable<TData extends User, TValue>({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext(),
+                            cell.getContext()
                           )}
                         </TableCell>
                       ))}

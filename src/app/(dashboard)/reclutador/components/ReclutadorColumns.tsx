@@ -288,6 +288,36 @@ export const reclutadorColumns: ColumnDef<VacancyWithRelations>[] = [
     },
   },
   {
+    id: "prioridad",
+    accessorKey: "prioridad",
+    header: ({ column }) => (
+      <SortableHeader column={column} title="Prioridad" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <Badge variant="outline" className="gap-1.5">
+          {row.original.prioridad === "Alta" ? (
+            <span
+              className="size-1.5 rounded-full bg-emerald-500"
+              aria-hidden="true"
+            ></span>
+          ) : row.original.prioridad === "Baja" ? (
+            <span
+              className="size-1.5 rounded-full bg-red-500"
+              aria-hidden="true"
+            ></span>
+          ) : (
+            <span
+              className="size-1.5 rounded-full bg-yellow-500"
+              aria-hidden="true"
+            ></span>
+          )}
+          {row.original.prioridad}
+        </Badge>
+      );
+    },
+  },
+  {
     id: "tipo",
     accessorKey: "tipo",
     header: ({ column }) => <SortableHeader column={column} title="Tipo" />,

@@ -68,7 +68,7 @@ const vacancySchema = z.object({
   prioridad: z
     .enum([
       VacancyPrioridad.Alta,
-      VacancyPrioridad.Media,
+      VacancyPrioridad.Normal,
       VacancyPrioridad.Baja,
     ])
     .optional(),
@@ -325,8 +325,8 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                                   <SelectItem value={VacancyPrioridad.Alta}>
                                     Alta
                                   </SelectItem>
-                                  <SelectItem value={VacancyPrioridad.Media}>
-                                    Media
+                                  <SelectItem value={VacancyPrioridad.Normal}>
+                                    Normal
                                   </SelectItem>
                                   <SelectItem value={VacancyPrioridad.Baja}>
                                     Baja

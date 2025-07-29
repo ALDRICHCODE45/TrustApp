@@ -102,15 +102,19 @@ export default async function LeadsPage({}: pageProps) {
   };
 
   return (
-    <>
-      <LeadsPageClient
-        initialData={data}
-        generadores={generadores}
-        sectores={sectores}
-        origenes={origenes}
-        isAdmin={isAdmin}
-        activeUser={activeUser}
-      />
-    </>
+    <div className="p-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+          <LeadsPageClient
+            initialData={data}
+            generadores={generadores}
+            sectores={sectores}
+            origenes={origenes}
+            isAdmin={isAdmin}
+            activeUser={activeUser}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

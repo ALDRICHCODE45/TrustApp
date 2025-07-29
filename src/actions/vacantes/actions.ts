@@ -31,7 +31,7 @@ const updateVacancySchema = z.object({
   prioridad: z
     .enum([
       VacancyPrioridad.Alta,
-      VacancyPrioridad.Media,
+      VacancyPrioridad.Normal,
       VacancyPrioridad.Baja,
     ])
     .optional(),

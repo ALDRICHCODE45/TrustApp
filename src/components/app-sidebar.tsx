@@ -210,7 +210,7 @@ export function AppSidebar({
     }));
 
   return (
-    <Sidebar collapsible="offcanvas">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <NavUser user={user} hasPendingTasks={hasPendingTasks} />
       </SidebarHeader>

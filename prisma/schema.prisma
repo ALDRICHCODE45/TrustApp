@@ -186,7 +186,7 @@ enum VacancyEstado {
 
 enum VacancyPrioridad {
   Alta
-  Media
+  Normal
   Baja
 }
 
@@ -202,7 +202,7 @@ model Vacancy {
   posicion              String
   tiempoTranscurrido    Int?
   Comments              Comment[]
-  prioridad             VacancyPrioridad @default(Alta)
+  prioridad             VacancyPrioridad @default(Normal)
   fechaEntrega          DateTime?
   fechaUltimaTerna      DateTime?
   duracionTotal         Int?

@@ -11,6 +11,7 @@ import {
   reclutadorColumns,
   VacancyWithRelations,
 } from "../../reclutador/components/ReclutadorColumns";
+import { redirect } from "next/navigation";
 
 export interface pageProps {}
 
@@ -77,24 +78,40 @@ export default async function ReclutamientoPage({}: pageProps): Promise<ReactEle
   const vacantes = await fetchVacancies();
 
   const session = await auth();
+  if (!session?.user) {
+    redirect("/sign-up");
+  }
+
   checkRoleRedirect(session?.user.role as Role, [Role.Admin]);
 
   const reclutadores = await fetchReclutadores();
   const clientes = await fetchClientes();
+  const user_logged = {
+    id: session?.user.id,
+    name: session?.user.name,
+    role: session?.user.role,
+  };
 
   return (
-    <>
-      {/* LIST */}
-
-      <div className="flex flex-col gap-4">
-        <CreateVacanteForm reclutadores={reclutadores} clientes={clientes} />
-        <RecruiterTable
-          columns={reclutadorColumns}
-          data={vacantes}
-          reclutadores={reclutadores}
-          clientes={clientes}
-        />
+    <div className="p-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+          {/* LIST */}
+          <div className="flex flex-col gap-4">
+            <CreateVacanteForm
+              reclutadores={reclutadores}
+              clientes={clientes}
+              user_logged={user_logged}
+            />
+            <RecruiterTable
+              columns={reclutadorColumns}
+              data={vacantes}
+              reclutadores={reclutadores}
+              clientes={clientes}
+            />
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

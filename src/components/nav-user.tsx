@@ -75,13 +75,13 @@ export function NavUser({
                     </AvatarFallback>
                   </Avatar>
                   {hasPendingTasks && (
-                    <div className="absolute -right-1 -top-1">
+                    <div className="absolute -right-1 -top-1 z-[9999]">
                       <Badge
                         variant="outline"
                         className="h-4 w-4 rounded-full bg-white p-0 flex items-center justify-center"
                       >
                         <span
-                          className="size-2.5 rounded-full bg-red-500 animate-pulse"
+                          className="size-2.5 rounded-full bg-red-500 animate-pulse z-[9999]"
                           aria-hidden="true"
                         ></span>
                       </Badge>

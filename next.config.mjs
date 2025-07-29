@@ -21,6 +21,20 @@ const nextConfig = {
       },
     ],
   },
+   // Permitir conexiones externas
+   async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+        ],
+      },
+    ]
+  },
 };
 
 export default nextConfig;

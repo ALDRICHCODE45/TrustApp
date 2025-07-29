@@ -111,7 +111,7 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
       </header>
       {/* Content container with better padding */}
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0e0e0e]">
-        <div className="container mx-auto py-6 px-4 md:px-6">{children}</div>
+        <div className="container mx-auto py-6 px-8 ">{children}</div>
       </main>
     </>
   );

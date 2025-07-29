@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,17 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Plus,
-  FileText,
-  Upload,
-  MoreVertical,
-  Download,
-  Edit,
-  Trash,
-  UserIcon,
-  CircleOff,
-} from "lucide-react";
+import { Plus, FileText, UserIcon, CircleOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -41,7 +31,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
   Popover,
@@ -49,12 +38,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Client,
   User,
-  Vacancy,
   VacancyEstado,
   VacancyPrioridad,
   VacancyTipo,
@@ -80,7 +68,13 @@ const vacancySchema = z.object({
     ])
     .optional(),
   posicion: z.string().optional(),
-  prioridad: z.enum(["Alta", "Media", "Baja"]).optional(),
+  prioridad: z
+    .enum([
+      VacancyPrioridad.Alta,
+      VacancyPrioridad.Normal,
+      VacancyPrioridad.Baja,
+    ])
+    .optional(),
   fechaAsignacion: z.date().optional(),
   fechaEntrega: z.date().optional(),
   reclutadorId: z.string().optional(),
@@ -128,11 +122,21 @@ const demoFiles: File[] = [
 
 interface Props {
   reclutadores: User[];
+
   clientes: Client[];
+  user_logged: {
+    id: string;
+    name: string;
+    role: string;
+  };
 }
 
 // Componente principal para crear una vacante
-export const CreateVacanteForm = ({ reclutadores, clientes }: Props) => {
+export const CreateVacanteForm = ({
+  reclutadores,
+  clientes,
+  user_logged,
+}: Props) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -142,22 +146,28 @@ export const CreateVacanteForm = ({ reclutadores, clientes }: Props) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] z-[200]">
-        <VacancyForm reclutadores={reclutadores} clientes={clientes} />
+        <VacancyForm
+          reclutadores={reclutadores}
+          clientes={clientes}
+          user_logged={user_logged}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
 // Componente principal del formulario con react-hook-form
-function VacancyForm({ reclutadores, clientes }: Props) {
+function VacancyForm({ reclutadores, clientes, user_logged }: Props) {
   const form = useForm<VacancyFormData>({
     resolver: zodResolver(vacancySchema),
     defaultValues: {
-      tipo: undefined,
-      estado: undefined,
+      tipo: VacancyTipo.Recompra,
+      estado: VacancyEstado.Hunting,
       posicion: "",
-      prioridad: undefined,
-      reclutadorId: "",
+      prioridad: VacancyPrioridad.Normal,
+      fechaAsignacion: new Date(),
+      fechaEntrega: undefined,
+      reclutadorId: user_logged.role === "Admin" ? "" : user_logged.id,
       clienteId: "",
       salario: undefined,
       valorFactura: undefined,
@@ -199,6 +209,7 @@ function VacancyForm({ reclutadores, clientes }: Props) {
               form={form}
               reclutadores={reclutadores}
               clientes={clientes}
+              user_logged={user_logged}
             />
           </TabsContent>
 
@@ -222,12 +233,37 @@ const BasicInformationTab = ({
   form,
   reclutadores,
   clientes,
+  user_logged,
 }: {
   form: any; // FormReturn from react-hook-form
   reclutadores: User[];
   clientes: Client[];
+  user_logged: {
+    id: string;
+    name: string;
+    role: string;
+  };
 }) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Usar los valores del formulario directamente
+  const fechaAsignacion = form.watch("fechaAsignacion");
+  const prioridad = form.watch("prioridad");
+
+  useEffect(() => {
+    //Todo: cambiar la fecha de entrega en base a la prioridad
+    if (fechaAsignacion && prioridad) {
+      let fechaEntrega: Date;
+      if (prioridad === VacancyPrioridad.Alta) {
+        fechaEntrega = addDays(fechaAsignacion, 5);
+      } else if (prioridad === VacancyPrioridad.Normal) {
+        fechaEntrega = addDays(fechaAsignacion, 9);
+      } else {
+        fechaEntrega = addDays(fechaAsignacion, 15);
+      }
+      form.setValue("fechaEntrega", fechaEntrega);
+    }
+  }, [fechaAsignacion, prioridad, form]);
 
   return (
     <Card>
@@ -345,8 +381,8 @@ const BasicInformationTab = ({
                   </FormControl>
                   <SelectContent className="z-[8888]">
                     <SelectItem value={VacancyPrioridad.Alta}>Alta</SelectItem>
-                    <SelectItem value={VacancyPrioridad.Media}>
-                      Media
+                    <SelectItem value={VacancyPrioridad.Normal}>
+                      Normal
                     </SelectItem>
                     <SelectItem value={VacancyPrioridad.Baja}>Baja</SelectItem>
                   </SelectContent>
@@ -368,8 +404,8 @@ const BasicInformationTab = ({
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button variant="outline" className="w-full">
-                        {field.value ? (
-                          format(field.value, "eee dd/MM/yyyy", {
+                        {fechaAsignacion ? (
+                          format(fechaAsignacion, "eee dd/MM/yyyy", {
                             locale: es,
                           })
                         ) : (
@@ -381,10 +417,11 @@ const BasicInformationTab = ({
                   <PopoverContent side="top" className="z-[999999] w-full">
                     <Calendar
                       mode="single"
-                      selected={field.value}
+                      selected={fechaAsignacion}
                       onSelect={field.onChange}
                       locale={es}
                       captionLayout="dropdown"
+                      required
                     />
                   </PopoverContent>
                 </Popover>
@@ -420,6 +457,7 @@ const BasicInformationTab = ({
                       onSelect={field.onChange}
                       locale={es}
                       captionLayout="dropdown"
+                      required
                     />
                   </PopoverContent>
                 </Popover>
@@ -438,7 +476,12 @@ const BasicInformationTab = ({
                 <FormLabel>Reclutador</FormLabel>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild className="w-full">
-                    <Button variant="outline" size="sm" className="flex">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex"
+                      disabled={user_logged.role !== "Admin"}
+                    >
                       <UserIcon className="h-4 w-4 mr-2" />
                       <span className="truncate">
                         {field.value
@@ -461,7 +504,32 @@ const BasicInformationTab = ({
                       </div>
                     )}
 
+                    {/* {user_logged.role != "Admin" && (
+                      <DropdownMenuItem
+                        key="admin"
+                        className="flex items-center gap-4 p-2 cursor-pointer"
+                        disabled={true}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <Avatar className="h-9 w-9 shrink-0">
+                            <AvatarFallback>
+                              {user_logged.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {user_logged.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {user_logged.role}
+                            </span>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    )} */}
+
                     {reclutadores.length > 0 &&
+                      user_logged.role === "Admin" &&
                       reclutadores.map((recruiter) => (
                         <DropdownMenuItem
                           key={recruiter.id}

@@ -82,22 +82,35 @@ export default async function VacantesPage({}: PageProps): Promise<ReactElement>
   const reclutadores = await fetchReclutadores();
   const vacantes = await fetchVacancies();
   const clientes = await fetchClientes();
+  const user_logged = {
+    id: session?.user.id,
+    name: session?.user.name,
+    role: session?.user.role,
+  };
 
   return (
-    <>
-      {/* LIST */}
-      <ToastAlerts />
-      <div className="flex justify-end mt-2 w-full gap-2">
-        <QuickStatsDialog />
-        <CreateVacanteForm reclutadores={reclutadores} clientes={clientes} />
-      </div>
+    <div className="p-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+          {/* LIST */}
+          <ToastAlerts />
+          <div className="flex justify-end mt-2 gap-2">
+            <QuickStatsDialog />
+            <CreateVacanteForm
+              reclutadores={reclutadores}
+              clientes={clientes}
+              user_logged={user_logged}
+            />
+          </div>
 
-      <RecruiterTable
-        columns={reclutadorColumns}
-        clientes={clientes}
-        data={vacantes}
-        reclutadores={reclutadores}
-      />
-    </>
+          <RecruiterTable
+            columns={reclutadorColumns}
+            clientes={clientes}
+            data={vacantes}
+            reclutadores={reclutadores}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

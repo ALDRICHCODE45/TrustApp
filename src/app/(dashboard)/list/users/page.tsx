@@ -33,9 +33,13 @@ export default async function UserList({}: pageProps): Promise<ReactElement> {
   const { columns, data } = await fetchUsers();
 
   return (
-    <>
+    <div className="p-6">
       {/* LIST */}
-      <UsersTable columns={columns} data={data} />
-    </>
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+          <UsersTable columns={columns} data={data} />
+        </div>
+      </div>
+    </div>
   );
 }
