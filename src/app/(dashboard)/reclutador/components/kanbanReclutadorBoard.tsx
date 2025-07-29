@@ -514,7 +514,7 @@ const DroppableColumn: React.FC<ColumnProps> = ({
                     />
                   </div>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto z-[900]">
                   <DialogHeader>
                     <DialogTitle className="text-xl">
                       {vacante.posicion}

@@ -18,21 +18,21 @@ interface Props {
 
 export const VacancyDetailsChecklist = ({ vacante }: Props) => {
   return (
-    <SheetContent className="w-full max-w-[800px] z-[9999]">
+    <SheetContent className="]">
       <SheetHeader>
-        <SheetTitle>Edit profile</SheetTitle>
+        <SheetTitle>Checklist</SheetTitle>
         <SheetDescription>
-          Make changes to your profile here. Click save when you&apos;re done.
+          Realiza los cambios necesarios en el checklist de la vacante.
         </SheetDescription>
       </SheetHeader>
       <div className="grid flex-1 auto-rows-min gap-6 px-4">
         <div className="grid gap-3">
-          <Label htmlFor="sheet-demo-name">Name</Label>
+          <Label htmlFor="sheet-demo-name">Nombre</Label>
           <Input id="sheet-demo-name" defaultValue="Pedro Duarte" />
         </div>
         <div className="grid gap-3">
           <div className="*:not-first:mt-2">
-            <Label>Input with start add-on</Label>
+            <Label>Descripción</Label>
             <div className="flex rounded-md shadow-xs">
               <span className="border-input bg-background text-muted-foreground -z-10 inline-flex items-center rounded-s-md border px-3 text-sm">
                 https://

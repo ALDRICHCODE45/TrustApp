@@ -273,14 +273,14 @@ const BasicInformationTab = ({
             name="estado"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Estado</FormLabel>
+                <FormLabel>Status</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar Estado" />
+                      <SelectValue placeholder="Seleccionar Status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="z-[8888]">
@@ -319,7 +319,7 @@ const BasicInformationTab = ({
             name="posicion"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Puesto</FormLabel>
+                <FormLabel>Posición</FormLabel>
                 <FormControl>
                   <Input placeholder="Ej. Desarrollador Senior" {...field} />
                 </FormControl>
