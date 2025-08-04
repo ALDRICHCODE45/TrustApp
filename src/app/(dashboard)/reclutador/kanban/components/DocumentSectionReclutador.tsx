@@ -234,7 +234,7 @@ export const DocumentsSectionReclutador: React.FC<DocumentsSectionProps> = ({
               <Plus className="h-4 w-4" /> <span>Añadir documento</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+          <DialogContent className="z-[9999] flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader className="contents space-y-0 text-left">
               <DialogTitle className="border-b px-6 py-4 text-base">
                 Añadir documento

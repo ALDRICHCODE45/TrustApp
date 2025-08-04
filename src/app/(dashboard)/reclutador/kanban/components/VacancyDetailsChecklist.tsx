@@ -18,7 +18,7 @@ interface Props {
 
 export const VacancyDetailsChecklist = ({ vacante }: Props) => {
   return (
-    <SheetContent className="]">
+    <SheetContent className="z-[9999]">
       <SheetHeader>
         <SheetTitle>Checklist</SheetTitle>
         <SheetDescription>

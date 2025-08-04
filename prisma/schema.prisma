@@ -227,8 +227,22 @@ model Vacancy {
   creator   User?   @relation("VacancyCreator", fields: [creatorId], references: [id]) // Renombrado para claridad
   creatorId String?
 
+  // Relación con checklist
+  InputChecklist InputChecklist[]
   // Relación con tareas
-  tasks Task[]
+  tasks          Task[]
+}
+
+model InputChecklist {
+  id        String   @id @default(uuid())
+  vacancyId String?
+  vacancy   Vacancy? @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  content   String
+
+  isValidate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VacancyFile {

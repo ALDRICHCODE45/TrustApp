@@ -178,7 +178,7 @@ export const CommentsSectionReclutador: React.FC<CommentsSectionProps> = ({
                 <Plus className="h-3 w-3 mr-1" /> Añadir
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[200]">
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto z-[9999]">
               <DialogHeader>
                 <DialogTitle>Nuevo Comentario</DialogTitle>
                 <Separator />

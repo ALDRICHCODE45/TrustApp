@@ -89,6 +89,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { CompareChecklistForm } from "@/app/(dashboard)/list/reclutamiento/VacancyFormComponents/CreateVacancyComponents/CompareChecklistForm";
 
 interface CandidatesSectionProps {
   vacante: VacancyWithRelations;
@@ -612,7 +613,7 @@ export const CandidatesSectionReclutador = ({
                     <span>Agregar</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+                <DialogContent className="z-[9999] flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
                   <DialogHeader className="contents space-y-0 text-left">
                     <DialogTitle className="border-b px-6 py-4 text-base">
                       Agregar candidato
@@ -901,33 +902,22 @@ export const CandidatesSectionReclutador = ({
                             )}
                             <DropdownMenuSeparator />
 
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger>
-                                <Waypoints className="h-4 w-4 mr-2" />
-                                Acciones
-                              </DropdownMenuSubTrigger>
-                              <DropdownMenuPortal>
-                                <DropdownMenuSubContent className="z-[9999]">
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleEditCandidate(candidato)
-                                    }
-                                    className="cursor-pointer"
-                                  >
-                                    <Pencil className="h-4 w-4 mr-2 " />
-                                    Editar
-                                  </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEditCandidate(candidato)}
+                              className="cursor-pointer"
+                            >
+                              <Pencil />
+                              Editar
+                            </DropdownMenuItem>
 
-                                  <DropdownMenuItem
-                                    onClick={() => setAlertDialogDelete(true)}
-                                    className="cursor-pointer"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                              </DropdownMenuPortal>
-                            </DropdownMenuSub>
+                            <DropdownMenuItem
+                              onClick={() => setAlertDialogDelete(true)}
+                              className="cursor-pointer"
+                              variant="destructive"
+                            >
+                              <Trash2 />
+                              Eliminar
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -1190,11 +1180,7 @@ export const CandidatesSectionReclutador = ({
 
                   {/* Información de estado */}
                   <div className="mt-3 pt-2 border-t">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="text-xs">
-                        Candidato #{index + 1}
-                      </Badge>
-                    </div>
+                    <CompareChecklistForm />
                   </div>
                 </CardContent>
               </Card>
@@ -1218,7 +1204,7 @@ export const CandidatesSectionReclutador = ({
                 Agregar candidatos
               </Button>
             </DialogTrigger>
-            <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+            <DialogContent className="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5 z-[9999]">
               <DialogHeader className="contents space-y-0 text-left">
                 <DialogTitle className="border-b px-6 py-4 text-base">
                   Agregar candidato

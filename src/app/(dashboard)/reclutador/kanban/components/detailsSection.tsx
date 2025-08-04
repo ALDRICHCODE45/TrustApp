@@ -25,6 +25,7 @@ import {
 } from "../../components/kanbanReclutadorBoard";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { VacancyDetailsChecklist } from "./VacancyDetailsChecklist";
+import { DrawerVacancyDetails } from "./DrawerVacancyDetails";
 
 interface DetailsSectionProps {
   vacante: VacancyWithRelations;
@@ -41,7 +42,7 @@ export const DetailsSectionReclutador = ({
   user_logged,
 }: DetailsSectionProps) => {
   return (
-    <div className="space-y-6 mt-4">
+    <div className="space-y-6 mt-4 z-[999]">
       <div className="bg-muted/30 p-4 rounded-lg border border-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -93,24 +94,24 @@ export const DetailsSectionReclutador = ({
             <div className="flex items-center">
               <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Fecha entrega:
+                Fecha asignación:
               </span>
-              <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground ">
-                {vacante?.fechaEntrega
-                  ? format(vacante.fechaEntrega, "EE, dd MMMM yyyy", {
+              <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground">
+                {vacante.fechaAsignacion
+                  ? format(vacante.fechaAsignacion, "EE, dd MMMM yyyy", {
                       locale: es,
                     })
                   : "Sin fecha"}
               </span>
             </div>
             <div className="flex items-center">
-              <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+              <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Fecha asignación:
+                Fecha entrega:
               </span>
-              <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground">
-                {vacante.fechaAsignacion
-                  ? format(vacante.fechaAsignacion, "EE, dd MMMM yyyy", {
+              <span className="ml-2 font-normal text-md text-gray-700 dark:text-muted-foreground ">
+                {vacante?.fechaEntrega
+                  ? format(vacante.fechaEntrega, "EE, dd MMMM yyyy", {
                       locale: es,
                     })
                   : "Sin fecha"}
@@ -166,10 +167,13 @@ export const DetailsSectionReclutador = ({
       </div>
       {/* Información financiera */}
       <div>
-        <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
-          <FileText className="h-4 w-4 mr-2" />
-          Información financiera
-        </h4>
+        <div className="flex justify-between items-center">
+          <h4 className="text-sm font-medium uppercase text-muted-foreground mb-3 flex items-center">
+            <FileText className="h-4 w-4 mr-2" />
+            Información financiera
+          </h4>
+          <DrawerVacancyDetails vacancyId={vacante.id} />
+        </div>
         <div className="grid grid-cols-3 gap-4">
           <Card className="overflow-hidden">
             <div className="h-1 bg-blue-500"></div>

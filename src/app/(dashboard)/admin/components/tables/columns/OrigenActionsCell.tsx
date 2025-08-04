@@ -149,7 +149,7 @@ export const OrigenActionsCell = ({ row }: { row: Row<LeadOrigen> }) => {
             <AlertDialogTrigger asChild>
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
-                className="cursor-pointer text-red-500 bg-red-100"
+                variant="destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar

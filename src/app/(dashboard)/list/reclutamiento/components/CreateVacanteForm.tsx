@@ -49,6 +49,10 @@ import {
 } from "@prisma/client";
 import { toast } from "sonner";
 import { createVacancy } from "@/actions/vacantes/actions";
+import { ChecklistForm } from "../VacancyFormComponents/CreateVacancyComponents/ChecklistForm";
+import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import { SelectNative } from "@/components/ui/select-native";
+import { VacancyDetails } from "../VacancyFormComponents/CreateVacancyComponents/VacancyDetails";
 
 // Schema basado en el modelo Vacancy de Prisma
 const vacancySchema = z.object({
@@ -181,16 +185,41 @@ function VacancyForm({ reclutadores, clientes, user_logged }: Props) {
       const result = await createVacancy(data);
 
       if (!result.ok) {
-        toast.error("Error al crear la vacante");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al crear la vacante"
+            message="Por favor, intenta nuevamente"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
         return;
       }
 
-      console.log("Vacante creada exitosamente:", data);
-      toast.success("Vacante creada exitosamente");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Vacante creada exitosamente"
+          message="La vacante ha sido creada exitosamente"
+          type="success"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
       form.reset();
     } catch (error) {
-      console.error("Error al crear vacante:", error);
-      toast.error("Error al crear la vacante");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al crear la vacante"
+          message="Por favor, intenta nuevamente"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     }
   };
 
@@ -198,9 +227,10 @@ function VacancyForm({ reclutadores, clientes, user_logged }: Props) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4 mt-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4 mt-4">
             <TabsTrigger value="basic">Información Básica</TabsTrigger>
             <TabsTrigger value="financial">Información Fiscal</TabsTrigger>
+            <TabsTrigger value="checklist">Requisitos</TabsTrigger>
           </TabsList>
 
           {/* Tab de Información Básica */}
@@ -215,13 +245,21 @@ function VacancyForm({ reclutadores, clientes, user_logged }: Props) {
 
           {/* Tab de Información Fiscal */}
           <TabsContent value="financial">
-            <FinancialInformationTab form={form} />
+            <FinancialInformationTab form={form} user_logged={user_logged} />
+          </TabsContent>
+          <TabsContent value="checklist">
+            <ChecklistForm />
           </TabsContent>
 
           {/* Botón de Guardar */}
-          <Button type="submit" variant="default" className="w-full mt-4">
-            Guardar Vacante
-          </Button>
+          <div className="flex justify-between gap-3">
+            <Button type="submit" variant="default" className="w-full mt-4">
+              Guardar Vacante
+            </Button>
+            <Button type="button" variant="outline" className="w-full mt-4">
+              Cerrar
+            </Button>
+          </div>
         </Tabs>
       </form>
     </Form>
@@ -647,6 +685,10 @@ const BasicInformationTab = ({
             )}
           />
         </div>
+
+        <div className="w-full">
+          <VacancyDetails />
+        </div>
       </CardContent>
     </Card>
   );
@@ -655,8 +697,14 @@ const BasicInformationTab = ({
 // Componente para la pestaña de información fiscal
 const FinancialInformationTab = ({
   form,
+  user_logged,
 }: {
   form: any; // FormReturn from react-hook-form
+  user_logged: {
+    id: string;
+    name: string;
+    role: string;
+  };
 }) => (
   <Card>
     <CardHeader>
@@ -671,61 +719,77 @@ const FinancialInformationTab = ({
             <FormItem>
               <FormLabel>Salario</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(Number(e.target.value) || undefined)
-                  }
-                />
+                <div className="*:not-first:mt-2 ">
+                  <div className="flex rounded-md shadow-xs relative">
+                    <span className="mr-1 text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-sm peer-disabled:opacity-50">
+                      $
+                    </span>
+                    <Input
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(Number(e.target.value) || undefined)
+                      }
+                      className="-me-px rounded-e-none ml-3 shadow-none focus-visible:z-10"
+                      placeholder="1000"
+                      type="number"
+                    />
+                    <SelectNative className="text-muted-foreground hover:text-foreground w-fit rounded-s-none shadow-none">
+                      <option>MXN</option>
+                      <option>USD</option>
+                    </SelectNative>
+                  </div>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="valorFactura"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Valor Factura</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(Number(e.target.value) || undefined)
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {user_logged.role === "Admin" && (
+          <>
+            <FormField
+              control={form.control}
+              name="valorFactura"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor Factura</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(Number(e.target.value) || undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="fee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Fee</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(Number(e.target.value) || undefined)
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="fee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fee</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(Number(e.target.value) || undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
       </div>
       <div className="text-xs text-muted-foreground">
         * Todos los montos son en la moneda local

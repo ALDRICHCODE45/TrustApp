@@ -58,7 +58,7 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
             <TooltipTrigger asChild>
               <SidebarTrigger className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition-colors" />
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="dark px-2 py-1 text-xs" showArrow={true}>
               <span>Abrir/Cerrar Sidebar</span>
             </TooltipContent>
           </Tooltip>
@@ -79,7 +79,10 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
                     <TooltipTrigger>
                       <span className="text-sm font-medium">Back</span>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent
+                      className="dark px-2 py-1 text-xs"
+                      showArrow={true}
+                    >
                       <span>Ir a la pagina anterior</span>
                     </TooltipContent>
                   </Tooltip>

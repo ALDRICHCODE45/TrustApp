@@ -45,6 +45,7 @@ import {
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import { NotificationCenter } from "./NotificationCenter";
+import { ToastCustomMessage } from "../ToastCustomMessage";
 
 interface NotificationDropdownProps {
   userId: string;
@@ -115,10 +116,28 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
           body: JSON.stringify({ status: NotificationStatus.READ }),
         });
         await fetchNotifications();
-        toast.success("Notificacion leida");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Notificacion leida"
+            message="Notificacion leida"
+            type="success"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } catch (error) {
         console.error("Error marking notification as read:", error);
-        toast.error("Error, intentalo de nuevo mas tarde");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al marcar como leida la notificacion"
+            message="Error al marcar como leida la notificacion"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     },
     [fetchNotifications]
@@ -134,7 +153,16 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
         //TODO:mandar a llamar al server action
         const { ok, message } = await markAsReadNotification(notificationId);
         if (!ok) {
-          toast.error("Error al marcar como leida la notificacion");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error al marcar como leida la notificacion"
+              message="Error al marcar como leida la notificacion"
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
           return;
         }
 
@@ -146,10 +174,27 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
             return n;
           })
         );
-        toast.success("Notificacion marcada como leida");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Notificacion marcada como leida"
+            message="Notificacion marcada como leida"
+            type="success"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } catch (err) {
-        toast.error("Error al marcar como leida la notificacion");
-        throw new Error("Error al marcar como leida");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al marcar como leida"
+            message="Error al marcar como leida"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsMarkingRead(false);
       }
@@ -171,13 +216,40 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
             prevNotifications.filter((n) => n.id !== notificationId)
           );
           setUnreadCount((prev) => Math.max(0, prev - 1));
-          toast.success("Notificacion Eliminada");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Notificacion Eliminada"
+              message="Notificacion Eliminada"
+              type="success"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         } else {
-          toast.error(result.message || "Error al eliminar la notificacion");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error al eliminar la notificacion"
+              message="Error al eliminar la notificacion"
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         }
       } catch (err) {
         console.error("Error deleting notification:", err);
-        toast.error("Error al eliminar la notificacion");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar la notificacion"
+            message="Error al eliminar la notificacion"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsDeleting(false);
       }
@@ -201,7 +273,11 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent
+            side="bottom"
+            className="dark px-2 py-1 text-xs"
+            showArrow={true}
+          >
             <span>Notificaciones</span>
           </TooltipContent>
         </Tooltip>

@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
+import { CreateNewOrigenForm } from "../CreateNewOrigenForm";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -65,7 +66,7 @@ export function OrigenesTable<TData, TValue>({
   return (
     <div className="w-full max-w-4xl">
       {/* Contenedor con ancho máximo */}
-      <div className="flex items-center py-2">
+      <div className="flex items-center justify-between py-2">
         {" "}
         {/* Reducir padding vertical */}
         <Input
@@ -76,6 +77,9 @@ export function OrigenesTable<TData, TValue>({
           }
           className="max-w-xs h-8" // Hacer el input más pequeño
         />
+        <div>
+          <CreateNewOrigenForm />
+        </div>
       </div>
       {/* Contenedor con altura fija y scroll */}
       <div className="rounded-md border max-h-96 overflow-auto">
@@ -93,7 +97,7 @@ export function OrigenesTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -113,7 +117,7 @@ export function OrigenesTable<TData, TValue>({
                     <TableCell key={cell.id} className="px-3 py-2 text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}

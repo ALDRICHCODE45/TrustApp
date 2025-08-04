@@ -25,6 +25,7 @@ import {
   markAllAsRead,
   deleteAllRead,
 } from "@/actions/notifications/actions";
+import { ToastCustomMessage } from "../ToastCustomMessage";
 
 type NotificationWithTask = Prisma.NotificationGetPayload<{
   include: {
@@ -107,11 +108,29 @@ export function NotificationCenter({
         setNotifications(data.notifications);
         setStats(data.stats);
       } else {
-        toast.error("Error al cargar las notificaciones");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al cargar las notificaciones"
+            message="Error al cargar las notificaciones"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      toast.error("Error al cargar las notificaciones");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al cargar las notificaciones"
+          message="Error al cargar las notificaciones"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -141,13 +160,40 @@ export function NotificationCenter({
             });
           }
 
-          toast.success("Notificación marcada como leída");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Notificación marcada como leída"
+              message="Notificación marcada como leída"
+              type="success"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         } else {
-          toast.error(result.message || "Error al marcar como leída");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error al marcar como leída"
+              message="Error al marcar como leída"
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         }
       } catch (error) {
         console.error("Error marking notification as read:", error);
-        toast.error("Error al marcar como leída");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al marcar como leída"
+            message="Error al marcar como leída"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsMarkingRead(false);
       }
@@ -181,13 +227,40 @@ export function NotificationCenter({
             });
           }
 
-          toast.success("Notificación eliminada");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Notificación eliminada"
+              message="Notificación eliminada"
+              type="success"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         } else {
-          toast.error(result.message || "Error al eliminar");
+          toast.custom((t) => (
+            <ToastCustomMessage
+              title="Error al eliminar"
+              message="Error al eliminar"
+              type="error"
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+            />
+          ));
         }
       } catch (error) {
         console.error("Error deleting notification:", error);
-        toast.error("Error al eliminar");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar"
+            message="Error al eliminar"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } finally {
         setIsDeleting(false);
       }
@@ -214,13 +287,40 @@ export function NotificationCenter({
           });
         }
 
-        toast.success(result.message);
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Notificaciones marcadas como leídas"
+            message="Notificaciones marcadas como leídas"
+            type="success"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } else {
-        toast.error(result.message || "Error al marcar todas como leídas");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al marcar todas como leídas"
+            message="Error al marcar todas como leídas"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     } catch (error) {
       console.error("Error marking all as read:", error);
-      toast.error("Error al marcar todas como leídas");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al marcar todas como leídas"
+          message="Error al marcar todas como leídas"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } finally {
       setIsMarkingAllAsRead(false);
     }
@@ -245,13 +345,40 @@ export function NotificationCenter({
           });
         }
 
-        toast.success(result.message);
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Notificaciones eliminadas"
+            message="Notificaciones eliminadas"
+            type="success"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       } else {
-        toast.error(result.message || "Error al eliminar las leídas");
+        toast.custom((t) => (
+          <ToastCustomMessage
+            title="Error al eliminar las leídas"
+            message="Error al eliminar las leídas"
+            type="error"
+            onClick={() => {
+              toast.dismiss(t);
+            }}
+          />
+        ));
       }
     } catch (error) {
       console.error("Error deleting all read:", error);
-      toast.error("Error al eliminar las leídas");
+      toast.custom((t) => (
+        <ToastCustomMessage
+          title="Error al eliminar las leídas"
+          message="Error al eliminar las leídas"
+          type="error"
+          onClick={() => {
+            toast.dismiss(t);
+          }}
+        />
+      ));
     } finally {
       setIsDeletingAllRead(false);
     }

@@ -14,6 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Ban, Loader2, Plus, SquareCheckBig } from "lucide-react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -68,10 +73,21 @@ export const CreateNewOrigenForm = () => {
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Plus />
-            Agregar origen
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Plus />
+                Agregar nuevo origen
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent showArrow={true} className="dark px-2 py-1 text-xs">
+              <p>Agregar nuevo origen</p>
+            </TooltipContent>
+          </Tooltip>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit(onSubmit)}>
