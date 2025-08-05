@@ -9,13 +9,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -32,7 +32,6 @@ export const ActionsRecruitment = ({
 }: {
   row: Row<VacancyWithRelations>;
 }) => {
-  const [open, setOpen] = useState(false);
   const [openEdit, setOpenEdit] = useState<boolean>(false);
 
   const handleEdit = () => {
@@ -83,14 +82,6 @@ export const ActionsRecruitment = ({
     }
   };
 
-  const handleOpenDeleteDialog = () => {
-    // Cerrar el modal de edición si está abierto para evitar conflictos
-    if (openEdit) {
-      setOpenEdit(false);
-    }
-    setOpen(true);
-  };
-
   return (
     <>
       <DropdownMenu>
@@ -110,14 +101,36 @@ export const ActionsRecruitment = ({
             Editar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer"
-            variant="destructive"
-            onClick={handleOpenDeleteDialog}
-          >
-            <Trash2 />
-            Eliminar
-          </DropdownMenuItem>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                variant="destructive"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <Trash2 />
+                Eliminar
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="">
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Esto eliminará
+                  permanentemente la vacante.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleDeleteVacancy(row.original.id)}
+                >
+                  Continuar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -126,31 +139,6 @@ export const ActionsRecruitment = ({
         setOpen={handleCloseEdit}
         vacancy={row.original}
       />
-
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent className="z-[110]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente
-              la vacante.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setOpen(false)}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                handleDeleteVacancy(row.original.id);
-                setOpen(false);
-              }}
-            >
-              Continuar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };
