@@ -83,6 +83,14 @@ export const ActionsRecruitment = ({
     }
   };
 
+  const handleOpenDeleteDialog = () => {
+    // Cerrar el modal de edición si está abierto para evitar conflictos
+    if (openEdit) {
+      setOpenEdit(false);
+    }
+    setOpen(true);
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -105,7 +113,7 @@ export const ActionsRecruitment = ({
           <DropdownMenuItem
             className="cursor-pointer"
             variant="destructive"
-            onClick={() => setOpen(true)}
+            onClick={handleOpenDeleteDialog}
           >
             <Trash2 />
             Eliminar
@@ -120,7 +128,7 @@ export const ActionsRecruitment = ({
       />
 
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[110]">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
