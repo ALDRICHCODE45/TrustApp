@@ -29,6 +29,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { useState } from "react";
 
@@ -135,36 +136,40 @@ export function NavUser({
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={() => setisDialogOpen(true)}
-                  className="cursor-pointer"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        ¿Estás absolutamente segur@?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción cerrará tu sesión y tendrás que ingresar
+                        nuevamente tus credenciales.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLogOut}>
+                        Continuar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-
-      <AlertDialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás absolutamente segur@?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción cerrará tu sesión y tendrás que ingresar nuevamente
-              tus credenciales.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogOut}>
-              Continuar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

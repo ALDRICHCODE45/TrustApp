@@ -40,53 +40,38 @@ export const VacancyDetails = () => {
             </h3>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-experiencia">Salario</Label>
-              <Input id="req-experiencia" placeholder="Ej: $15,000 - $20,000" />
+              <Label>Prestaciones</Label>
+              <Input placeholder="Ej: 10 dias de vacaciones" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-educacion">Prestaciones</Label>
-              <Input
-                id="req-educacion"
-                placeholder="Ej: 10 dias de vacaciones"
-              />
+              <Label>Herramientas de trabajo</Label>
+              <Input placeholder="Ej: Excel , CRM, etc" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-habilidades">Herramientas de trabajo</Label>
-              <Input id="req-habilidades" placeholder="Ej: Excel , CRM, etc" />
+              <Label>Comisiones/Bonos</Label>
+              <Input placeholder="Ej: 10% de comisiones" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-idiomas">Comisiones/Bonos</Label>
-              <Input id="req-idiomas" placeholder="Ej: 10% de comisiones" />
+              <Label>Modalidad (Híbrido, Remoto, Presencial)</Label>
+              <Input placeholder="Ej: Híbrido" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-ubicacion">
-                Modalidad (Híbrido, Remoto, Presencial)
-              </Label>
-              <Input id="req-ubicacion" placeholder="Ej: Híbrido" />
+              <Label>Psicometría (Sí / No)</Label>
+              <Input placeholder="Ej: Sí" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-disponibilidad">Psicometría (Sí / No)</Label>
-              <Input id="req-disponibilidad" placeholder="Ej: Sí" />
+              <Label>Ubicación de la posición (CDMX, Monterrey, etc.)</Label>
+              <Input placeholder="Ej: CDMX" />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="req-salario">
-                Ubicación de la posición (CDMX, Monterrey, etc.)
-              </Label>
-              <Input id="req-salario" placeholder="Ej: CDMX" />
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="req-otros">Comentarios generales</Label>
-              <Textarea
-                id="req-otros"
-                placeholder="Ej: El cliente indicó que sus horarios para entrevistas son determinados"
-              />
+              <Label>Comentarios generales</Label>
+              <Textarea placeholder="Ej: El cliente indicó que sus horarios para entrevistas son determinados" />
             </div>
           </div>
         </div>

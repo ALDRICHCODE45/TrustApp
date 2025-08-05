@@ -9,12 +9,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Plus, FileText, UserIcon, CircleOff } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  UserIcon,
+  CircleOff,
+  ChevronsUpDown,
+  Check,
+  ChevronDownIcon,
+  CheckIcon,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -53,6 +63,17 @@ import { ChecklistForm } from "../VacancyFormComponents/CreateVacancyComponents/
 import { ToastCustomMessage } from "@/components/ToastCustomMessage";
 import { SelectNative } from "@/components/ui/select-native";
 import { VacancyDetails } from "../VacancyFormComponents/CreateVacancyComponents/VacancyDetails";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import ClientCombobox from "@/app/(dashboard)/reclutador/components/ClientCombobox";
+import { Label } from "@/components/ui/label";
 
 // Schema basado en el modelo Vacancy de Prisma
 const vacancySchema = z.object({
@@ -287,6 +308,9 @@ const BasicInformationTab = ({
   // Usar los valores del formulario directamente
   const fechaAsignacion = form.watch("fechaAsignacion");
   const prioridad = form.watch("prioridad");
+
+  const [open, setOpen] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
 
   useEffect(() => {
     //Todo: cambiar la fecha de entrega en base a la prioridad
@@ -542,30 +566,6 @@ const BasicInformationTab = ({
                       </div>
                     )}
 
-                    {/* {user_logged.role != "Admin" && (
-                      <DropdownMenuItem
-                        key="admin"
-                        className="flex items-center gap-4 p-2 cursor-pointer"
-                        disabled={true}
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <Avatar className="h-9 w-9 shrink-0">
-                            <AvatarFallback>
-                              {user_logged.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {user_logged.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {user_logged.role}
-                            </span>
-                          </div>
-                        </div>
-                      </DropdownMenuItem>
-                    )} */}
-
                     {reclutadores.length > 0 &&
                       user_logged.role === "Admin" &&
                       reclutadores.map((recruiter) => (
@@ -620,8 +620,75 @@ const BasicInformationTab = ({
             name="clienteId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cliente</FormLabel>
-                <DropdownMenu>
+                <div className="*:not-first:mt-2">
+                  <Label>Cliente</Label>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]"
+                      >
+                        <span
+                          className={cn(
+                            "truncate",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? clientes.find(
+                                (cliente) => cliente.id === field.value
+                              )?.cuenta
+                            : "Seleccionar Cliente"}
+                        </span>
+                        <ChevronDownIcon
+                          size={16}
+                          className="text-muted-foreground/80 shrink-0"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0 z-[9999]"
+                      align="start"
+                    >
+                      <Command>
+                        <CommandInput placeholder="Buscar Cliente..." />
+                        <CommandList>
+                          <CommandEmpty>
+                            No se encontraron clientes.
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {clientes.map((cliente) => (
+                              <CommandItem
+                                key={cliente.id}
+                                className="z-[9999]"
+                                value={cliente.cuenta || ""}
+                                onSelect={() => {
+                                  const newValue =
+                                    field.value === cliente.id
+                                      ? ""
+                                      : cliente.id;
+                                  field.onChange(newValue);
+                                  setValue(newValue || "");
+                                  setOpen(false);
+                                }}
+                              >
+                                {cliente.cuenta}
+                                {field.value === cliente.id && (
+                                  <CheckIcon size={16} className="ml-auto" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* <DropdownMenu>
                   <DropdownMenuTrigger asChild className="w-full">
                     <Button variant="outline" size="sm" className="flex">
                       <UserIcon className="h-4 w-4 mr-2" />
@@ -679,7 +746,7 @@ const BasicInformationTab = ({
                         </DropdownMenuItem>
                       ))}
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
                 <FormMessage />
               </FormItem>
             )}

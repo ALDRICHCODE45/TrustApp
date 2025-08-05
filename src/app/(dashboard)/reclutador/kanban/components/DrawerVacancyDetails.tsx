@@ -34,21 +34,21 @@ export const DrawerVacancyDetails = ({ vacancyId }: { vacancyId: string }) => {
             <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
               {/* Aquí irá el contenido específico de la vacante */}
               <div className="grid gap-4">
-                <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="dark:bg-muted/50 bg-muted p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Información Financiera</h4>
                   <p className="text-sm text-muted-foreground">
                     Detalles específicos de la vacante con ID: {vacancyId}
                   </p>
                 </div>
 
-                <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="dark:bg-muted/50 bg-muted p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Métricas de Rendimiento</h4>
                   <p className="text-sm text-muted-foreground">
                     Estadísticas y análisis de la vacante.
                   </p>
                 </div>
 
-                <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="dark:bg-muted/50 bg-muted p-4 rounded-lg">
                   <h4 className="font-medium mb-2">Historial de Cambios</h4>
                   <p className="text-sm text-muted-foreground">
                     Registro de modificaciones y actualizaciones.
