@@ -41,6 +41,7 @@ import { useState, useEffect } from "react";
 import { updateVacancy } from "@/actions/vacantes/actions";
 import { toast } from "sonner";
 import { ToastCustomMessage } from "@/components/ToastCustomMessage";
+import { EditVacancyDetailt } from "../VacancyFormComponents/CreateVacancyComponents/EditVacancyComponent";
 
 interface Props {
   open: boolean;
@@ -84,6 +85,15 @@ const vacancySchema = z.object({
     .optional(),
   fee: z.number().min(0, "El fee debe ser mayor o igual a 0").optional(),
   monto: z.number().min(0, "El monto debe ser mayor o igual a 0").optional(),
+  //Detalles de la vacante
+  prestaciones: z.string().optional(),
+  herramientas: z.string().optional(),
+  comisiones: z.string().optional(),
+  modalidad: z.string().optional(),
+  horario: z.string().optional(),
+  psicometria: z.string().optional(),
+  ubicacion: z.string().optional(),
+  comentarios: z.string().optional(),
 });
 
 type VacancyFormData = z.infer<typeof vacancySchema>;
@@ -108,6 +118,14 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
       valorFactura: vacancy.valorFactura || undefined,
       fee: vacancy.fee || undefined,
       monto: vacancy.monto || undefined,
+      prestaciones: vacancy.prestaciones || undefined,
+      herramientas: vacancy.herramientas || undefined,
+      comisiones: vacancy.comisiones || undefined,
+      modalidad: vacancy.modalidad || undefined,
+      horario: vacancy.horario || undefined,
+      psicometria: vacancy.psicometria || undefined,
+      ubicacion: vacancy.ubicacion || undefined,
+      comentarios: vacancy.comentarios || undefined,
     },
   });
 
@@ -129,6 +147,14 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
         valorFactura: vacancy.valorFactura || undefined,
         fee: vacancy.fee || undefined,
         monto: vacancy.monto || undefined,
+        prestaciones: vacancy.prestaciones || undefined,
+        herramientas: vacancy.herramientas || undefined,
+        comisiones: vacancy.comisiones || undefined,
+        modalidad: vacancy.modalidad || undefined,
+        horario: vacancy.horario || undefined,
+        psicometria: vacancy.psicometria || undefined,
+        ubicacion: vacancy.ubicacion || undefined,
+        comentarios: vacancy.comentarios || undefined,
       });
     }
   }, [vacancy, open, form]);
@@ -440,6 +466,7 @@ export const EditVacancyForm = ({ open, setOpen, vacancy }: Props) => {
                         </div>
                       </div>
                     </CardContent>
+                    <EditVacancyDetailt form={form} vacante={vacancy} />
                   </Card>
                 </TabsContent>
 

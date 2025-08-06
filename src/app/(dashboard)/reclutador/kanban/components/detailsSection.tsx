@@ -172,7 +172,9 @@ export const DetailsSectionReclutador = ({
             <FileText className="h-4 w-4 mr-2" />
             Información financiera
           </h4>
-          <DrawerVacancyDetails vacancyId={vacante.id} />
+          <div className="mb-2">
+            <DrawerVacancyDetails vacante={vacante} />
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-4">
           <Card className="overflow-hidden">

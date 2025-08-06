@@ -112,6 +112,16 @@ const vacancySchema = z.object({
 
   // Cliente (requerido según el esquema de Prisma)
   clienteId: z.string().min(1, "El cliente es requerido"),
+
+  //Detalles de la vacante
+  prestaciones: z.string().optional(),
+  herramientas: z.string().optional(),
+  comisiones: z.string().optional(),
+  modalidad: z.string().optional(),
+  horario: z.string().optional(),
+  psicometria: z.string().optional(),
+  ubicacion: z.string().optional(),
+  comentarios: z.string().optional(),
 });
 
 type VacancyFormData = z.infer<typeof vacancySchema>;
@@ -198,6 +208,14 @@ function VacancyForm({ reclutadores, clientes, user_logged }: Props) {
       valorFactura: undefined,
       fee: undefined,
       monto: undefined,
+      prestaciones: "",
+      herramientas: "",
+      comisiones: "",
+      modalidad: "",
+      horario: "",
+      psicometria: "",
+      ubicacion: "",
+      comentarios: "",
     },
   });
 
@@ -754,7 +772,7 @@ const BasicInformationTab = ({
         </div>
 
         <div className="w-full">
-          <VacancyDetails />
+          <VacancyDetails form={form} />
         </div>
       </CardContent>
     </Card>

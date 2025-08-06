@@ -20,12 +20,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { VacancyWithRelations } from "@/app/(dashboard)/reclutador/components/ReclutadorColumns";
 
 interface Props {
   form: any; // FormReturn from react-hook-form
+  vacante: VacancyWithRelations;
 }
 
-export const VacancyDetails = ({ form }: Props) => {
+export const EditVacancyDetailt = ({ form, vacante }: Props) => {
   return (
     <Sheet>
       <SheetTrigger asChild className="mt-4 w-full">
@@ -55,7 +57,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Prestaciones</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: 10 días de vacaciones" {...field} />
+                    <Input
+                      defaultValue={vacante.prestaciones || undefined}
+                      placeholder="Ej: 10 días de vacaciones"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -69,7 +75,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Herramientas de trabajo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Excel, CRM, etc" {...field} />
+                    <Input
+                      defaultValue={vacante.herramientas || undefined}
+                      placeholder="Ej: Excel, CRM, etc"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,7 +93,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Comisiones/Bonos</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: 10% de comisiones" {...field} />
+                    <Input
+                      defaultValue={vacante.comisiones || undefined}
+                      placeholder="Ej: 10% de comisiones"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,7 +111,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Modalidad (Híbrido, Remoto, Presencial)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Híbrido" {...field} />
+                    <Input
+                      defaultValue={vacante.modalidad || undefined}
+                      placeholder="Ej: Híbrido"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,7 +129,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Horario</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: 9:00 AM - 6:00 PM" {...field} />
+                    <Input
+                      defaultValue={vacante.horario || undefined}
+                      placeholder="Ej: 9:00 AM - 6:00 PM"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -125,7 +147,11 @@ export const VacancyDetails = ({ form }: Props) => {
                 <FormItem>
                   <FormLabel>Psicometría (Sí / No)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Sí" {...field} />
+                    <Input
+                      defaultValue={vacante.psicometria || undefined}
+                      placeholder="Ej: Sí"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,7 +167,11 @@ export const VacancyDetails = ({ form }: Props) => {
                     Ubicación de la posición (CDMX, Monterrey, etc.)
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: CDMX" {...field} />
+                    <Input
+                      defaultValue={vacante.ubicacion || undefined}
+                      placeholder="Ej: CDMX"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -156,6 +186,7 @@ export const VacancyDetails = ({ form }: Props) => {
                   <FormLabel>Comentarios generales</FormLabel>
                   <FormControl>
                     <Textarea
+                      defaultValue={vacante.comentarios || undefined}
                       placeholder="Ej: El cliente indicó que sus horarios para entrevistas son determinados"
                       {...field}
                     />
@@ -164,6 +195,9 @@ export const VacancyDetails = ({ form }: Props) => {
                 </FormItem>
               )}
             />
+          </div>
+          <div className="w-full">
+            <EditVacancyDetailt form={form} vacante={vacante} />
           </div>
         </div>
 

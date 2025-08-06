@@ -216,6 +216,16 @@ model Vacancy {
   fee                   Float?
   ternaFinal            Person[]         @relation("VacancyTernaFinal")
 
+  //Detalles de la vacante NO OBLIGATORIOS 
+  prestaciones String?
+  herramientas String?
+  comisiones   String?
+  modalidad    String?
+  horario      String?
+  psicometria  String?
+  ubicacion    String?
+  comentarios  String?
+
   // Relación con el cliente
   cliente   Client @relation(fields: [clienteId], references: [id])
   clienteId String

@@ -47,6 +47,14 @@ const updateVacancySchema = z.object({
     .optional(),
   fee: z.number().min(0, "El fee debe ser mayor o igual a 0").optional(),
   monto: z.number().min(0, "El monto debe ser mayor o igual a 0").optional(),
+  prestaciones: z.string().optional(),
+  herramientas: z.string().optional(),
+  comisiones: z.string().optional(),
+  modalidad: z.string().optional(),
+  horario: z.string().optional(),
+  psicometria: z.string().optional(),
+  ubicacion: z.string().optional(),
+  comentarios: z.string().optional(),
 });
 
 type UpdateVacancyFormData = z.infer<typeof updateVacancySchema>;
@@ -64,6 +72,15 @@ interface VacancyFormData {
   valorFactura?: number;
   fee?: number;
   monto?: number;
+  //Detalles de la vacante
+  prestaciones?: string;
+  herramientas?: string;
+  comisiones?: string;
+  modalidad?: string;
+  horario?: string;
+  psicometria?: string;
+  ubicacion?: string;
+  comentarios?: string;
 }
 
 export const updateVacancy = async (data: UpdateVacancyFormData) => {
@@ -89,7 +106,17 @@ export const updateVacancy = async (data: UpdateVacancyFormData) => {
 
     const updatedVacancy = await prisma.vacancy.update({
       where: { id },
-      data: filteredUpdateData,
+      data: {
+        ...filteredUpdateData,
+        prestaciones: data.prestaciones || undefined,
+        herramientas: data.herramientas || undefined,
+        comisiones: data.comisiones || undefined,
+        modalidad: data.modalidad || undefined,
+        horario: data.horario || undefined,
+        psicometria: data.psicometria || undefined,
+        ubicacion: data.ubicacion || undefined,
+        comentarios: data.comentarios || undefined,
+      },
       include: {
         reclutador: true,
         cliente: true,
@@ -198,6 +225,14 @@ export const createVacancy = async (vacancy: VacancyFormData) => {
             id: vacancy.clienteId,
           },
         },
+        prestaciones: vacancy.prestaciones,
+        herramientas: vacancy.herramientas,
+        comisiones: vacancy.comisiones,
+        modalidad: vacancy.modalidad,
+        horario: vacancy.horario,
+        psicometria: vacancy.psicometria,
+        ubicacion: vacancy.ubicacion,
+        comentarios: vacancy.comentarios,
       },
     });
 
