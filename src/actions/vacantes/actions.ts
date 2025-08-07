@@ -397,3 +397,32 @@ export const seleccionarCandidato = async (
     };
   }
 };
+
+export const getCandidates = async ({ vacancyId }: { vacancyId: string }) => {
+  try {
+    const candidates = await prisma.person.findMany({
+      where: {
+        vacanciesTernaFinal: {
+          some: {
+            id: vacancyId,
+          },
+        },
+      },
+
+      include: {
+        cv: true,
+      },
+    });
+    return {
+      ok: true,
+      message: "Candidatos obtenidos correctamente",
+      candidates,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      ok: false,
+      message: "Error al obtener candidatos de la vacante",
+    };
+  }
+};
