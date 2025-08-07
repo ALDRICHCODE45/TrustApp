@@ -23,7 +23,12 @@ import {
   getProgressPercentage,
   getTipoColor,
 } from "../../components/kanbanReclutadorBoard";
-import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetOverlay,
+  SheetPortal,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { VacancyDetailsChecklist } from "./VacancyDetailsChecklist";
 import { DrawerVacancyDetails } from "./DrawerVacancyDetails";
 
@@ -223,7 +228,10 @@ export const DetailsSectionReclutador = ({
               Checklist
             </Button>
           </SheetTrigger>
-          <VacancyDetailsChecklist vacante={vacante} />
+          <SheetPortal>
+            <SheetOverlay className="z-[9999]" />
+            <VacancyDetailsChecklist vacante={vacante} />
+          </SheetPortal>
         </Sheet>
       </div>
       {/* Candidato contratado (condicional) */}
