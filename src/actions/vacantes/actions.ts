@@ -411,6 +411,7 @@ export const getCandidates = async ({ vacancyId }: { vacancyId: string }) => {
 
       include: {
         cv: true,
+        vacanciesContratado: true,
       },
     });
     return {

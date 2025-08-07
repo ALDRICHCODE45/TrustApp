@@ -83,6 +83,7 @@ import {
 export type PersonWithRelations = Prisma.PersonGetPayload<{
   include: {
     cv: true;
+    vacanciesContratado: true;
   };
 }>;
 

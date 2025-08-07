@@ -625,10 +625,6 @@ export const KanbanBoardPage = ({
     { value: 12, label: "Diciembre" },
   ];
 
-  const getMonthName = (monthValue: number) => {
-    return months.find((m) => m.value === monthValue)?.label;
-  };
-
   // Configurar sensores para drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {

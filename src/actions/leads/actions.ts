@@ -325,7 +325,7 @@ export async function createLead(prevState: any, formData: FormData) {
     if (submission.status !== "success") {
       return submission.reply();
     }
-    const empresa = submission.value.empresa;
+    const empresa = submission.value.empresa.trim();
 
     // Check if lead already exists (exact match, case insensitive)
     const leadExists = await prisma.lead.findFirst({

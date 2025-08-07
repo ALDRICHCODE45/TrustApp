@@ -23,6 +23,8 @@ import {
   UserCheck,
   Pencil,
   Trash2,
+  ExternalLink,
+  FileUser,
 } from "lucide-react";
 import { MoreVertical } from "lucide-react";
 import { ToastCustomMessage } from "@/components/ToastCustomMessage";
@@ -143,6 +145,7 @@ export const CandidatesSectionReclutador = ({
   const handleMarkCandidateAsContratado = async (candidateId: string) => {
     try {
       await selectCandidate(candidateId);
+
       toast.custom((t) => (
         <ToastCustomMessage
           title="Candidato seleccionado correctamente"
@@ -166,6 +169,7 @@ export const CandidatesSectionReclutador = ({
   const handleDeseleccionarCandidato = async () => {
     try {
       await deselectCandidate();
+
       toast.custom((t) => (
         <ToastCustomMessage
           title="Candidato deseleccionado correctamente"
@@ -319,6 +323,21 @@ export const CandidatesSectionReclutador = ({
                               <Phone className="h-3 w-3" />
                               <span>{candidato.phone || "Sin teléfono"}</span>
                             </div>
+                            {candidato.cv?.url && (
+                              <Button
+                                variant="link"
+                                className="cursor-pointer text-xs text-muted-foreground p-0"
+                              >
+                                <Link
+                                  className="flex items-center gap-2 text-xs"
+                                  href={candidato.cv.url}
+                                  target="_blank"
+                                >
+                                  <FileUser className="h-4 w-4" />
+                                  <span className="text-xs">Ver CV</span>
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         </div>
 
@@ -337,19 +356,8 @@ export const CandidatesSectionReclutador = ({
                             align="end"
                             className="w-40 z-[9999]"
                           >
-                            {candidato.cv?.url && (
-                              <DropdownMenuItem
-                                asChild
-                                className="cursor-pointer"
-                              >
-                                <Link href={candidato.cv.url} target="_blank">
-                                  <FileText className="h-4 w-4 mr-2" />
-                                  Ver CV
-                                </Link>
-                              </DropdownMenuItem>
-                            )}
-
-                            {vacante.candidatoContratadoId === candidato.id ? (
+                            {candidato.vacanciesContratado &&
+                            candidato.vacanciesContratado.length > 0 ? (
                               <DropdownMenuItem
                                 onClick={() => handleDeseleccionarCandidato()}
                                 className="cursor-pointer"

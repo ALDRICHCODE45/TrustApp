@@ -27,11 +27,13 @@ export type VacancyWithRelations = Prisma.VacancyGetPayload<{
     candidatoContratado: {
       include: {
         cv: true;
+        vacanciesContratado: true;
       };
     };
     ternaFinal: {
       include: {
         cv: true;
+        vacanciesContratado: true;
       };
     };
     files: true;
